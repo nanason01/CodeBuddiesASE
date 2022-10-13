@@ -18,4 +18,4 @@ then:
 bazel-bin/entry/test
 
 bazel test <test target>
-e.g. bazel test --test_output=all //entry/test:hello```
+e.g. bazel test --test_output=all //entry/test:hello
