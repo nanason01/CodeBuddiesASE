@@ -1,4 +1,4 @@
-bazel quick start guide:
+```bazel quick start guide:
 
 all targets are structured like:
 
@@ -18,5 +18,4 @@ then:
 bazel-bin/entry/test
 
 bazel test <test target>
-e.g. bazel test --test_output=all //entry/test:hello_
-
+e.g. bazel test --test_output=all //entry/test:hello```
