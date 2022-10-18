@@ -6,9 +6,9 @@
 
 #include "common/types.h"
 #include "data/user_data.h"
+#include "pricer/pricer.h"
 
 #include <vector>
-
 
 using namespace std::chrono_literals;
 using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
