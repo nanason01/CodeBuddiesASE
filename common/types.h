@@ -50,13 +50,14 @@ constexpr const char* operator+(const Exchange e) {
 
 using Timestamp = std::chrono::year_month_day;
 using TimeDelta = std::chrono::days;
-using PNL = double;
 
-static Timestamp now() {
+static inline Timestamp now() {
     return std::chrono::floor<std::chrono::days>(
         std::chrono::system_clock::now()
         );
 }
+
+using PNL = double;
 
 // Singular dated swap
 struct Trade {

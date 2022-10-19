@@ -1,6 +1,6 @@
 cc_library(
     name = "engine",
-    srcs = glob(["*.cpp"]),
+    srcs = glob(["*.cc"]),
     hdrs = glob(["*.h"]),
     visibility = [
         "//entry:__pkg__",
@@ -8,5 +8,6 @@ cc_library(
     deps = [
         "//common",
         "//data",
+        "//pricer",
     ],
 )

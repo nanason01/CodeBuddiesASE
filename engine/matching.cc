@@ -34,13 +34,12 @@ PNL get_net_pnl(AuthenticUser user, Timestamp end_time = std::chrono::system_clo
 }
 
 // get year end stats for a year
-YearEndPNL get_year_end_pnl(AuthenticUser user, std::chrono::time_point<std::chrono::system_clock> year) {
+YearEndPNL get_year_end_pnl(AuthenticUser user, Timestamp year) {
     PNL net = 0.0, lt = 0.0, st = 0.0;
 
-
-
     for (const auto matched_trade : get_matched_trades(user)) {
-        std::chrono::year(matched_trade.sold_timestamp);
+        if (matched_trade.sold_timestamp.year() != year.year())
+            continue;
 
         net += matched_trade.pnl;
 
@@ -61,7 +60,12 @@ YearEndPNL get_year_end_pnl(AuthenticUser user, std::chrono::time_point<std::chr
 
 // get pnl over various points in time
 vector<SnapshotPNL> get_pnl_snapshots(AuthenticUser user, vector<TimeDelta> timestamps = DEFAULT_SAMPLES) {
-    return vector<SnapshotPNL>();
+    PNL running_pnl = 0.0;
+
+    for (const auto offset : get_trades | ranges::rev)
+        ;
+
+    this_should_not_compile
 }
 
 // returns the earliest dates user could sell each of his cryptos for

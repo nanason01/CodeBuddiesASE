@@ -1,10 +1,9 @@
 cc_library(
-    name = "exchanges",
+    name = "pricer",
     srcs = glob(["*.cpp"]),
     hdrs = glob(["*.h"]),
     visibility = [
-        "//data:__pkg__",
-        "//entry:__pkg__",
+        "//engine:__pkg__",
     ],
     deps = ["//common"],
 )

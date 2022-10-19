@@ -15,7 +15,7 @@
 
 using namespace std::chrono_literals;
 
-constexpr Timestamp REFRESH_INTERVAL = std::chrono::days{ 1 };
+constexpr TimeDelta REFRESH_INTERVAL = std::chrono::days{ 1 };
 
 // TODO: subject to change on 0Auth exploration
 struct AuthenticUser {

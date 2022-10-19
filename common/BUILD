@@ -7,6 +7,7 @@ cc_library(
         "//engine:__pkg__",
         "//entry:__pkg__",
         "//exchanges:__pkg__",
+        "//pricer:__pkg__",
     ],
 )
 

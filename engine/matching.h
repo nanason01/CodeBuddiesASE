@@ -46,10 +46,10 @@ std::vector<MatchedTrade> get_matched_trades(AuthenticUser user);
 // get pnl of trade
 // internally, this assumes the trade was net-0 value the first day
 // then calculated the present value of both legs to get the result
-PNL get_pnl_from(AuthenticUser user, Trade trade, Timestamp end_time = std::chrono::system_clock::now());
+PNL get_pnl_from(AuthenticUser user, Trade trade, Timestamp end_time = now());
 
 // get net pnl of a user up to end_date
-PNL get_net_pnl(AuthenticUser user, Timestamp end_time = std::chrono::system_clock::now());
+PNL get_net_pnl(AuthenticUser user, Timestamp end_time = now());
 
 // get year end stats for a year
 YearEndPNL get_year_end_pnl(AuthenticUser user, std::chrono::time_point<std::chrono::system_clock> year);
