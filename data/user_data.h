@@ -15,7 +15,7 @@
 
 using namespace std::chrono_literals;
 
-constexpr std::chrono::duration REFRESH_INTERVAL = 24h;
+constexpr Timestamp REFRESH_INTERVAL = std::chrono::days{ 1 };
 
 // TODO: subject to change on 0Auth exploration
 struct AuthenticUser {
@@ -72,7 +72,7 @@ std::vector<Exchange> get_exchanges(AuthenticUser user);
 void __check_user(AuthenticUser user);
 
 // throws InvalidCreds if credentials don't match
-void __check_creds(AuthenticUser user);
+void check_creds(AuthenticUser user);
 
 // get last time this exchange was updated for user
-std::time_t __get_last_update(AuthenticUser user, Exchange e);
+Timestamp __get_last_update(AuthenticUser user, Exchange e);

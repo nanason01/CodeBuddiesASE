@@ -11,13 +11,11 @@
 #include <vector>
 
 using namespace std::chrono_literals;
-using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
-using TimeDelta = std::chrono::hours;
 
 // this does not need to be exact
 // chrono::months do not convert to chrono::hours
 std::vector<TimeDelta> DEFAULT_SAMPLES = {
-    std::chrono::hours(0),
+    std::chrono::days(0),
     std::chrono::weeks(1),
     std::chrono::weeks(2),
     std::chrono::weeks(3),
@@ -33,13 +31,13 @@ std::vector<TimeDelta> DEFAULT_SAMPLES = {
 };
 
 struct YearEndPNL {
-    double lt_realized, st_realized;
-    double actual;
+    PNL lt_realized, st_realized;
+    PNL actual;
 };
 
 struct SnapshotPNL {
-    std::chrono::time_point<std::chrono::system_clock> timestamp;
-    double pnl;
+    Timestamp timestamp;
+    PNL pnl;
 };
 
 // get all matched trades for user
@@ -48,7 +46,10 @@ std::vector<MatchedTrade> get_matched_trades(AuthenticUser user);
 // get pnl of trade
 // internally, this assumes the trade was net-0 value the first day
 // then calculated the present value of both legs to get the result
-MatchedTrade get_pnl_from(AuthenticUser user, Trade trade);
+PNL get_pnl_from(AuthenticUser user, Trade trade, Timestamp end_time = std::chrono::system_clock::now());
+
+// get net pnl of a user up to end_date
+PNL get_net_pnl(AuthenticUser user, Timestamp end_time = std::chrono::system_clock::now());
 
 // get year end stats for a year
 YearEndPNL get_year_end_pnl(AuthenticUser user, std::chrono::time_point<std::chrono::system_clock> year);

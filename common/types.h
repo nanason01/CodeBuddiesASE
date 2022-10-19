@@ -48,21 +48,32 @@ constexpr const char* operator+(const Exchange e) {
     return to_string(e);
 }
 
+using Timestamp = std::chrono::year_month_day;
+using TimeDelta = std::chrono::days;
+using PNL = double;
+
+static Timestamp now() {
+    return std::chrono::floor<std::chrono::days>(
+        std::chrono::system_clock::now()
+        );
+}
+
 // Singular dated swap
 struct Trade {
-    std::chrono::time_point<std::chrono::system_clock> timestamp;
+    Timestamp timestamp;
 
     std::string sold_currency, bought_currency;
     double sold_amount, bought_amount;
 };
 
+
 // Matched buy with sell swap
 struct MatchedTrade {
-    std::chrono::time_point<std::chrono::system_clock> bought_timestamp, sold_timestamp;
+    Timestamp bought_timestamp, sold_timestamp;
     Term term;
 
     std::string currency;
-    double pnl;
+    PNL pnl;
 };
 
 // TODO define these types with 0Auth
