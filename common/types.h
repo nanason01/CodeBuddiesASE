@@ -13,7 +13,7 @@
 enum class Exchange : uint8_t {
     Invalid,
     Coinbase,
-    Crypto_com,
+    Kraken,
 
     All = std::numeric_limits<uint8_t>::max(),
 };
@@ -27,8 +27,8 @@ constexpr const char* to_string(const Exchange e) {
     switch (e) {
     case Exchange::Coinbase:
         return "Coinbase";
-    case Exchange::Crypto_com:
-        return "crypto.com";
+    case Exchange::Kraken:
+        return "Kraken";
     default:
         return "invalid";
     }
@@ -37,8 +37,8 @@ constexpr const char* to_string(const Exchange e) {
 constexpr const Exchange from_string(const std::string_view str) {
     if (str == "Coinbase")
         return Exchange::Coinbase;
-    else if (str == "crypto.com")
-        return Exchange::Crypto_com;
+    else if (str == "Kraken")
+        return Exchange::Kraken;
     else
         return Exchange::Invalid;
 }

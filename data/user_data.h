@@ -8,7 +8,7 @@
 
 #include "common/types.h"
 #include "exchanges/coinbase.h"
-#include "exchanges/crypto_com.h"
+#include "exchanges/kraken.h"
 
 #include <exception>
 #include <chrono>
