@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "common/types.h"
+#include "../common/types.h"
 
 #include <exception>
 #include <vector>
@@ -32,7 +32,4 @@ protected:
     API_key key;
 public:
     virtual ~ExchangeDriver() = default;
-
-    virtual std::vector<Trade> get_trades(User user, API_key key) = 0;
-    virtual void check_api_key(User user, API_key key) = 0;
 };
