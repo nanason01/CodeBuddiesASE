@@ -55,5 +55,5 @@ Lastly, you must pay your taxes every year, and you can't go back and "change yo
 
 The actual PNL of your trades is much less ambiguous. In reality, you either made or lost money. The value of what you bought has shifted relative to what you sold, and if you reverse it right now you will have gain or lost value. Straightforward as that.
 
-### ***Disclaimer***
+## **Disclaimer**
 None of this is intended as tax advice nor trading advice and is only intended as a software engineering project for entertainment classes. We take no responsibility for our data gathering, our outputs, and ***especially your taxes***. You should consult a professional tax program for good advice.

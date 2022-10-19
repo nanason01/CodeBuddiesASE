@@ -21,6 +21,8 @@ enum class Exchange : uint8_t {
 enum class Term : uint8_t {
     Short,
     Long,
+    Held,
+    UnmatchedSell,
 };
 
 constexpr const char* to_string(const Exchange e) {
@@ -57,6 +59,18 @@ static inline Timestamp now() {
         );
 }
 
+static inline Timestamp beginning_of_time() {
+    using std::chrono::month;
+
+    return Timestamp(month{ 1 } / 1 / 1970);
+}
+
+// courtesy of cppreference: operator sys_days
+constexpr Timestamp normalize(Timestamp ymd) {
+    ymd += std::chrono::months{ 0 }; // normalizes year and month
+    return std::chrono::sys_days{ ymd }; // normalizes day
+}
+
 using PNL = double;
 
 // Singular dated swap
@@ -67,13 +81,18 @@ struct Trade {
     double sold_amount, bought_amount;
 };
 
-
 // Matched buy with sell swap
+// if term == Term::Held, the position is still open,
+// and therefore the sold_timestamp is invalid
+// if term == Term::UnmatchedSell, the position was
+// closed without a corresponding open, so the bought_timestamp
+// and pnl are therefore invalid
 struct MatchedTrade {
     Timestamp bought_timestamp, sold_timestamp;
     Term term;
 
     std::string currency;
+    double sz;
     PNL pnl;
 };
 

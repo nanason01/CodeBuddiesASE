@@ -59,4 +59,5 @@ std::vector<SnapshotPNL> get_pnl_snapshots(AuthenticUser user, std::vector<TimeD
 
 // returns the earliest dates user could sell each of his cryptos for
 // all of them to be considered long term cap gains
+// Trade::bought_amount is meaningless as the future price is unknown
 std::vector<Trade> get_earliest_long_term_sells(AuthenticUser user);
