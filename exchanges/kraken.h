@@ -18,6 +18,34 @@ public:
     std::vector<Trade> get_trades() final;
 
 private:
-    // throws exceptions if the key is invalid
-    void check_api_key(User, API_key);
+    /*
+     * Get trades of user, throw exception on error
+     * On success, processes the trades, checks that
+     * new trades have been added since the last time
+     * function was called, and sends their info to
+     * db.
+     */
+    void query_for_trades(User user);
+
+    /*
+     * Retrieve user API key from DB
+     * Returns: const string key
+     */
+    API_key get_api_key(User user);
+
+    /*
+     * Generate a nonce for requests to Kraken
+     * Returns: string nonce
+     */
+    std::string generate_nonce();
+
+    /*
+     * Generate API-sign for request header, message signature
+     * Returns: const string signature
+     */
+    std::string generate_signature(std::string uri_path, 
+                                   std::string post_data, 
+                                   std::string nonce,
+                                   API_key api_key);
+
 };
