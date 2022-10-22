@@ -9,11 +9,9 @@
 
 #include <vector>
 
-using namespace std::chrono_literals;
-
 // this does not need to be exact
 // chrono::months do not convert to chrono::hours
-std::vector<TimeDelta> DEFAULT_SAMPLES = {
+static const vector<TimeDelta> DEFAULT_SAMPLES = {
     std::chrono::days(0),
     std::chrono::weeks(1),
     std::chrono::weeks(2),
@@ -29,34 +27,60 @@ std::vector<TimeDelta> DEFAULT_SAMPLES = {
     std::chrono::days(365 * 3),
 };
 
-struct YearEndPNL {
-    PNL lt_realized, st_realized;
-    PNL actual;
+class Matcher {
+    Pricer* pricer;
+public:
+    using std::vector;
+
+    Matcher(Pricer* _pricer) : pricer(_pricer) {}
+    virtual ~Matcher() = default;
+
+    struct YearEndPNL {
+        PNL lt_realized, st_realized;
+        PNL actual;
+    };
+
+    struct SnapshotPNL {
+        Timestamp timestamp;
+        PNL pnl;
+    };
+
+    // get all matched trades for user
+    virtual vector<MatchedTrade> get_matched_trades(const vector<Trade>& trades_in);
+
+    // get pnl of trade
+    // internally, this assumes the trade was net-0 value the first day
+    // then calculated the present value of both legs to get the result
+    virtual PNL get_pnl_from(Trade trade, Timestamp end_time = now());
+
+    // get net pnl of a user up to end_date
+    virtual PNL get_net_pnl(const vector<Trade>& trades, Timestamp end_time = now());
+
+    // get year end stats for a year
+    virtual YearEndPNL get_year_end_pnl(const vector<Trade>& trades, Timestamp year = now());
+
+    // get pnl over various points in time
+    virtual vector<SnapshotPNL> get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timestamps = DEFAULT_SAMPLES);
+
+    // returns the earliest dates user could sell each of his cryptos for
+    // all of them to be considered long term cap gains
+    // Trade::bought_amount is meaningless as the future price is unknown
+    virtual vector<Trade> get_earliest_long_term_sells(const vector<Trade>& trades);
+
+private:
+    // get whether this is a short or long term trade
+    static constexpr Term get_term(Timestamp buy, Timestamp sell);
+
+    // This is the "conversion rate" between STCG and LTCG
+    // when we have to decide  whether to take a small STCG
+    // or a large LTCG
+    // it compares the amount saved by deferring a STCG into a LTCG
+    // versus the amount saved by deferring a LTCG
+    // so saving 1 STCG dollar is worth saving ST_FIXING LTCG dollars
+    // assumptions: STCG rate = 35%, LTCG rate = 20%, risk free rate = 3%
+    // and the obvious assumption that not realizing a STCG will mean waiting
+    // until it becomes a LTCG
+    // In the future, the assumptions or this value can be set by a user
+    static constexpr double ST_FIXING = (0.35 - (0.20 / (1.00 + 0.03))) /
+        (0.20 - (0.20 / (1.00 + 0.03)));
 };
-
-struct SnapshotPNL {
-    Timestamp timestamp;
-    PNL pnl;
-};
-
-// get all matched trades for user
-std::vector<MatchedTrade> get_matched_trades(const vector<Trade>& trades_in);
-
-// get pnl of trade
-// internally, this assumes the trade was net-0 value the first day
-// then calculated the present value of both legs to get the result
-PNL get_pnl_from(Trade trade, Timestamp end_time = now());
-
-// get net pnl of a user up to end_date
-PNL get_net_pnl(const vector<Trade>& trades, Timestamp end_time = now());
-
-// get year end stats for a year
-YearEndPNL get_year_end_pnl(const vector<Trade>& trades, std::chrono::time_point<std::chrono::system_clock> year);
-
-// get pnl over various points in time
-std::vector<SnapshotPNL> get_pnl_snapshots(const vector<Trade>& trades, std::vector<TimeDelta> timestamps = DEFAULT_SAMPLES);
-
-// returns the earliest dates user could sell each of his cryptos for
-// all of them to be considered long term cap gains
-// Trade::bought_amount is meaningless as the future price is unknown
-std::vector<Trade> get_earliest_long_term_sells(const vector<Trade>& trades, );
