@@ -24,7 +24,7 @@ cc_test(
     deps = [
         "//common",
         "//engine",
-        "//pricer",
+        "//pricer:mock",
         "@com_google_googletest//:gtest_main",
     ],
 )

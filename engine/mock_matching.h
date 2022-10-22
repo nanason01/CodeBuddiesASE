@@ -2,6 +2,8 @@
 // Mock class of matcher for use by testers
 //
 
+#pragma once
+
 #include "matching.h"
 #include "gmock/gmock.h"
 

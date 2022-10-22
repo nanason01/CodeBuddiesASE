@@ -1,6 +1,6 @@
 
 #include "matching.h"
-#include "pricer/mock-pricer.h"
+#include "pricer/mock_pricer.h"
 #include <gtest/gtest.h>
 
 /*
@@ -24,7 +24,7 @@ using testing::Return;
 
 class MatchingFixture : public ::testing::Test {
 protected:
-    MockPricerME mock_pricer;
+    MockPricer mock_pricer;
     Matcher* matcher;
     void SetUp() override {
         matcher = new Matcher(&mock_pricer);
