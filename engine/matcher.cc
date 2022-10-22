@@ -1,4 +1,4 @@
-#include "matching.h"
+#include "matcher.h"
 
 #include <unordered_map>
 #include <map>
@@ -191,7 +191,7 @@ PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time) {
 }
 
 // get year end stats for a year
-Matcher::YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Timestamp year) {
+YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Timestamp year) {
     PNL net = 0.0, lt = 0.0, st = 0.0;
 
     for (const auto& matched_trade : get_matched_trades(trades)) {
@@ -220,7 +220,7 @@ Matcher::YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Times
 
 // get pnl over various points in time
 // currently assumes that get_trades returns trades in chronological asc order
-vector<Matcher::SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timedeltas) {
+vector<SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timedeltas) {
     vector<SnapshotPNL> ret;
 
     for (const auto delta : timedeltas) {

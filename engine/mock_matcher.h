@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "matching.h"
+#include "base_matcher.h"
 #include "gmock/gmock.h"
 
 using std::vector;
 
-class MockMatcher : public Matcher {
+class MockMatcher : public BaseMatcher {
     MOCK_METHOD(vector<MatchedTrade>, get_matched_trades, (const vector<Trade>& trades_in), (override));
     MOCK_METHOD(PNL, get_pnl_from, (Trade trade), (override));
     MOCK_METHOD(PNL, get_net_pnl, (const vector<Trade>& trades_in, Timestamp end_time = now()), (override));
