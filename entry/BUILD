@@ -1,7 +1,8 @@
 cc_binary(
     name = "entry",
     srcs = [
-        # Add your .cc files here
+        "main.cc",
+        # Add your .cc files here probs endpoints.cc
     ],
     hdrs = ["endpoints.h"],
     deps = [
