@@ -15,14 +15,17 @@ cc_library(
 )
 
 cc_library(
-    name = "mock-matcher",
-    hdrs = ["mock_matcher.h"],
+    name = "mock",
+    hdrs = [
+        "base_matcher.h",
+        "mock_matcher.h",
+    ],
     visibility = ["//entry:__pkg__"],
     deps = ["//engine"],
 )
 
 cc_test(
-    name = "matcher-test",
+    name = "test",
     srcs = ["matcher_test.cc"],
     deps = [
         "//common",
