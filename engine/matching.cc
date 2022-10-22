@@ -11,20 +11,7 @@ using std::unordered_map;
 using std::map;
 using std::priority_queue;
 
-// This is the "conversion rate" between STCG and LTCG
-// when we have to decide  whether to take a small STCG
-// or a large LTCG
-// it compares the amount saved by deferring a STCG into a LTCG
-// versus the amount saved by deferring a LTCG
-// so saving 1 STCG dollar is worth saving ST_FIXING LTCG dollars
-// assumptions: STCG rate = 35%, LTCG rate = 20%, risk free rate = 3%
-// and the obvious assumption that not realizing a STCG will mean waiting
-// until it becomes a LTCG
-// In the future, the assumptions or this value can be set by a user
-constexpr double ST_FIXING = (0.35 - (0.20 / (1.00 + 0.03))) /
-(0.20 - (0.20 / (1.00 + 0.03)));
-
-static constexpr Term get_term(Timestamp buy, Timestamp sell) {
+constexpr Term Matcher::get_term(Timestamp buy, Timestamp sell) {
     using namespace std::chrono;
 
     buy = normalize(buy);
@@ -39,11 +26,10 @@ static constexpr Term get_term(Timestamp buy, Timestamp sell) {
 
 // get all matched trades for user
 // see README for details on how this is done
-vector<MatchedTrade> get_matched_trades(AuthenticUser user) {
+vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in) {
     vector<MatchedTrade> ret;
-    auto trades = get_trades(user);
 
-    if (trades.empty())
+    if (trades_in.empty())
         return ret;
 
     struct TradePayload {
@@ -54,11 +40,11 @@ vector<MatchedTrade> get_matched_trades(AuthenticUser user) {
 
     map<std::chrono::year, vector<Trade>> year_to_trades;
 
-    for (const Trade trade : trades) {
+    for (const Trade trade : trades_in) {
         year_to_trades[trade.timestamp.year()].push_back(trade);
     }
 
-    const Timestamp start = trades.front().timestamp;
+    const Timestamp start = trades_in.front().timestamp;
     // curr -> (list of trade sz and date info)
     unordered_map<std::string, vector<TradePayload>> unmatched_buys;
 
@@ -122,7 +108,7 @@ vector<MatchedTrade> get_matched_trades(AuthenticUser user) {
                 TradePayload matched = matching_orders.top();
                 matching_orders.pop();
 
-                const double sz_filled = min(sz, matched.rem_sz);
+                const double sz_filled = std::min(sz, matched.rem_sz);
 
                 matched.rem_sz -= sz_filled;
                 sz -= sz_filled;
@@ -137,12 +123,12 @@ vector<MatchedTrade> get_matched_trades(AuthenticUser user) {
                 );
 
                 // if there is still volume left, push this back
-                if (matched.rem_sz > std::numeric_limits<double>::epsilon)
+                if (matched.rem_sz > std::numeric_limits<double>::epsilon())
                     matching_orders.push(matched);
             }
 
             // case: put unused buys back into unmatched buys
-            while (!matched_orders.empty()) {
+            while (!matching_orders.empty()) {
                 unmatched_buys[trade.sold_currency].push_back(matching_orders.top());
                 matching_orders.pop();
             }
@@ -178,45 +164,35 @@ vector<MatchedTrade> get_matched_trades(AuthenticUser user) {
     return ret;
 }
 
-static PNL __get_pnl_from(Trade trade, Timestamp end_time) {
+// get pnl of trade
+// internally, this assumes the trade was net-0 value the first day
+// then calculated the present value of both legs to get the result
+PNL Matcher::get_pnl_from(Trade trade, Timestamp end_time = now()) {
     return PNL((trade.sold_amount * get_usd_price(trade.sold_currency, trade.timestamp)) +
         (trade.bought_amount * get_usd_price(trade.bought_currency, end_time)) -
         (trade.sold_amount * get_usd_price(trade.sold_currency, end_time)) -
         (trade.bought_amount * get_usd_price(trade.bought_currency, trade.timestamp)));
 }
 
-static PNL __get_net_pnl(Timestamp end_time, const vector<Trade>& trades) {
+// get net pnl of a user up to end_date
+PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time = now()) {
     PNL pnl = 0.0;
 
     for (const auto trade : trades) {
         if (trade.timestamp > end_time)
             continue;
 
-        pnl += __get_pnl_from(trade, end_time);
+        pnl += get_pnl_from(trade, end_time);
     }
 
     return pnl;
 }
 
-// get pnl of trade
-// internally, this assumes the trade was net-0 value the first day
-// then calculated the present value of both legs to get the result
-PNL get_pnl_from(AuthenticUser user, Trade trade, Timestamp end_time = std::chrono::system_clock::now()) {
-    check_creds(user);
-
-    return __get_pnl_from(trade, end_time);
-}
-
-// get net pnl of a user up to end_date
-PNL get_net_pnl(AuthenticUser user, Timestamp end_time = std::chrono::system_clock::now()) {
-    return __get_net_pnl(end_time, get_trades(user));
-}
-
 // get year end stats for a year
-YearEndPNL get_year_end_pnl(AuthenticUser user, Timestamp year) {
+Matcher::YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Timestamp year) {
     PNL net = 0.0, lt = 0.0, st = 0.0;
 
-    for (const auto matched_trade : get_matched_trades(user)) {
+    for (const auto matched_trade : get_matched_trades(trades)) {
         if (matched_trade.sold_timestamp.year() != year.year())
             continue;
 
@@ -239,8 +215,7 @@ YearEndPNL get_year_end_pnl(AuthenticUser user, Timestamp year) {
 
 // get pnl over various points in time
 // currently assumes that get_trades returns trades in chronological asc order
-vector<SnapshotPNL> get_pnl_snapshots(AuthenticUser user, vector<TimeDelta> timedeltas = DEFAULT_SAMPLES) {
-    const auto trades = get_trades(user);
+vector<Matcher::SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timedeltas = DEFAULT_SAMPLES) {
     PNL running_pnl = 0.0;
     vector<SnapshotPNL> ret;
 
@@ -249,33 +224,27 @@ vector<SnapshotPNL> get_pnl_snapshots(AuthenticUser user, vector<TimeDelta> time
 
         ret.push_back({
             .timestamp = next_timestamp,
-            .pnl = __get_net_pnl(next_timestamp, trades),
+            .pnl = get_net_pnl(trades, next_timestamp),
             });
     }
 
     return ret;
 }
 
-/*
-static inline Timestamp max(const Timestamp& a, const Timestamp& b) {
-    return a > b ? a : b;
-}
-*/
-
 // returns the earliest dates user could sell each of his cryptos for
 // all of them to be considered long term cap gains
 // Trade::bought_amount is meaningless as the future price is unknown
-vector<Trade> get_earliest_long_term_sells(AuthenticUser user) {
+vector<Trade> Matcher::get_earliest_long_term_sells(const vector<Trade>& trades) {
     using namespace std::chrono;
 
     vector<Trade> ret;
 
-    for (const auto mt : get_matched_trades(user)) {
+    for (const auto mt : get_matched_trades(trades)) {
         if (mt.term != Term::Held)
             continue;
 
         ret.push_back({
-            .timestamp = max(
+            .timestamp = std::max(
                 normalize(mt.bought_timestamp + years{1} + days{1}),
                 now()
             ),
