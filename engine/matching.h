@@ -9,6 +9,8 @@
 
 #include <vector>
 
+using std::vector;
+
 // this does not need to be exact
 // chrono::months do not convert to chrono::hours
 static const vector<TimeDelta> DEFAULT_SAMPLES = {
@@ -30,7 +32,6 @@ static const vector<TimeDelta> DEFAULT_SAMPLES = {
 class Matcher {
     Pricer* pricer;
 public:
-    using std::vector;
 
     Matcher(Pricer* _pricer) : pricer(_pricer) {}
     virtual ~Matcher() = default;

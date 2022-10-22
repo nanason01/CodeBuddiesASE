@@ -3,9 +3,9 @@
 //
 
 #include "pricer.h"
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 
 class MockPricer : public Pricer {
 public:
-    MOCK_METHOD(double, get_usd_price, (std::string, Timestamp end_time), (override));
-}
+    MOCK_METHOD(double, get_usd_price, (std::string, Timestamp), (override));
+};

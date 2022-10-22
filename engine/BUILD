@@ -8,15 +8,17 @@ cc_library(
     deps = [
         "//common",
         "//pricer",
+        "//pricer:mock-pricer",
     ],
 )
+
 cc_test(
-    name = "hello_test",
+    name = "matching-test",
     srcs = ["matching_test.cc"],
     deps = [
-        "//engine:engine",
         "//common",
-        "//pricer",
+        "//engine",
+        "//pricer:mock-pricer",
         "@com_google_googletest//:gtest_main",
     ],
 )

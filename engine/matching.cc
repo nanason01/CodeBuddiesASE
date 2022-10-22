@@ -40,33 +40,32 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
 
     map<std::chrono::year, vector<Trade>> year_to_trades;
 
-    for (const Trade trade : trades_in) {
+    for (const Trade& trade : trades_in) {
         year_to_trades[trade.timestamp.year()].push_back(trade);
     }
 
-    const Timestamp start = trades_in.front().timestamp;
     // curr -> (list of trade sz and date info)
     unordered_map<std::string, vector<TradePayload>> unmatched_buys;
 
     // work through each year, backwards
-    for (const auto [year, trades] : year_to_trades) {
-        for (const auto trade : trades) {
+    for (const auto& [year, trades] : year_to_trades) {
+        for (const auto& trade : trades) {
             if (trade.bought_currency == trade.sold_currency)
                 continue; // should this throw ?? is this even worth checking ?
 
             const double basis_bought = trade.bought_currency == "USD" ? 1 :
                 trade.sold_currency == "USD" ? trade.bought_amount / trade.sold_amount :
-                get_usd_price(trade.bought_currency, trade.timestamp);
+                pricer->get_usd_price(trade.bought_currency, trade.timestamp);
 
-            unmatched_buys[trade.bought_currency].emplace_back(
+            unmatched_buys[trade.bought_currency].push_back({
                 trade.timestamp,
                 basis_bought,
-                trade.bought_amount,
-                );
+                trade.bought_amount
+                });
 
             const double basis_sold = trade.sold_currency == "USD" ? 1 :
                 trade.bought_currency == "USD" ? trade.sold_amount / trade.bought_amount :
-                get_usd_price(trade.sold_currency, trade.timestamp);
+                pricer->get_usd_price(trade.sold_currency, trade.timestamp);
             // all of the sold_amount must be matched with a corresponding buy
             double sz = trade.sold_amount;
 
@@ -113,14 +112,14 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
                 matched.rem_sz -= sz_filled;
                 sz -= sz_filled;
 
-                ret.emplace_back(
+                ret.push_back({
                     matched.ts,
                     trade.timestamp,
                     get_term(matched.ts, trade.timestamp),
                     trade.sold_currency,
                     sz_filled,
                     sz_filled * (basis_sold - matched.basis)
-                );
+                    });
 
                 // if there is still volume left, push this back
                 if (matched.rem_sz > std::numeric_limits<double>::epsilon())
@@ -135,29 +134,29 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
 
             // case: remaining sold volume unaccounted for
             if (sz) {
-                ret.emplace_back(
+                ret.push_back({
                     beginning_of_time(),
                     trade.timestamp,
                     Term::UnmatchedSell,
                     trade.sold_currency,
                     sz,
                     sz * basis_sold
-                );
+                    });
             }
         }
     }
 
     // register any held positions
-    for (const auto [curr, buys] : unmatched_buys) {
-        for (const auto buy : buys) {
-            ret.emplace_back(
+    for (const auto& [curr, buys] : unmatched_buys) {
+        for (const auto& buy : buys) {
+            ret.push_back({
                 buy.ts,
                 now(),
                 Term::Held,
                 curr,
                 buy.rem_sz,
-                buy.rem_sz * (get_usd_price(curr) - buy.basis)
-            );
+                buy.rem_sz * (pricer->get_usd_price(curr) - buy.basis)
+                });
         }
     }
 
@@ -167,18 +166,21 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
 // get pnl of trade
 // internally, this assumes the trade was net-0 value the first day
 // then calculated the present value of both legs to get the result
-PNL Matcher::get_pnl_from(Trade trade, Timestamp end_time = now()) {
-    return PNL((trade.sold_amount * get_usd_price(trade.sold_currency, trade.timestamp)) +
-        (trade.bought_amount * get_usd_price(trade.bought_currency, end_time)) -
-        (trade.sold_amount * get_usd_price(trade.sold_currency, end_time)) -
-        (trade.bought_amount * get_usd_price(trade.bought_currency, trade.timestamp)));
+PNL Matcher::get_pnl_from(Trade trade, Timestamp end_time) {
+    const double cur_short_px = trade.sold_currency == "USD" ? 1.0 :
+        pricer->get_usd_price(trade.sold_currency, end_time);
+    const double cur_long_px = trade.bought_currency == "USD" ? 1.0 :
+        pricer->get_usd_price(trade.bought_currency, end_time);
+
+    return PNL((trade.bought_amount * cur_long_px) -
+        (trade.sold_amount * cur_short_px));
 }
 
 // get net pnl of a user up to end_date
-PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time = now()) {
+PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time) {
     PNL pnl = 0.0;
 
-    for (const auto trade : trades) {
+    for (const auto& trade : trades) {
         if (trade.timestamp > end_time)
             continue;
 
@@ -192,7 +194,7 @@ PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time = now()
 Matcher::YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Timestamp year) {
     PNL net = 0.0, lt = 0.0, st = 0.0;
 
-    for (const auto matched_trade : get_matched_trades(trades)) {
+    for (const auto& matched_trade : get_matched_trades(trades)) {
         if (matched_trade.sold_timestamp.year() != year.year())
             continue;
 
@@ -203,6 +205,9 @@ Matcher::YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Times
             lt += matched_trade.pnl;
         case(Term::Short):
             st += matched_trade.pnl;
+        case (Term::Held):
+        case (Term::UnmatchedSell):
+            throw;
         }
     }
 
@@ -215,8 +220,7 @@ Matcher::YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Times
 
 // get pnl over various points in time
 // currently assumes that get_trades returns trades in chronological asc order
-vector<Matcher::SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timedeltas = DEFAULT_SAMPLES) {
-    PNL running_pnl = 0.0;
+vector<Matcher::SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timedeltas) {
     vector<SnapshotPNL> ret;
 
     for (const auto delta : timedeltas) {
@@ -239,7 +243,7 @@ vector<Trade> Matcher::get_earliest_long_term_sells(const vector<Trade>& trades)
 
     vector<Trade> ret;
 
-    for (const auto mt : get_matched_trades(trades)) {
+    for (const auto& mt : get_matched_trades(trades)) {
         if (mt.term != Term::Held)
             continue;
 

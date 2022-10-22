@@ -71,6 +71,31 @@ constexpr Timestamp normalize(Timestamp ymd) {
     return std::chrono::sys_days{ ymd }; // normalizes day
 }
 
+// appearently this is only defined for months and years
+// the cpp std committee probably has an incredibly enlightened
+// reasoning behind this, probably adding a day to a date is stupid
+// I, for one, live most of my life on a per-year or per-month basis
+// I go to class once a month, I'll get back to you within a month,
+// and I live for the month-end.
+constexpr Timestamp operator+(const Timestamp& ts, const TimeDelta& delta) {
+    return normalize(Timestamp{ ts.year(), ts.month(), ts.day() + delta });
+}
+constexpr Timestamp operator+(const TimeDelta& delta, const Timestamp& ts) {
+    return normalize(Timestamp{ ts.year(), ts.month(), ts.day() + delta });
+}
+constexpr Timestamp operator-(const Timestamp& ts, const TimeDelta& delta) {
+    return normalize(Timestamp{ ts.year(), ts.month(), ts.day() + delta });
+}
+
+// The more I use this lib, the more I regret it
+// CHECK THE ORDER, usa meaning month/day/year like Jan 1st 2020
+constexpr inline Timestamp from_usa_date(const unsigned int& _m, const unsigned int& _d, const int& _y) {
+    using std::chrono::year;
+    using std::chrono::month;
+    using std::chrono::day;
+    return Timestamp(year{ _y }, month{ _m }, day{ _d });
+}
+
 using PNL = double;
 
 // Singular dated swap
