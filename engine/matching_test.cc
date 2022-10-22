@@ -17,21 +17,21 @@ CRSH = 1000 begin, 25 in 7/1/2017-1/1/2018, +100/mo in 2018
 
 */
 
-constexpr Timestamp begin = from_usa_date(1, 1, 2017);
-constexpr Timestamp end = from_usa_date(1, 1, 2019);
+constexpr Timestamp BEGIN = from_usa_date(1, 1, 2017);
+constexpr Timestamp END = from_usa_date(1, 1, 2019);
 
 using testing::Return;
 
 class MatchingFixture : public ::testing::Test {
 protected:
-    MockPricer mock_pricer;
+    MockPricerME mock_pricer;
     Matcher* matcher;
     void SetUp() override {
         matcher = new Matcher(&mock_pricer);
 
-        auto cur_month = begin.month();
+        auto cur_month = BEGIN.month();
         double val = 1000.0;
-        for (Timestamp i = begin; i != end; i = normalize(i + TimeDelta{ 1 })) {
+        for (Timestamp i = BEGIN; i != END; i = normalize(i + TimeDelta{ 1 })) {
             if (cur_month != i.month()) {
                 cur_month = i.month();
                 val += 10.0;
@@ -40,9 +40,9 @@ protected:
                 .WillByDefault(Return(val));
         }
 
-        cur_month = begin.month();
+        cur_month = BEGIN.month();
         val = 1000.0;
-        for (Timestamp i = begin; i != end; i = normalize(i + TimeDelta{ 1 })) {
+        for (Timestamp i = BEGIN; i != END; i = normalize(i + TimeDelta{ 1 })) {
             if (cur_month != i.month()) {
                 cur_month = i.month();
                 val -= 10.0;
@@ -51,11 +51,11 @@ protected:
                 .WillByDefault(Return(val));
         }
 
-        auto cur_year = begin.year();
+        auto cur_year = BEGIN.year();
         double delta = -10.0;
-        cur_month = begin.month();
+        cur_month = BEGIN.month();
         val = 1000.0;
-        for (Timestamp i = begin; i != end; i = normalize(i + TimeDelta{ 1 })) {
+        for (Timestamp i = BEGIN; i != END; i = normalize(i + TimeDelta{ 1 })) {
             if (cur_year != i.year()) {
                 cur_year = i.year();
                 delta *= -1;
@@ -68,11 +68,11 @@ protected:
                 .WillByDefault(Return(val));
         }
 
-        cur_year = begin.year();
+        cur_year = BEGIN.year();
         delta = 10.0;
-        cur_month = begin.month();
+        cur_month = BEGIN.month();
         val = 1000.0;
-        for (Timestamp i = begin; i != end; i = normalize(i + TimeDelta{ 1 })) {
+        for (Timestamp i = BEGIN; i != END; i = normalize(i + TimeDelta{ 1 })) {
             if (cur_year != i.year()) {
                 cur_year = i.year();
                 delta *= -1;
@@ -89,7 +89,7 @@ protected:
             .WillByDefault(Return(1000.0));
 
         auto crash_date = from_usa_date(7, 1, 2017);
-        for (Timestamp i = begin; i != crash_date; i = normalize(i + TimeDelta{ 1 })) {
+        for (Timestamp i = BEGIN; i != crash_date; i = normalize(i + TimeDelta{ 1 })) {
             ON_CALL(mock_pricer, get_usd_price("CRSH", i))
                 .WillByDefault(Return(1000.0));
         }
@@ -100,7 +100,7 @@ protected:
         }
         cur_month = improve_date.month();
         val = 25.0;
-        for (Timestamp i = improve_date; i != end; i = normalize(i + TimeDelta{ 1 })) {
+        for (Timestamp i = improve_date; i != END; i = normalize(i + TimeDelta{ 1 })) {
             if (cur_month != i.month()) {
                 cur_month = i.month();
                 val += 100.0;
@@ -138,7 +138,7 @@ TEST_F(MatchingFixture, GetPnlFromUSD) {
     EXPECT_FLOAT_EQ(matcher->get_pnl_from(buy_decr, exit_time), -240.0);
     Trade sell_incr = {
         entry_time,
-        "DECR",
+        "INCR",
         "USD",
         3,
         3000,
@@ -146,10 +146,10 @@ TEST_F(MatchingFixture, GetPnlFromUSD) {
     EXPECT_FLOAT_EQ(matcher->get_pnl_from(sell_incr, exit_time), -360.0);
     Trade sell_decr = {
         entry_time,
-        "USD",
         "DECR",
-        4000,
+        "USD",
         4,
+        4000,
     };
     EXPECT_FLOAT_EQ(matcher->get_pnl_from(sell_decr, exit_time), 480.0);
 }
@@ -164,7 +164,7 @@ TEST_F(MatchingFixture, GetPnlFromSwap) {
         2,
         2,
     };
-    EXPECT_FLOAT_EQ(matcher->get_pnl_from(decr_to_incr, exit_time), 480.0);
+    EXPECT_FLOAT_EQ(matcher->get_pnl_from(decr_to_incr, exit_time), 160.0);
     Trade incr_to_decr = {
         entry_time,
         "INCR",
@@ -172,7 +172,7 @@ TEST_F(MatchingFixture, GetPnlFromSwap) {
         1,
         1,
     };
-    EXPECT_FLOAT_EQ(matcher->get_pnl_from(incr_to_decr, exit_time), -240.0);
+    EXPECT_FLOAT_EQ(matcher->get_pnl_from(incr_to_decr, exit_time), -80.0);
 }
 
 // get_net_pnl

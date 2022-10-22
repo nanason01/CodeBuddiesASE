@@ -30,10 +30,10 @@ static const vector<TimeDelta> DEFAULT_SAMPLES = {
 };
 
 class Matcher {
-    Pricer* pricer;
+    PricerBase* pricer;
 public:
 
-    Matcher(Pricer* _pricer) : pricer(_pricer) {}
+    Matcher(PricerBase* _pricer) : pricer(_pricer) {}
     virtual ~Matcher() = default;
 
     struct YearEndPNL {

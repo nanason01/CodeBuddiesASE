@@ -8,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include <limits>
+#include <iostream>
 #include <chrono>
 
 enum class Exchange : uint8_t {
@@ -94,6 +95,22 @@ constexpr inline Timestamp from_usa_date(const unsigned int& _m, const unsigned 
     using std::chrono::month;
     using std::chrono::day;
     return Timestamp(year{ _y }, month{ _m }, day{ _d });
+}
+
+// this is needed for gtest to print human-readable dates
+namespace std::chrono {
+    void PrintTo(const Timestamp& ts, std::ostream* os) {
+        if (!ts.ok()) {
+            *os << "Invalid timestamp";
+            return;
+        }
+
+        auto year = static_cast<int>(ts.year());
+        auto month = static_cast<unsigned>(ts.month());
+        auto day = static_cast<unsigned>(ts.day());
+
+        *os << month << "/" << day << "/" << year;
+    }
 }
 
 using PNL = double;

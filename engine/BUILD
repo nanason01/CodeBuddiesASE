@@ -1,15 +1,21 @@
 cc_library(
     name = "engine",
-    srcs = glob(["*.cc"]),
-    hdrs = glob(["*.h"]),
+    srcs = ["matching.cc"],
+    hdrs = ["matching.h"],
     visibility = [
         "//entry:__pkg__",
     ],
     deps = [
         "//common",
         "//pricer",
-        "//pricer:mock-pricer",
     ],
+)
+
+cc_library(
+    name = "mock-matching",
+    hdrs = ["mock-matching.h"],
+    visibility = ["//entry:__pkg__"],
+    deps = ["//engine"],
 )
 
 cc_test(
@@ -18,7 +24,7 @@ cc_test(
     deps = [
         "//common",
         "//engine",
-        "//pricer:mock-pricer",
+        "//pricer",
         "@com_google_googletest//:gtest_main",
     ],
 )
