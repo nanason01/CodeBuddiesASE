@@ -14,6 +14,7 @@
 #include "common/types.h"
 
 #include <exception>
+#include <vector>
 
 struct InvalidAPIKey : std::exception {
     const char* what() const noexcept override {
@@ -26,10 +27,12 @@ struct WriteableAPIKey : std::exception {
     }
 };
 
-class ExchangeDriver : Driver {
+class ExchangeDriver {
 protected:
     API_key key;
 public:
-    ExchangeDriver(User _user, API_key _key) : Driver(_user), key(_key) {}
     virtual ~ExchangeDriver() = default;
+
+    virtual std::vector<Trade> get_trades(User user, API_key key) = 0;
+    virtual void check_api_key(User user, API_key key) = 0;
 };

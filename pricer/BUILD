@@ -26,3 +26,13 @@ cc_library(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "test",
+    srcs = ["pricer_test.cc"],
+    deps = [
+        "//common",
+        "//pricer",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

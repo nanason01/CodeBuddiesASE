@@ -1,3 +1,6 @@
+//
+// Testing suite for matcher.h
+//
 
 #include "matcher.h"
 #include "pricer/mock_pricer.h"
@@ -22,7 +25,7 @@ constexpr Timestamp END = from_usa_date(1, 1, 2019);
 
 using testing::Return;
 
-class MatchingFixture : public ::testing::Test {
+class MatcherFixture : public ::testing::Test {
 protected:
     MockPricer mock_pricer;
     Matcher* matcher;
@@ -116,7 +119,7 @@ protected:
 
 // get_pnl_from
 
-TEST_F(MatchingFixture, GetPnlFromUSD) {
+TEST_F(MatcherFixture, GetPnlFromUSD) {
     Timestamp entry_time = from_usa_date(1, 1, 2017);
     Timestamp exit_time = from_usa_date(1, 1, 2018);
 
@@ -153,7 +156,7 @@ TEST_F(MatchingFixture, GetPnlFromUSD) {
     };
     EXPECT_FLOAT_EQ(matcher->get_pnl_from(sell_decr, exit_time), 480.0);
 }
-TEST_F(MatchingFixture, GetPnlFromSwap) {
+TEST_F(MatcherFixture, GetPnlFromSwap) {
     Timestamp entry_time = from_usa_date(1, 1, 2017);
     Timestamp exit_time = from_usa_date(5, 1, 2017);
 

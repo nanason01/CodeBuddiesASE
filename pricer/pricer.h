@@ -10,7 +10,7 @@
 #include "common/types.h"
 #include "base_pricer.h"
 
-class Pricer : public PricerBase {
+class Pricer final : public PricerBase {
 public:
     // returns the price per unit of currency on date
     virtual double get_usd_price(std::string currency, Timestamp timestamp = now()) final;

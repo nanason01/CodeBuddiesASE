@@ -1,13 +1,42 @@
 cc_library(
     name = "data",
-    srcs = glob(["*.cpp"]),
-    hdrs = glob(["*.h"]),
+    srcs = [
+        # add src file used here
+    ],
+    hdrs = [
+        "base_data.h",
+        "data.h",
+    ],
     visibility = [
-        "//engine:__pkg__",
         "//entry:__pkg__",
     ],
     deps = [
         "//common",
         "//exchanges",
+    ],
+)
+
+cc_library(
+    name = "mock",
+    hdrs = [
+        "base_data.h",
+        "mock_data.h",
+    ],
+    visibility = [
+        "//entry:__pkg__",
+    ],
+    deps = [
+        "//common",
+        "//exchanges",
+    ],
+)
+
+cc_test(
+    name = "test",
+    srcs = ["data_test.cc"],
+    deps = [
+        "//common",
+        "//exchanges:mock",
+        "@com_google_googletest//:gtest_main",
     ],
 )

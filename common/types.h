@@ -140,17 +140,5 @@ struct MatchedTrade {
 
 // TODO define these types with 0Auth
 using User = std::string;
-using API_key = std::string;
 using Creds = std::string;
-
-// Interface for getting trades from a source
-class Driver {
-protected:
-    User user;
-public:
-    Driver(User _user) : user(_user) {}
-    virtual ~Driver() = default;
-
-    // TODO: add a more fine-grained option
-    virtual std::vector<Trade> get_trades() = 0;
-};
+using API_key = std::string;
