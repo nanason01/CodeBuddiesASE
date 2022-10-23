@@ -29,6 +29,9 @@ struct WriteableAPIKey : std::exception {
 class ExchangeDriver {
 protected:
     API_key key;
+    API_key privatekey;
+
 public:
+    ExchangeDriver(User _user, API_key _key, API_key _privatekey) : Driver(_user), key(_key), privatekey(_privatekey) {}
     virtual ~ExchangeDriver() = default;
 };
