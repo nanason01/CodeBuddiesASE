@@ -7,34 +7,33 @@
 #include "../common/types.h"
 #include "driver.h"
 
+#include <vector>
+
 class KrakenDriver final : ExchangeDriver {
 public:
-    KrakenDriver(User _user, API_key _key) : ExchangeDriver(_user, _key) {
+    KrakenDriver(User _user, API_key _key, API_key _privatekey) : ExchangeDriver(_user, _key, _privatekey) {
         _uname = _user;
         _ukey = _key;
+        _uprivatekey = _privatekey;
     }
 
-    // std::vector<Trade> get_trades() final;
-
-// private:
-
-    User _uname;
-    API_key _ukey;
-
     /*
-     * Get trades of user, throw exception on error
      * On success, processes the trades, checks that
      * new trades have been added since the last time
      * function was called, and sends their info to
      * db.
      */
-    void query_for_trades(User user);
+    std::vector<Trade> get_trades() final;
+
+private:
+    User _uname;
+    API_key _ukey;
+    API_key _uprivatekey;
 
     /*
-     * Retrieve user API key and the secret API key from DB
-     * Returns: pair of strings
+     * Get trades of user as a string, throw exception on error
      */
-    std::pair<API_key, API_key> get_api_key(User user);
+    std::string query_for_trades();
 
     /*
      * Generate a nonce for requests to Kraken
