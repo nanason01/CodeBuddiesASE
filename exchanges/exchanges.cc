@@ -219,6 +219,8 @@ std::string KrakenDriver::generate_signature(std::string uri_path, std::string r
     //                      POST data)) and b64decoded secret API key        //
     ///////////////////////////////////////////////////////////////////////////
     // Hash the nonce and the request data, create data for HMAC
+     
+    std::cout << "Concat nonce and request_data: " << request_nonce + request_data << "\n"; 
     std::vector<unsigned char> hashed_nonce_data = sha256_wrapper(request_nonce + request_data);
 
     // Concatenate the hash with URI Path
