@@ -3,20 +3,20 @@ For calling this header file connector classyou can set up a calldb class, use c
 
 # calldb insertDB
 You can use this function to insert items into the database, such as:
-'''
+```
 sql.insertDB(xxx, xxx);
-'''
+```
 
 # calldb deleteDB
 You can use this function to delete items from the database by deleting the primaryb key "client_identifier", such as:
-'''
+```
 sql.deleteDB(xxx);
-'''
+```
 
 # Example
 
 Here goes an example code
-'''
+```
 '#include "calldb.h"
 int main() {
 	//This is an example of how to create a calldb class in order to create a table, insert, delete, and showTable, and close.
@@ -32,4 +32,4 @@ int main() {
     
     return 0;
 }
-'''
+```
