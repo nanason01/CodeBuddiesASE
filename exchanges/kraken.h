@@ -7,8 +7,6 @@
 #include "../common/types.h"
 #include "driver.h"
 
-#include <vector>
-
 class KrakenDriver final : ExchangeDriver {
 public:
     KrakenDriver(User _user, API_key _key) : ExchangeDriver(_user, _key) {
