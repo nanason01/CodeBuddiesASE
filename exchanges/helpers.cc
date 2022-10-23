@@ -1,7 +1,11 @@
-#include "../common/crypto_helpers.h"
+#include "../common/helpers.h"
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 #include <sstream>
+
+/*
+ *
+ */
 std::vector<unsigned char> sha256_wrapper(std::string data) { 
     std::vector<unsigned char> sha256_digest (SHA256_DIGEST_LENGTH);
     if (data.empty()) {
@@ -27,6 +31,9 @@ err_out:
     return std::vector<unsigned char>();
 }
 
+/*
+ *
+ */
 std::vector<unsigned char> hmac_sha512_wrapper(std::string data, API_key key) {
     std::vector<unsigned char> data_vec;
     std::vector<unsigned char> key_vec;
@@ -70,6 +77,9 @@ err_out:
     return std::vector<unsigned char>();
 }
 
+/*
+ *
+ */
 std::string convert_vec_to_str(std::vector<unsigned char> data) {
     std::ostringstream output;
 
@@ -78,4 +88,13 @@ std::string convert_vec_to_str(std::vector<unsigned char> data) {
     }
 
     return output.str();
+}
+
+/*
+ *
+ */
+size_t kraken_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+    std::string *response = reinterpret_cast<std::string *> (userdata);
+    response->append(ptr, size * nmemb);
+    return size * nmemb;
 }
