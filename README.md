@@ -24,7 +24,8 @@ To run style checker:
 
 ```# only need to run install once
 pip install cpplint
-cpplint */*```
+cpplint */*  # to run for entire repo
+cpplint <path_to_file> # to run for single file```
 
 To run all tests:
 
