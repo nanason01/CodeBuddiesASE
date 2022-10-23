@@ -19,6 +19,8 @@ public:
     Matcher(PricerBase* _pricer) : pricer(_pricer) {}
 
     // get all matched trades for user
+    // note: no contract on condensing results,
+    // a trade may be split into an arbitrary number of matched trades as long as they account for exactly the trade volume
     vector<MatchedTrade> get_matched_trades(const vector<Trade>& trades_in) final;
 
     // get pnl of trade
@@ -38,7 +40,7 @@ public:
     // returns the earliest dates user could sell each of his cryptos for
     // all of them to be considered long term cap gains
     // Trade::bought_amount is meaningless as the future price is unknown
-    vector<Trade> get_earliest_long_term_sells(const vector<Trade>& trades);
+    vector<Trade> get_earliest_long_term_sells(const vector<Trade>& trades) final;
 
 private:
     // get whether this is a short or long term trade
