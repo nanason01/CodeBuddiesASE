@@ -19,3 +19,8 @@ std::vector<unsigned char> hmac_sha512_wrapper(std::string data, API_key secret_
  * using ostringstream.
  */
 std::string convert_vec_to_str(std::vector<unsigned char> data);
+
+/*
+ * Write callback function for cURL.
+ */
+size_t kraken_write_callback(char *ptr, size_t size, size_t nmeb, void *userdata);
