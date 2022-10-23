@@ -1,0 +1,38 @@
+cc_library(
+    name = "pricer",
+    srcs = [],
+    hdrs = [
+        "base_pricer.h",
+        "pricer.h",
+    ],
+    visibility = [
+        "//engine:__pkg__",
+    ],
+    deps = ["//common"],
+)
+
+cc_library(
+    name = "mock",
+    srcs = [],
+    hdrs = [
+        "base_pricer.h",
+        "mock_pricer.h",
+    ],
+    visibility = [
+        "//engine:__pkg__",
+    ],
+    deps = [
+        "//common",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "test",
+    srcs = ["pricer_test.cc"],
+    deps = [
+        "//common",
+        "//pricer",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

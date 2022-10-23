@@ -9,15 +9,12 @@
 
 #include <vector>
 
-class CoinbaseDriver final : ExchangeDriver {
+class CoinbaseDriver final : public ExchangeDriver {
 public:
-    CoinbaseDriver(User _user, API_key _key) : ExchangeDriver(_user, _key) {
-        check_api_key(_user, _key);
-    }
 
-    std::vector<Trade> get_trades() final;
+    std::vector<Trade> get_trades(User user, API_key key) final;
 
-private:
     // throws exceptions if the key is invalid
-    void check_api_key(User, API_key);
+    // @TODO: is user necessary here?
+    void check_api_key(User user, API_key key) final;
 };
