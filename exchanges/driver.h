@@ -12,7 +12,6 @@
 #pragma once
 
 #include "../common/types.h"
-
 #include <exception>
 
 struct InvalidAPIKey : std::exception {
