@@ -12,12 +12,17 @@
 class KrakenDriver final : ExchangeDriver {
 public:
     KrakenDriver(User _user, API_key _key) : ExchangeDriver(_user, _key) {
-        check_api_key(_user, _key);
+        _uname = _user;
+        _ukey = _key;
     }
 
-    std::vector<Trade> get_trades() final;
+    // std::vector<Trade> get_trades() final;
 
-private:
+// private:
+
+    User _uname;
+    API_key _ukey;
+
     /*
      * Get trades of user, throw exception on error
      * On success, processes the trades, checks that
@@ -28,10 +33,10 @@ private:
     void query_for_trades(User user);
 
     /*
-     * Retrieve user API key from DB
-     * Returns: const string key
+     * Retrieve user API key and the secret API key from DB
+     * Returns: pair of strings
      */
-    API_key get_api_key(User user);
+    std::pair<API_key, API_key> get_api_key(User user);
 
     /*
      * Generate a nonce for requests to Kraken
@@ -41,11 +46,20 @@ private:
 
     /*
      * Generate API-sign for request header, message signature
-     * Returns: const string signature
+     * Returns: string signature
      */
     std::string generate_signature(std::string uri_path, 
                                    std::string post_data, 
                                    std::string nonce,
-                                   API_key api_key);
+                                   API_key api_key_secret);
 
+    /*
+     * Function that returns formatted payload to be sent
+     * with the query to kraken.
+     *
+     * For now, just returns a formatted nonce but in the
+     * future can be extended with functionality to also
+     * specify target trades and exchanges.
+     */
+    std::string generate_payload(std::string nonce);
 };
