@@ -1,21 +1,23 @@
-```bazel quick start guide:
+To run service:
+```bazel run //entry
+bazel build //entry # to just build the binary, then the binary will exist in bazel-bin/
+```
 
-all targets are structured like:
+To modify database ddl:\
+(eventually this will be done via an admin-only api endpoint)
 
-// <- indicates the root directory, where WORKSPACE file is
+```
+TODO
+```
 
-//<path to file>:<target name>
+To run style checker:
+```# only need to run install once
+pip install cpplint
+cpplint */*  # to run for entire repo
+cpplint <path_to_file> # to run for single file
+```
 
-simple commands:
-
-bazel run <target>
-run (and maybe build) a target
-e.g. bazel run //entry:test
-
-bazel build <target>
-e.g. bazel build //entry:test
-then:
-bazel-bin/entry/test
-
-bazel test <test target>
-e.g. bazel test --test_output=all //entry/test:hello
+To run tests:
+```bazel test --test_output=all //... # run every test
+bazel test --test_output=all //<target> # run single test suite
+```
