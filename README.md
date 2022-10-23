@@ -25,3 +25,7 @@ To run style checker:
 ```# only need to run install once
 pip install cpplint
 cpplint */*```
+
+To run all tests:
+
+```bazel test //...```
