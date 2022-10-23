@@ -20,3 +20,8 @@ bazel-bin/entry/test
 bazel test <test target>
 e.g. bazel test --test_output=all //entry/test:hello_
 
+To run style checker:
+
+```# only need to run install once
+pip install cpplint
+cpplint */*```
