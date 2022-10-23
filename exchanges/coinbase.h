@@ -11,13 +11,16 @@
 
 class CoinbaseDriver final : ExchangeDriver {
 public:
-    CoinbaseDriver(User _user, API_key _key) : ExchangeDriver(_user, _key) {
-        check_api_key(_user, _key);
+    CoinbaseDriver(User _user, API_key _key, API_key _privatekey) : ExchangeDriver(_user, _key, _privatekey) {
+        _uname = _user;
+        _ukey = _key;
+        _uprivatekey = _privatekey;
     }
 
     std::vector<Trade> get_trades() final;
 
 private:
-    // throws exceptions if the key is invalid
-    void check_api_key(User, API_key);
+    User _uname;
+    API_key _ukey;
+    API_key _uprivatekey;
 };
