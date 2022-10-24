@@ -11,18 +11,20 @@
 
 class CoinbaseDriver final : ExchangeDriver {
 public:
-    CoinbaseDriver(User _user, API_key _key, API_key _privatekey, User _accountid) : ExchangeDriver(_user, _key, _privatekey) {
+    CoinbaseDriver(User _user, API_key _key, API_key _privatekey, std::string _password, std::string _uid) : ExchangeDriver(_user, _key, _privatekey) {
         _uname = _user;
-        _uaccountid = _accountid;
+        _upassword = _password;
         _ukey = _key;
         _uprivatekey = _privatekey;
+        _uaccountid = _uid;
     }
 
     std::vector<Trade> get_trades() final;
 
 private:
-    User _uname;
-    User _uaccountid;
+    User _uname; 
+    std::string _upassword;
+    std::string _uaccountid;
 
     API_key _ukey;
     API_key _uprivatekey;
