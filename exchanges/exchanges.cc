@@ -10,10 +10,10 @@
 #include <crow.h>
 
 // TODO:
+// - Wrap up Coinbase query
 // - Process return from cURL into Trades and return them
 // - Pricer (KRN/CNB public API for a given pair)
 // - Testing
-// - Wrap up Coinbase query
 
 ///////////////////////////////////////////////////////////////////////////////
 struct HexCharStruct
@@ -48,7 +48,7 @@ void print_vec_as_hex(std::vector<unsigned char> temp) {
  *
  */
 std::string CoinbaseDriver::generate_timestamp() {
-    using namespace boost::posix::time;
+    using namespace boost::posix_time;
     ptime recorded_time = microsec_clock::universal_time();
     return to_iso_extended_string(recorded_time);
 }
@@ -75,7 +75,7 @@ std::string CoinbaseDriver::generate_signature(std::string timestamp, std::strin
     body.insert(body.end(), method.begin(), method.end());
     body.insert(body.end(), path.begin(), path.end());
 
-    std::vector<unsigned char> key (this->_uaccesskey.begin(), this->_uaccesskey.end());
+    std::vector<unsigned char> key (this->_uprivatekey.begin(), this->_uprivatekey.end());
     
     // HMAC the data and key, get the signature
     std::vector<unsigned char> signature = hmac_sha256_wrapper(body, key);
@@ -87,8 +87,7 @@ std::string CoinbaseDriver::generate_signature(std::string timestamp, std::strin
     // std::cout << "[B64ENCODED (SIGNATURE)] ";
     // print_vec_as_hex(vect_encoded_signature);
 
-    return encoded_signature;
-    
+    return str_signature; 
 }
 
 /*
@@ -99,9 +98,14 @@ std::string CoinbaseDriver::query_for_trades() {
     // "CB-ACCESS-SIGN: " -- message signature, [HMAC, SHA256] (body = timestamp + method + requestPath, key = cnb_secret_token)
     // "CB-ACCESS-TIMESTAMP: " -- timestamp for this request, seconds since UNIX epoch in UTC
 
-    if (this->_ukey == "" || this->_uprivatekey == "" || this->_uaccountid == "") {
+    if (this->_ukey == "" || this->_uprivatekey == "" || this->_upassword == "") {
         throw "API Creds Missing";
     }
+
+    // Get the user account id
+    // std::string account_id = ...
+
+
 
     // Generate a timestamp
     std::string request_timestamp = this->generate_timestamp();
@@ -141,7 +145,7 @@ std::string CoinbaseDriver::query_for_trades() {
         // Prepare the headers
         std::string api_key_header = "CB-ACCESS-KEY: " + this->_ukey;
         std::string api_secret_header = "CB-ACCESS-SIGN: " + request_sig;
-        std::strubg api_timestamp_header = "CB-ACCESS-TIMESTAMP: " + request_timestamp;
+        std::string api_timestamp_header = "CB-ACCESS-TIMESTAMP: " + request_timestamp;
 
         // Create the request headers and add them to the cURL agent
         request_headers = curl_slist_append(request_headers, api_key_header.c_str());      // Add API key header
@@ -177,7 +181,7 @@ std::string CoinbaseDriver::query_for_trades() {
 std::vector<Trade> CoinbaseDriver::get_trades() {
     std::vector<Trade> processed_txs;
     std::string string_txs = this->query_for_trades();
-    std::cout << "[QUERIED TRADES] " << string_txs << std::endl;
+    std::cout << "[COINBASE QUERIED TRADES] " << string_txs << std::endl;
 
     //////////////////////////////
     // Process the transactions //
@@ -216,24 +220,14 @@ std::string KrakenDriver::generate_signature(std::string uri_path, std::string r
     ///////////////////////////////////////////////////////////////////////////
     // Hash the nonce and the request data, create data for HMAC
     std::vector<unsigned char> hashed_nonce_data = sha256_wrapper(request_nonce + request_data);
-    // std::cout << "[NONCE + REQUEST_DATA] " << request_nonce + request_data << std::endl; 
-    // std::cout << "[SHA256 (NONCE+DATA)] ";
-    // print_vec_as_hex(hashed_nonce_data);
 
     // Concatenate the hash with URI Path
     hashed_nonce_data.insert(hashed_nonce_data.begin(), uri_path.begin(), uri_path.end());
-    // std::cout << "[URIPATH + SHA256 (NONCE+DATA)] ";
-    // print_vec_as_hex(hashed_nonce_data);
 
     // HMAC the data and key, get the signature
     std::vector<unsigned char> signature = hmac_sha512_wrapper(hashed_nonce_data, api_key_secret);
     std::string str_signature = convert_vec_to_str(signature);
     std::string encoded_signature = crow::utility::base64encode(str_signature, str_signature.size());
-
-    // Test
-    // std::vector<unsigned char> vect_encoded_signature (encoded_signature.begin(), encoded_signature.end());
-    // std::cout << "[B64_ENCODE (SIGNATURE)] ";
-    // print_vec_as_hex(vect_encoded_signature);
 
     return encoded_signature;
 }
@@ -259,10 +253,6 @@ std::string KrakenDriver::query_for_trades() {
     ///////////////////////////////////////////////////////////////////////////
     // Part 1: Generate the required request headers                         //
     ///////////////////////////////////////////////////////////////////////////
-
-    // std::cout << "[API KEY] " << this->_ukey << "\n";
-    // std::cout << "[SECRET API KEY] " << this->_uprivatekey << "\n";
-
     if (this->_ukey == "" || this->_uprivatekey == "") {
         throw "API Creds Missing";
     }
@@ -271,26 +261,17 @@ std::string KrakenDriver::query_for_trades() {
     std::string decoded_api_secret = crow::utility::base64decode(this->_uprivatekey, this->_uprivatekey.size());
     std::vector<unsigned char> vec_decoded_api_secret (decoded_api_secret.begin(), decoded_api_secret.end()); 
    
-    // Test
-    // std::cout << "[B64 DECODE (SECRET API KEY)] ";
-    // print_vec_as_hex(vec_decoded_api_secret);
-
-    // std::cout << "[B64 DECODE (SECRET API KEY) IN PLAINTEXT] " << decoded_api_secret << std::endl;
-    
     // Generate nonce
     std::string request_nonce = this->generate_nonce();
-    // std::cout << "[NONCE] " << request_nonce << std::endl;
 
     // Generate payload
     std::string request_data  = this->generate_payload(request_nonce);
-    // std::cout << "[REQUEST DATA] " << request_data << std::endl;
 
     // Generate the URI path
     std::string krn_uri_path = this->generate_path();
 
     // Generate signature
     std::string request_sig = this->generate_signature(krn_uri_path, request_data, request_nonce, vec_decoded_api_secret);
-    // std::cout << "[REQUEST SIGNATURE] " << request_sig << std::endl; 
 
     // Generate the url to query
     std::string krn_url = this->generate_url();
@@ -309,7 +290,6 @@ std::string KrakenDriver::query_for_trades() {
     if (curl) {
 
         curl_easy_setopt(curl, CURLOPT_URL, krn_url.c_str());                              // Set path to query
-        // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);                                    // Set verbosity level
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);                                // Verify certificate name against host
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "CodeBuddies Crypto Portfolio Tracker"); // Specify user agent
@@ -330,7 +310,6 @@ std::string KrakenDriver::query_for_trades() {
 
         // Execute the request
         res = curl_easy_perform(curl);
-        // std::cout << "[cURL RESPONSE] " << res << std::endl;
     } else {
         throw "Curl setup failed";
     }
@@ -350,12 +329,12 @@ std::string KrakenDriver::query_for_trades() {
 std::vector<Trade> KrakenDriver::get_trades() {
     std::vector<Trade> processed_txs;
     std::string string_txs = this->query_for_trades();
-    std::cout << "[QUERIED TRADES] " << string_txs << std::endl;
+    std::cout << "[KRAKEN QUERIED TRADES] " << string_txs << std::endl;
 
     //////////////////////////////
     // Process the transactions //
-    // libjson                  //
-    //////////////////////////////
+    crow::json::wvalue wval (string_txs);
+    // cout
 
     return processed_txs;
 }
@@ -376,11 +355,15 @@ int main () {
     }
 
     // Coinbase
-    API_key cnb_api_token = "VViR0nG9v7KoX6gL";
-    API_key cnb_secret_token = "Xy9h8UrlqtDQyYL9El7LrC4xnAxTQzCy";
-    std::string cnb_account_id = "";
+    // API_key cnb_api_token = "VViR0nG9v7KoX6gL";
+    // API_key cnb_secret_token = "Xy9h8UrlqtDQyYL9El7LrC4xnAxTQzCy";
+    // std::string cnb_account_id = "atk315@nyu.edu";
     
-    CoinbaseDriver coinbase_client("client", cnb_api_token, cnb_secret_token, cnb_account_id);
+    API_key cnb_api_token = "c0a4e40189be2a9439ced5306ca4f64b";
+    API_key cnb_secret_token = "oMYpyEEEKRF7A24/ev4tciy3TIybludyEbQIj6ls3naEi79aphzvOqvRtDqf+i/TeLzLLjWlkATnjInbPwQU3g==";
+    std::string password = "pass";
+/*
+    CoinbaseDriver coinbase_client("client", cnb_api_token, cnb_secret_token, password, "temp");
     for (auto x : coinbase_client.get_trades()) {
         std::cout << "Trade record"      << "\n";
         std::cout << "Currency sold: "   << x.sold_currency   << "\n";
@@ -388,6 +371,6 @@ int main () {
         std::cout << "Sold amount: "     << x.sold_amount     << "\n";
         std::cout << "Bought amountL "   << x.bought_amount   << "\n";
     }
-
+*/
     return 0;
 }
