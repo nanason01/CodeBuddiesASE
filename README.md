@@ -26,3 +26,9 @@ To run tests:
 bazel test --test_output=all //... # run every test
 bazel test --test_output=all //<target> # run single test suite
 ```
+Endpoints : 
+
+| Endpoint url  |   | Description | Input | Output |
+| ------------- | - | ----------- | ----- | ------ |
+| /getcredentials  | GET  | Generate credentials. Called the first time client uses the api | None | Json data with keys _client_id_, _api_key_ and _refresh_token_ |
+| Content Cell  | Content Cell  |
