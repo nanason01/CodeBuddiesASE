@@ -22,6 +22,7 @@ cpplint <path_to_file> # to run for single file
 
 To run tests:
 
-```bazel test --test_output=all //... # run every test
+```
+bazel test --test_output=all //... # run every test
 bazel test --test_output=all //<target> # run single test suite
 ```
