@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <openssl/sha.h>
 #include "auth.h"
-#include "data.h"
 
 #include "engine/matching.h"
 
