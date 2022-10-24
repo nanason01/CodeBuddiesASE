@@ -138,3 +138,35 @@ crow::json::wvalue auth::refresh_credentials(const crow::request& req){
 	return credentials;
 }
 
+std::string auth::convert_to_string(const crow::json::rvalue jrvalue){
+	std::ostringstream os;
+        os << jrvalue;
+        std::string s = os.str();
+        s = s.substr(1, s.length() - 2);
+        return s;
+}
+
+// TODO : actual definition is struct trade parse_trade_from_json(auto x)
+void auth::parse_trade_from_json(const crow::request& req){
+	//struct trade t;
+	auto x = crow::json::load(req.body);
+	/*
+	* if (!x) do something
+	*/
+	
+	std::string timestamp = convert_to_string(x["timestamp"]);
+	std::string sold_currency = convert_to_string(x["sold_currency"]);
+	std::string bought_currency = convert_to_string(x["bought_currency"]);
+	std::string sold_amount = convert_to_string(x["sold_amount"]);
+	std::string bought_amount = convert_to_string(x["bought_amount"]);
+	
+	/*
+	 * TODO :
+	 * format struct trade t in a way appropriate for db
+	 * May have to change return type if db functions don't accept
+	 * 	a struct trade as input
+	*/
+	
+	//return t;
+}
+

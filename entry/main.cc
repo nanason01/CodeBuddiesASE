@@ -50,167 +50,168 @@ int main() {
         std::cout << x["a"] << std::endl;
         std::cout << x["b"] << std::endl;
         
-        if (validate_credentials(req))
-		return crow::response(200);
-	else
-		return crow::response(401);
+        if (a.validate_credentials(req))
+            return crow::response(200);
+        else
+            return crow::response(401);
     });
     
     CROW_ROUTE(app, "/trade").methods("POST"_method)([](const crow::request& req){
         
         
         
-        if (validate_credentials(req)){
+        if (a.validate_credentials(req)){
 		
-		auto x = crow::json::load(req.body);
-		if (!x)
-		    return crow::response(400);
-		
-		std::string client_id = get_client_id(req);
-		//struct trade t = parse_trade_from_json(req);
-		
-		// TODO : store trade t in db
-		
-		return crow::response(200);
+            auto x = crow::json::load(req.body);
+            if (!x)
+                return crow::response(400);
+            
+            std::string client_id = a.get_client_id(req);
+            //struct trade t = a.parse_trade_from_json(req);
+            
+            // TODO : store trade t in db
+            
+            return crow::response(200);
         }
-	else
-		return crow::response(401);
+	    else
+		    return crow::response(401);
     });
     
     CROW_ROUTE(app, "/exchangekey").methods("POST"_method)([](const crow::request& req){
         
         
         
-        if (validate_credentials(req)){
+        if (a.validate_credentials(req)){
 		
-		auto x = crow::json::load(req.body);
-		if (!x)
-		    return crow::response(400);
+            auto x = crow::json::load(req.body);
+            if (!x)
+                return crow::response(400);
+            
+            std::string client_id = a.get_client_id(req);
+            std::string exchange = a.convert_to_string(x["exchange"]);
+            std::string readkey = a.convert_to_string(x["readkey"]);
+            
+            std::cout << exchange << std::endl;
+            std::cout << readkey << std::endl;
+            
+            // TODO : store client_id, exchange and readkey into db
 		
-		std::string client_id = get_client_id(req);
-		std::string exchange = convert_to_string(x["exchange"]);
-		std::string readkey = convert_to_string(x["readkey"]);
-		
-		std::cout << exchange << std::endl;
-		std::cout << readkey << std::endl;
-		
-		// TODO : store client_id, exchange and readkey into db
-		
-		return crow::response(200);
+            return crow::response(200);
         }
-	else
-		return crow::response(401);
+        else
+            return crow::response(401);
     });
     
     CROW_ROUTE(app, "/removekey").methods("POST"_method)([](const crow::request& req){
         
         
         
-        if (validate_credentials(req)){
+        if (a.validate_credentials(req)){
 		
-		auto x = crow::json::load(req.body);
-		if (!x)
-		    return crow::response(400);
-		
-		std::string client_id = get_client_id(req);
-		std::string exchange = convert_to_string(x["exchange"]);
-		std::string readkey = convert_to_string(x["readkey"]);
-		
-		std::cout << exchange << std::endl;
-		std::cout << readkey << std::endl;
-		
-		// TODO : delete exchange and readkey for clientid from db
-		
-		return crow::response(200);;
+            auto x = crow::json::load(req.body);
+            if (!x)
+                return crow::response(400);
+            
+            std::string client_id = a.get_client_id(req);
+            std::string exchange = a.convert_to_string(x["exchange"]);
+            std::string readkey = a.convert_to_string(x["readkey"]);
+            
+            std::cout << exchange << std::endl;
+            std::cout << readkey << std::endl;
+            
+            // TODO : delete exchange and readkey for clientid from db
+            
+            return crow::response(200);;
         }
-	else
-		return crow::response(401);
+        else
+            return crow::response(401);
     });
     
     CROW_ROUTE(app, "/get_annotated_trades")([](const crow::request& req){
         
-        if (validate_credentials(req)){
+        if (a.validate_credentials(req)){
 		
-		std::string client_id = get_client_id(req);
-		/*
-		 * TODO :
-		 * get trades for client from db
-		 * all_matched_trades = get_matched_trades(trades)
-		 * format return value into response
-		*/
-		return crow::response(200);
+            std::string client_id = a.get_client_id(req);
+            /*
+            * TODO :
+            * get trades for client from db
+            * all_matched_trades = get_matched_trades(trades)
+            * format return value into response
+            */
+            return crow::response(200);
 		
-	}
-	else
-		return crow::response(401);
+        }
+        else
+            return crow::response(401);
     });
     
     CROW_ROUTE(app, "/year_end_stats")([](const crow::request& req){
         
-        if (validate_credentials(req)){
+        if (a.validate_credentials(req)){
 		
 		
-		std::string client_id = get_client_id(req);
-		/*
-		 * TODO :
-		 * get all trades for client from db
-		 * YearEndPNL y_pnl;
-		 * y_pnl = get_year_end_pnl(trades);
-		 * format return value into response
-		*/
+            std::string client_id = a.get_client_id(req);
+            /*
+            * TODO :
+            * get all trades for client from db
+            * YearEndPNL y_pnl;
+            * y_pnl = get_year_end_pnl(trades);
+            * format return value into response
+            */
+            
+            return crow::response(200);
 		
-		return crow::response(200);
-		
-	}
-	else
-		return crow::response(401);
+        }
+        else
+            return crow::response(401);
     });
     
     CROW_ROUTE(app, "/trade_pnl").methods("POST"_method)([](const crow::request& req){
         
-        if (validate_credentials(req)){
+        if (a.validate_credentials(req)){
 		
 		
-		auto x = crow::json::load(req.body);
-		if (!x)
-		    return crow::response(400);
+            auto x = crow::json::load(req.body);
+            if (!x)
+                return crow::response(400);
+            
+            std::string client_id = a.get_client_id(req);
+            //struct trade t = parse_trade_from_json(req);
+            
+            /*
+            * TODO :
+            * 
+            * PNL pnl = get_trade_pnl(trade);
+            * pnl is a double
+            * std::string pnl = pnl.str();
+            */
+            
+            return crow::response("2000.5");
 		
-		std::string client_id = get_client_id(req);
-		//struct trade t = parse_trade_from_json(req);
-		
-		/*
-		 * TODO :
-		 * 
-		 * PNL pnl = get_trade_pnl(trade);
-		 * pnl is a double
-		 * std::string pnl = pnl.str();
-		*/
-		
-		return crow::response("2000.5");
-		
-	}
-	else
-		return crow::response(401);
+        }
+        else
+            return crow::response(401);
     });
     
     CROW_ROUTE(app, "/portfolio_pnl")([](const crow::request& req){
         
-        if (validate_credentials(req)){
+        if (a.validate_credentials(req)){
 		
 		
-		std::string client_id = get_client_id(req);
-		/*
-		 * TODO :
-		 * get required trades for client from db
-		 * get_pnl_snapshots(trade);
-		 * format return value into response
-		*/
+            std::string client_id = a.get_client_id(req);
+
+            /*
+            * TODO :
+            * get required trades for client from db
+            * get_pnl_snapshots(trade);
+            * format return value into response
+            */
+            
+            return crow::response(200);
 		
-		return crow::response(200);
-		
-	}
-	else
-		return crow::response(401);
+        }
+        else
+            return crow::response(401);
     });
 
     
