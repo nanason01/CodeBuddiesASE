@@ -59,4 +59,14 @@ private:
      * specify target trades and exchanges.
      */
     std::string generate_payload(std::string nonce);
+
+    /*
+     * Generates the URL to query.
+     */
+    std::string generate_url();
+
+    /*
+     * Generates the URI
+     */
+    std::string generate_path();
 };
