@@ -23,6 +23,41 @@ constexpr Term Matcher::get_term(Timestamp buy, Timestamp sell) {
         return buy.month() - sell.month() >= months{ 1 } || buy.day() - sell.day() >= days{ 1 } ?
         Term::Long : Term::Short;
 }
+static inline bool isSameMatchedMeta(const MatchedTrade& a, const MatchedTrade& b) {
+    if (a.term != b.term || a.currency != b.currency)
+        return false;
+
+    switch (a.term) {
+    case (Term::Held):
+        return a.bought_timestamp == b.bought_timestamp;
+    case (Term::UnmatchedSell):
+        return a.sold_timestamp == b.sold_timestamp;
+    default:
+        return a.sold_timestamp == b.sold_timestamp && a.bought_timestamp == b.bought_timestamp;
+    }
+}
+
+static std::vector<MatchedTrade> condense(const std::vector<MatchedTrade>& mts) {
+    std::vector<MatchedTrade> ret;
+
+    // simple O(n2) algo
+    for (int i = 0; i < mts.size(); i++) {
+        if (mts[i].sz == 0.0 || (mts[i].currency == "USD" && (mts[i].term == Term::Long || mts[i].term == Term::Short)))
+            continue;
+        // look for duplicates
+        for (int j = i + 1; j < mts.size(); j++) {
+            if (isSameMatchedMeta(mts[i], mts[j])) {
+                mts[i].sz += mts[j].sz;
+                mts[i].pnl += mts[j].pnl;
+                mts[j].sz = 0.0;
+            }
+        }
+
+        ret.push_back(mts[i]);
+    }
+
+    return ret;
+}
 
 // get all matched trades for user
 // see README for details on how this is done
@@ -160,7 +195,7 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
         }
     }
 
-    return ret;
+    return condense(ret);
 }
 
 // get pnl of trade
