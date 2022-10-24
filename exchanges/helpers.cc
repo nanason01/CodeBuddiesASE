@@ -34,23 +34,12 @@ err_out:
 /*
  *
  */
-std::vector<unsigned char> hmac_sha512_wrapper(std::string data, API_key key) {
-    std::vector<unsigned char> data_vec;
-    std::vector<unsigned char> key_vec;
-
+std::vector<unsigned char> hmac_sha512_wrapper(std::vector<unsigned char> data_vec, std::vector<unsigned char> key_vec) {
     unsigned int length = EVP_MAX_MD_SIZE;
     std::vector<unsigned char> hmac_digest (length);
 
-    if (data.empty() || key.empty()) {
+    if (data_vec.empty() || key_vec.empty()) {
         goto err_out;
-    }
-
-    for (unsigned char x_ch : data) {
-        data_vec.push_back(x_ch);
-    }
-
-    for (unsigned char x_ch : key) {
-        key_vec.push_back(x_ch);
     }
 
     HMAC_CTX *ctx;
