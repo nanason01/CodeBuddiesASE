@@ -31,4 +31,12 @@ public:
 	
 	// generate new credentials for already existing client
 	crow::json::wvalue refresh_credentials(const crow::request& req);
+
+	// convert const crow::json::rvalue to a std::string
+	std::string convert_to_string(const crow::json::rvalue jrvalue);
+
+	// parse const crow::request& and convert into struct trade
+	// For now return pointer is void
+	// actual definition will be struct trade parse_trade_from_json(auto x)
+	void parse_trade_from_json(const crow::request& req);
 };
