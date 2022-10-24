@@ -35,7 +35,7 @@ Endpoints :
 | /trade  | POST  | Takes information about a trade and saves it in the database | Json data with keys _timestamp_, _sold_currency_, _bought_currency_, _sold_amount_ and _bought_amount_ | HTTP Status Code |
 | /exchangekey  | POST  | Takes read key for a supported exchange and stores in database | Json data with keys _exchange_ and _readkey_ | HTTP Status Code |
 | /removekey  | POST  | Takes read key for a supported exchange and deletes that key from database | Json data with keys _exchange_ and _readkey_ | HTTP Status Code |
-| /get_annotated_trades  | GET  |
-| /year_end_stats  | GET  |
-| /trade_pnl  | POST  |
-| /portfolio_pnl  | GET  |
+| /get_annotated_trades  | GET  | Gets matched trades | None | Matched trades |
+| /year_end_stats  | GET  | Gets year end statistics for a year | None | Year end profit and loss |
+| /trade_pnl  | POST  | Gets the profit and loss for the input trade and returns it | Json data with keys _timestamp_, _sold_currency_, _bought_currency_, _sold_amount_ and _bought_amount_ | The profit or loss in the form of a double that has been converted to a string |
+| /portfolio_pnl  | GET  | Get profit and loss of portfolio at various points in time | None | Profit and loss over time |
