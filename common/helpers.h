@@ -12,7 +12,7 @@ std::vector<unsigned char> sha256_wrapper(std::string data);
 /*
  * Helper function for hmac with sha-512.
  */
-std::vector<unsigned char> hmac_sha512_wrapper(std::string data, API_key secret_key);
+std::vector<unsigned char> hmac_sha512_wrapper(std::vector<unsigned char> data, std::vector<unsigned char> secret_key);
 
 /*
  * Helper function for converting a vector of unsigned char's to string
