@@ -12,13 +12,18 @@
 #include "exchanges/coinbase.h"
 #include "exchanges/crypto_com.h"
 
+#include "sqlite3.h"
 #include <exception>
 #include <chrono>
+
+constexpr auto DB_FILENAME = "db";
 
 class Data final : public BaseData {
     const CoinbaseDriver cb_driver;
     const Crypto_comDriver cc_driver;
     const ExchangeDriver* cb_driver_ptr, * cc_driver_ptr;
+
+    sqlite3* db_conn;
 
     inline const ExchangeDriver* get_driver(const Exchange& e) {
         switch (e) {
@@ -34,10 +39,20 @@ class Data final : public BaseData {
 public:
     // normal call
     Data()
-        : cb_driver_ptr(&cb_driver), cc_driver_ptr(&cc_driver) {}
+        : cb_driver_ptr(&cb_driver), cc_driver_ptr(&cc_driver) {
+        if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK)
+            throw DatabaseConnError();
+    }
     // only for testing
-    Data(ExchangeDriver* _cb, ExchangeDriver* _cc)
-        : cb_driver_ptr(_cb), cc_driver_ptr(_cc) {}
+    Data(ExchangeDriver* _cb, ExchangeDriver* _cc, std::string test_db_filename)
+        : cb_driver_ptr(_cb), cc_driver_ptr(_cc) {
+        if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK)
+            throw DatabaseConnError();
+    }
+
+    ~Data() {
+        sqlite3_close(db_conn);
+    }
 
     // writing operations
 

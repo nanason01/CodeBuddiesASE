@@ -1,0 +1,16 @@
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //engine:test (0 packages loaded, 0 targets configured)
+INFO: Analyzed target //engine:test (0 packages loaded, 0 targets configured).
+INFO: Found 1 test target...
+[0 / 10] [Prepa] BazelWorkspaceStatusAction stable-status.txt
+[9 / 10] [Prepa] Linking engine/test
+[10 / 11] Testing //engine:test; 1s darwin-sandbox
+[10 / 11] Testing //engine:test; 2s darwin-sandbox
+FAIL: //engine:test (see /private/var/tmp/_bazel_nick/19a0812a07acf88b86f6cb88b068138a/execroot/__main__/bazel-out/darwin_arm64-fastbuild/testlogs/engine/test/test.log)
+Target //engine:test up-to-date:
+  bazel-bin/engine/test
+INFO: Elapsed time: 4.177s, Critical Path: 4.10s
+INFO: 7 processes: 1 internal, 6 darwin-sandbox.
+INFO: Build completed, 1 test FAILED, 7 total actions
+INFO: Build completed, 1 test FAILED, 7 total actions
