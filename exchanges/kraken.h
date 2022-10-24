@@ -48,7 +48,7 @@ private:
     std::string generate_signature(std::string uri_path, 
                                    std::string post_data, 
                                    std::string nonce,
-                                   API_key api_key_secret);
+                                   std::vector<unsigned char> api_key_secret);
 
     /*
      * Function that returns formatted payload to be sent
