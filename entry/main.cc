@@ -6,11 +6,12 @@
 #include <unistd.h>
 #include <openssl/sha.h>
 #include "auth.h"
+//#include "data/data.h"
 
-#include "engine/matching.h"
+//#include "engine/matching.h"
 
 int main() {
-    get_pnl_snapshots({ "me", "mine" });
+    //get_pnl_snapshots({ "me", "mine" });
     
     crow::SimpleApp app; //define your crow application
     auth a;
@@ -40,7 +41,8 @@ int main() {
     });
 
     
-    CROW_ROUTE(app, "/tryjson").methods("POST"_method)([](const crow::request& req){
+    CROW_ROUTE(app, "/tryjson").methods("POST"_method)([&a](const crow::request& req){
+
         
         auto x = crow::json::load(req.body);
         if (!x)
@@ -55,7 +57,8 @@ int main() {
             return crow::response(401);
     });
     
-    CROW_ROUTE(app, "/trade").methods("POST"_method)([](const crow::request& req){
+
+    CROW_ROUTE(app, "/trade").methods("POST"_method)([&a](const crow::request& req){
         
         
         
@@ -76,7 +79,9 @@ int main() {
 		    return crow::response(401);
     });
     
-    CROW_ROUTE(app, "/exchangekey").methods("POST"_method)([](const crow::request& req){
+
+    CROW_ROUTE(app, "/exchangekey").methods("POST"_method)([&a](const crow::request& req){
+
         
         
         
@@ -89,11 +94,14 @@ int main() {
             std::string client_id = a.get_client_id(req);
             std::string exchange = a.convert_to_string(x["exchange"]);
             std::string readkey = a.convert_to_string(x["readkey"]);
+            std::string secretkey = a.convert_to_string(x["secretkey"]);
+
             
             std::cout << exchange << std::endl;
             std::cout << readkey << std::endl;
             
-            // TODO : store client_id, exchange and readkey into db
+
+            // TODO : store client_id, exchange and readkey, and secretkey into db
 		
             return crow::response(200);
         }
@@ -101,7 +109,9 @@ int main() {
             return crow::response(401);
     });
     
-    CROW_ROUTE(app, "/removekey").methods("POST"_method)([](const crow::request& req){
+
+    CROW_ROUTE(app, "/removekey").methods("POST"_method)([&a](const crow::request& req){
+
         
         
         
@@ -114,6 +124,8 @@ int main() {
             std::string client_id = a.get_client_id(req);
             std::string exchange = a.convert_to_string(x["exchange"]);
             std::string readkey = a.convert_to_string(x["readkey"]);
+            std::string secretkey = a.convert_to_string(x["secretkey"]);
+
             
             std::cout << exchange << std::endl;
             std::cout << readkey << std::endl;
@@ -126,7 +138,8 @@ int main() {
             return crow::response(401);
     });
     
-    CROW_ROUTE(app, "/get_annotated_trades")([](const crow::request& req){
+
+    CROW_ROUTE(app, "/get_annotated_trades")([&a](const crow::request& req){
         
         if (a.validate_credentials(req)){
 		
@@ -137,6 +150,7 @@ int main() {
             * all_matched_trades = get_matched_trades(trades)
             * format return value into response
             */
+
             return crow::response(200);
 		
         }
@@ -144,7 +158,8 @@ int main() {
             return crow::response(401);
     });
     
-    CROW_ROUTE(app, "/year_end_stats")([](const crow::request& req){
+
+    CROW_ROUTE(app, "/year_end_stats")([&a](const crow::request& req){
         
         if (a.validate_credentials(req)){
 		
@@ -153,9 +168,17 @@ int main() {
             /*
             * TODO :
             * get all trades for client from db
+            * 
+            * Code below this should be working and should be uncommented when db gets done
+            * 
             * YearEndPNL y_pnl;
             * y_pnl = get_year_end_pnl(trades);
-            * format return value into response
+            * 
+            * crow::json::wvalue stats;
+            * stats["lt_realized_pnl"] = y_pnl.lt_realized.str();
+            * stats["st_realized_pnl"] = y_pnl.st_realized.str();
+            * stats["actual_pnl"] = y_pnl.actual_pnl.str();
+            * return stats;
             */
             
             return crow::response(200);
@@ -165,7 +188,7 @@ int main() {
             return crow::response(401);
     });
     
-    CROW_ROUTE(app, "/trade_pnl").methods("POST"_method)([](const crow::request& req){
+    CROW_ROUTE(app, "/trade_pnl").methods("POST"_method)([&a](const crow::request& req){
         
         if (a.validate_credentials(req)){
 		
@@ -175,14 +198,16 @@ int main() {
                 return crow::response(400);
             
             std::string client_id = a.get_client_id(req);
-            //struct trade t = parse_trade_from_json(req);
+            //struct trade t = a.parse_trade_from_json(req);
             
             /*
-            * TODO :
+            * Below code should be uncommented when parse_trade_from_json is implemented
             * 
             * PNL pnl = get_trade_pnl(trade);
-            * pnl is a double
             * std::string pnl = pnl.str();
+            * 
+            * return crow::response(pnl);
+
             */
             
             return crow::response("2000.5");
@@ -192,7 +217,8 @@ int main() {
             return crow::response(401);
     });
     
-    CROW_ROUTE(app, "/portfolio_pnl")([](const crow::request& req){
+
+    CROW_ROUTE(app, "/portfolio_pnl")([&a](const crow::request& req){
         
         if (a.validate_credentials(req)){
 		
