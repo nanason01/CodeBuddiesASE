@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 constexpr TimeDelta REFRESH_INTERVAL = std::chrono::days{ 1 };
 
 // TODO: subject to change on 0Auth exploration
-struct AuthenticUser {
+struct const AuthenticUser& {
     User user;
     Creds creds;
 };
@@ -47,18 +47,18 @@ public:
 
     // add a user to our system
     // throws UserExists if user exists
-    virtual void add_user(AuthenticUser user) = 0;
+    virtual void add_user(const AuthenticUser& user) = 0;
 
     // remove a user from our system
     // throws UserNotFound if user doesn't exist
-    virtual void remove_user(AuthenticUser user) = 0;
+    virtual void remove_user(const AuthenticUser& user) = 0;
 
     // add an exchange for user
     // may throw ExchangeDriver level errors
-    virtual void register_exchange(AuthenticUser user, Exchange exch, API_key key) = 0;
+    virtual void register_exchange(const AuthenticUser& user, Exchange exch, const API_key& key) = 0;
 
     // add a trade for user
-    virtual void upload_trade(AuthenticUser user, Trade trade) = 0;
+    virtual void upload_trade(const AuthenticUser& user, const Trade& trade) = 0;
 
     // reading operations
 
@@ -66,17 +66,15 @@ public:
     // if exchange key is no longer valid, mark it as invalid and rethrow
     // so consecutive calls will invalidate one exchange at a time until all
     // remaining exchanges are valid, then return the valid list of trades
-    virtual std::vector<Trade> get_trades(AuthenticUser user, Exchange e = Exchange::All) = 0;
+    virtual std::vector<Trade> get_trades(const AuthenticUser& user) = 0;
 
     // get exchanges associated with user
-    virtual std::vector<Exchange> get_exchanges(AuthenticUser user) = 0;
+    virtual std::vector<Exchange> get_exchanges(const AuthenticUser& user) = 0;
 
     // throws UserNotFound if user does not exist
-    virtual void check_user(AuthenticUser user) = 0;
-
     // throws InvalidCreds if credentials don't match
-    virtual void check_creds(AuthenticUser user) = 0;
+    virtual void check_user(const AuthenticUser& user) const = 0;
 
     // get last time this exchange was updated for user
-    virtual Timestamp get_last_update(AuthenticUser user, Exchange e) = 0;
+    virtual Timestamp get_last_update(const AuthenticUser& user, Exchange e) const = 0;
 };
