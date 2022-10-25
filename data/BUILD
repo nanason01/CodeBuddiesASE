@@ -1,3 +1,11 @@
+cc_binary(
+    name = "test-nit",
+    srcs = ["sqlite_tester.cc"],
+    deps = [
+        "//data/sqlite_stuff:sqlite3",
+    ],
+)
+
 cc_library(
     name = "data",
     srcs = [
