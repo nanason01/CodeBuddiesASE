@@ -20,6 +20,11 @@ struct AuthenticUser {
 };
 
 // errors
+struct DatabaseConnError : std::exception {
+    const char* what() const noexcept override {
+        return "Can't open database";
+    }
+};
 struct UserNotFound : std::exception {
     const char* what() const noexcept override {
         return "User not found in system";

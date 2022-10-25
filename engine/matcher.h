@@ -19,7 +19,9 @@ public:
     Matcher(PricerBase* _pricer) : pricer(_pricer) {}
 
     // get all matched trades for user
-    vector<MatchedTrade> get_matched_trades(const vector<Trade>& trades_in) final;
+    // note: no contract on condensing results,
+    // a trade may be split into an arbitrary number of matched trades as long as they account for exactly the trade volume
+    vector<MatchedTrade> get_matched_trades(const vector<Trade>& trades_in, const Timestamp end_time = now()) final;
 
     // get pnl of trade
     // internally, this assumes the trade was net-0 value the first day
@@ -38,11 +40,11 @@ public:
     // returns the earliest dates user could sell each of his cryptos for
     // all of them to be considered long term cap gains
     // Trade::bought_amount is meaningless as the future price is unknown
-    vector<Trade> get_earliest_long_term_sells(const vector<Trade>& trades);
+    vector<Trade> get_earliest_long_term_sells(const vector<Trade>& trades, const Timestamp end_time = now()) final;
 
 private:
     // get whether this is a short or long term trade
-    static constexpr Term get_term(Timestamp buy, Timestamp sell);
+    static Term get_term(Timestamp buy, Timestamp sell);
 
     // This is the "conversion rate" between STCG and LTCG
     // when we have to decide  whether to take a small STCG
