@@ -29,7 +29,6 @@ size_t pricer_write_callback(char *ptr, size_t size, size_t nmemb, void *userdat
  *
  */
 std::string Pricer::perform_curl_request(std::string url) {
-    CURLcode res;
     std::string response_buffer;
 
     // Get the history of trades for that day for this asset
@@ -42,12 +41,11 @@ std::string Pricer::perform_curl_request(std::string url) {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, pricer_write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, static_cast<void*> (&response_buffer));
         
-        res = curl_easy_perform(curl);
+        curl_easy_perform(curl);
     } else {
         goto out;
     }
 
-full_out:
     // Deallocate resources
     curl_easy_cleanup(curl);
 
@@ -59,7 +57,7 @@ out:
  *
  */
 std::string Pricer::get_asset_id(std::string currency) {
-    int i;
+    size_t i;
     std::string url_list = "https://api.coingecko.com/api/v3/coins/list";
 
     std::string list_of_ids = this->perform_curl_request(url_list);

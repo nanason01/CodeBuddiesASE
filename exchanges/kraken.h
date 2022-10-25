@@ -11,10 +11,7 @@
 
 class KrakenDriver final : ExchangeDriver {
 public:
-    KrakenDriver(User _user, API_key _key, API_key _privatekey) : ExchangeDriver(_user, _key, _privatekey) {
-        _uname = _user;
-        _ukey = _key;
-        _uprivatekey = _privatekey;
+    KrakenDriver() : ExchangeDriver() {
     }
 
     /*
@@ -23,17 +20,14 @@ public:
      * function was called, and sends their info to
      * db.
      */
-    virtual std::vector<Trade> get_trades() final;
+    virtual std::vector<Trade> get_trades(API_key public_key, API_key private_key) final;
 
 private:
-    User _uname;
-    API_key _ukey;
-    API_key _uprivatekey;
 
     /*
      * Get trades of user as a string, throw exception on error
      */
-    std::string query_for_trades();
+    std::string query_for_trades(API_key public_key, API_key private_key);
 
     /*
      * Generate a nonce for requests to Kraken

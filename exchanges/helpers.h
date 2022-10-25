@@ -1,7 +1,5 @@
 #pragma once
 
-#include "common/types.h"
-
 #include <vector>
 #include <string>
 #include <crow.h>

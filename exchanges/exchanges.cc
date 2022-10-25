@@ -9,10 +9,8 @@
 #include <string>
 #include <crow.h>
 
-// TODO:
-// - Testing
-
 ///////////////////////////////////////////////////////////////////////////////
+// Debugging functions for printing std::vector<unsigined char> as hex to stdout.
 // Taken from: https://stackoverflow.com/questions/673240/how-do-i-print-an-unsigned-char-as-hex-in-c-using-ostream
 struct HexCharStruct {
   unsigned char c;
@@ -51,27 +49,27 @@ std::string CoinbaseDriver::generate_timestamp() {
 /*
  *
  */
-std::string CoinbaseDriver::generate_url() {
-    return ("https://api.coinbase.com/v2/accounts/" + this->_uaccountid + "/transactions");
+std::string CoinbaseDriver::generate_url(std::string account_id) {
+    return ("https://api.coinbase.com/v2/accounts/" + account_id + "/transactions");
 }
 
 /*
  *
  */
-std::string CoinbaseDriver::generate_path() {
-    return ("/v2/accounts/" + this->_uaccountid + "/transactions");
+std::string CoinbaseDriver::generate_path(std::string account_id) {
+    return ("/v2/accounts/" + account_id + "/transactions");
 }
 
 /*
  *
  */
-std::string CoinbaseDriver::generate_signature(std::string timestamp, std::string method, std::string path) {
+std::string CoinbaseDriver::generate_signature(std::string timestamp, std::string method, std::string path, API_key private_key) {
     std::vector<unsigned char> body (timestamp.begin(), timestamp.end());
     body.insert(body.end(), method.begin(), method.end());
     body.insert(body.end(), path.begin(), path.end());
 
-    std::vector<unsigned char> key (this->_uprivatekey.begin(), this->_uprivatekey.end());
-    
+    std::vector<unsigned char> key (private_key.begin(), private_key.end());
+
     // HMAC the data and key, get the signature
     std::vector<unsigned char> signature = hmac_sha256_wrapper(body, key);
     std::string str_signature = convert_vec_to_str(signature);
@@ -88,32 +86,33 @@ std::string CoinbaseDriver::generate_signature(std::string timestamp, std::strin
 /*
  *
  */
-std::string CoinbaseDriver::query_for_trades() {
+std::string CoinbaseDriver::query_for_trades(API_key public_key, API_key private_key) {
     // "CB-ACCESS-KEY: " -- api key
     // "CB-ACCESS-SIGN: " -- message signature, [HMAC, SHA256] (body = timestamp + method + requestPath, key = cnb_secret_token)
     // "CB-ACCESS-TIMESTAMP: " -- timestamp for this request, seconds since UNIX epoch in UTC
 
-    if (this->_ukey == "" || this->_uprivatekey == "" || this->_upassword == "") {
+    if (public_key == "" || private_key == "") {
         throw inv_key;
     }
 
+    // TODO
     // Get the user account id
-    // std::string account_id = ...
+    std::string account_id;
 
     // Generate a timestamp
     std::string request_timestamp = this->generate_timestamp();
     std::cout << "[TIMESTAMP] " << request_timestamp << std::endl;
 
     // Generate the URL to query
-    std::string cnb_query_url = this->generate_url();
+    std::string cnb_query_url = this->generate_url(account_id);
     std::cout << "[CNB QUERY URL] " << cnb_query_url << std::endl;
 
     // Generate the URI
-    std::string request_path = this->generate_path();
+    std::string request_path = this->generate_path(account_id);
     std::cout << "[CNB QUERY URI] " << request_path << std::endl;
 
     // Generate signature
-    std::string request_sig = this->generate_signature(request_timestamp, "GET", request_path);
+    std::string request_sig = this->generate_signature(request_timestamp, "GET", request_path, private_key);
     std::cout << "[REQUEST SIGNATURE] " << request_sig << std::endl; 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -136,7 +135,7 @@ std::string CoinbaseDriver::query_for_trades() {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, kraken_write_callback);              // Specify the write callback function
 
         // Prepare the headers
-        std::string api_key_header = "CB-ACCESS-KEY: " + this->_ukey;
+        std::string api_key_header = "CB-ACCESS-KEY: " + public_key;
         std::string api_secret_header = "CB-ACCESS-SIGN: " + request_sig;
         std::string api_timestamp_header = "CB-ACCESS-TIMESTAMP: " + request_timestamp;
 
@@ -171,9 +170,9 @@ std::string CoinbaseDriver::query_for_trades() {
 /*
  *
  */
-std::vector<Trade> CoinbaseDriver::get_trades() {
+std::vector<Trade> CoinbaseDriver::get_trades(API_key public_key, API_key private_key) {
     std::vector<Trade> processed_txs;
-    std::string string_txs = this->query_for_trades();
+    std::string string_txs = this->query_for_trades(public_key, private_key);
     std::cout << "[COINBASE QUERIED TRADES] " << string_txs << std::endl;
 
     //////////////////////////////
@@ -240,16 +239,16 @@ std::string KrakenDriver::generate_path() {
 /*
  *  Send request for info to Kraken
  */
-std::string KrakenDriver::query_for_trades() {
+std::string KrakenDriver::query_for_trades(API_key public_key, API_key private_key) {
     ///////////////////////////////////////////////////////////////////////////
     // Part 1: Generate the required request headers                         //
     ///////////////////////////////////////////////////////////////////////////
-    if (this->_ukey == "" || this->_uprivatekey == "") {
+    if (public_key == "" || private_key == "") {
         throw creds_mia;
     }
 
     // Decode secret api key
-    std::string decoded_api_secret = crow::utility::base64decode(this->_uprivatekey, this->_uprivatekey.size());
+    std::string decoded_api_secret = crow::utility::base64decode(private_key, private_key.size());
     std::vector<unsigned char> vec_decoded_api_secret (decoded_api_secret.begin(), decoded_api_secret.end()); 
    
     // Generate nonce
@@ -288,7 +287,7 @@ std::string KrakenDriver::query_for_trades() {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, kraken_write_callback);              // Specify the write callback function
 
         // Prepare the headers
-        std::string api_key_header = "API-Key: " + this->_ukey;
+        std::string api_key_header = "API-Key: " + public_key;
         std::string api_secret_header = "API-Sign: " + request_sig;
 
         // Create the request headers and add them to the cURL agent
@@ -317,9 +316,9 @@ std::string KrakenDriver::query_for_trades() {
     return response_buffer;
 }
 
-std::vector<Trade> KrakenDriver::get_trades() {
+std::vector<Trade> KrakenDriver::get_trades(API_key public_key, API_key private_key) {
     std::vector<Trade> processed_txs;
-    std::string string_txs = this->query_for_trades();
+    std::string string_txs = this->query_for_trades(public_key, private_key);
 
     auto jsonified_txs = crow::json::load(string_txs);
     if (!jsonified_txs["result"] || !jsonified_txs["result"]["count"] || !jsonified_txs["result"]["trades"]) {
@@ -330,11 +329,11 @@ std::vector<Trade> KrakenDriver::get_trades() {
     for (auto tx : tx_record) {
         // Now we're looking at individual txs
         Trade single_trade = {
-            .timestamp = "", // convert_to_string(tx["time"]),
+            .timestamp = now(), // convert_to_string(tx["time"]),
             .sold_currency = convert_to_string(tx["pair"]),   // Currency pair
             .bought_currency = convert_to_string(tx["type"]), // Type of transaction, buy/sell
-            .sold_amount = std::__cxx11::stod(convert_to_string(tx["vol"])),
-            .bought_amount = std::__cxx11::stod(convert_to_string(tx["cost"]))
+            .sold_amount = tx["vol"].d(),
+            .bought_amount = tx["cost"].d()
         };
 
         processed_txs.push_back(single_trade);
@@ -346,8 +345,8 @@ std::vector<Trade> KrakenDriver::get_trades() {
 /*
 int main () {
     // Kraken
-    KrakenDriver kraken_client("client", "J9LYvgnqF6wG4H0Y7/Yr1ysdXke/O2vPdu58nQGp9bmK+e7R4OSyWAsU", "VzP5UOZzOcsjJOw/9gU1D1QY78eBNO3LHnXIUngXxK7jbhy58EHpPOGI8b7CIg4D/304BOAwrxX5JwGVECJimg==");
-    std::vector<Trade> trade_record = kraken_client.get_trades();
+    KrakenDriver kraken_client;
+    std::vector<Trade> trade_record = kraken_client.get_trades("J9LYvgnqF6wG4H0Y7/Yr1ysdXke/O2vPdu58nQGp9bmK+e7R4OSyWAsU", "VzP5UOZzOcsjJOw/9gU1D1QY78eBNO3LHnXIUngXxK7jbhy58EHpPOGI8b7CIg4D/304BOAwrxX5JwGVECJimg==");
 
     for (auto x : trade_record) {
         std::cout << "Trade record"      << "\n";
