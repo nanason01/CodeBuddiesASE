@@ -9,7 +9,9 @@
 #include <string_view>
 #include <limits>
 #include <iostream>
-#include <chrono>
+#include <sstream>
+#include <iomanip>
+#include <ctime>
 
 enum class Exchange : uint8_t {
     Invalid,
@@ -51,65 +53,57 @@ constexpr const char* operator+(const Exchange e) {
     return to_string(e);
 }
 
-using Timestamp = std::chrono::year_month_day;
-using TimeDelta = std::chrono::days;
+using Timestamp = std::time_t;
+using TimeDelta = std::time_t;
 
 static inline Timestamp now() {
-    return std::chrono::floor<std::chrono::days>(
-        std::chrono::system_clock::now()
-        );
+    return std::time(nullptr);
 }
-
 static inline Timestamp beginning_of_time() {
-    using std::chrono::month;
-
-    return Timestamp(month{ 1 } / 1 / 1970);
+    return 0;
 }
 
-// courtesy of cppreference: operator sys_days
-constexpr Timestamp normalize(Timestamp ymd) {
-    ymd += std::chrono::months{ 0 }; // normalizes year and month
-    return std::chrono::sys_days{ ymd }; // normalizes day
-}
-
-// appearently this is only defined for months and years
-// the cpp std committee probably has an incredibly enlightened
-// reasoning behind this, probably adding a day to a date is stupid
-// I, for one, live most of my life on a per-year or per-month basis
-// I go to class once a month, I'll get back to you within a month,
-// and I live for the month-end.
-constexpr Timestamp operator+(const Timestamp& ts, const TimeDelta& delta) {
-    return normalize(Timestamp{ ts.year(), ts.month(), ts.day() + delta });
-}
-constexpr Timestamp operator+(const TimeDelta& delta, const Timestamp& ts) {
-    return normalize(Timestamp{ ts.year(), ts.month(), ts.day() + delta });
-}
-constexpr Timestamp operator-(const Timestamp& ts, const TimeDelta& delta) {
-    return normalize(Timestamp{ ts.year(), ts.month(), ts.day() + delta });
-}
-
-// The more I use this lib, the more I regret it
 // CHECK THE ORDER, usa meaning month/day/year like Jan 1st 2020
-constexpr inline Timestamp from_usa_date(const unsigned int& _m, const unsigned int& _d, const int& _y) {
-    using std::chrono::year;
-    using std::chrono::month;
-    using std::chrono::day;
-    return Timestamp(year{ _y }, month{ _m }, day{ _d });
+inline Timestamp from_usa_date(const int& _m, const int& _d, const int& _y) {
+    std::tm time{};
+
+    time.tm_year = _y - 1900;
+    time.tm_mon = _m - 1;
+    time.tm_mday = _d;
+    time.tm_hour = 12;
+    time.tm_min = 0;
+    time.tm_isdst = 0;
+
+    return std::mktime(&time);
+}
+
+// returns a timedelta representing this many days
+inline TimeDelta from_cal(const int& _m, const int& _d, const int& _y) {
+    return ((((12 * _y) + _m) * 30) + _d) * 24 * 60 * 60;
+}
+
+inline int get_year(Timestamp ts) {
+    std::tm* ts_tm = localtime(&ts);
+
+    return ts_tm->tm_year + 1900;
+}
+inline int get_month(Timestamp ts) {
+    std::tm* ts_tm = localtime(&ts);
+
+    return ts_tm->tm_mon + 1;
+}
+inline int get_day(Timestamp ts) {
+    std::tm* ts_tm = localtime(&ts);
+
+    return ts_tm->tm_mday;
 }
 
 // this is needed for gtest to print human-readable dates
-namespace std::chrono {
+namespace std {
     void PrintTo(const Timestamp& ts, std::ostream* os) {
-        if (!ts.ok()) {
-            *os << "Invalid timestamp";
-            return;
-        }
+        std::tm* cal_ts = localtime(&ts);
 
-        auto year = static_cast<int>(ts.year());
-        auto month = static_cast<unsigned>(ts.month());
-        auto day = static_cast<unsigned>(ts.day());
-
-        *os << month << "/" << day << "/" << year;
+        *os << std::put_time(cal_ts, "%c %Z");
     }
 }
 
@@ -121,7 +115,19 @@ struct Trade {
 
     std::string sold_currency, bought_currency;
     double sold_amount, bought_amount;
+
+    friend std::ostream& operator<<(std::ostream& os, const Trade& tr);
 };
+
+std::ostream& operator<<(std::ostream& os, const Trade& tr) {
+    os << "trade at ";
+    std::PrintTo(tr.timestamp, &os);
+    os << " exchanged " << tr.sold_amount << " " <<
+        tr.sold_currency << " for " << tr.bought_amount <<
+        tr.bought_currency;
+
+    return os;
+}
 
 // Matched buy with sell swap
 // if term == Term::Held, the position is still open,
@@ -136,7 +142,45 @@ struct MatchedTrade {
     std::string currency;
     double sz;
     PNL pnl;
+
+    friend std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt);
+    bool operator==(const MatchedTrade& other) const = default;
 };
+
+std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt) {
+    switch (mt.term) {
+    case(Term::Short):
+        os << "Short term " << mt.sz << ":" << mt.currency <<
+            " bought at ";
+        std::PrintTo(mt.bought_timestamp, &os);
+        os << " sold at ";
+        std::PrintTo(mt.sold_timestamp, &os);
+        os << " pnl: " << mt.pnl;
+        break;
+    case(Term::Long):
+        os << "Long term " << mt.sz << ":" << mt.currency <<
+            " bought at ";
+        std::PrintTo(mt.bought_timestamp, &os);
+        os << " sold at ";
+        std::PrintTo(mt.sold_timestamp, &os);
+        os << " pnl: " << mt.pnl;
+        break;
+    case(Term::UnmatchedSell):
+        os << "Unmatched Sell " << mt.sz << ":" << mt.currency <<
+            " sold at ";
+        std::PrintTo(mt.sold_timestamp, &os);
+        os << " pnl: " << mt.pnl;
+        break;
+    case(Term::Held):
+        os << "Held " << mt.sz << ":" << mt.currency <<
+            " bought at ";
+        std::PrintTo(mt.bought_timestamp, &os);
+        os << " pnl: " << mt.pnl;
+        break;
+    }
+
+    return os;
+}
 
 // TODO define these types with 0Auth
 using User = std::string;
