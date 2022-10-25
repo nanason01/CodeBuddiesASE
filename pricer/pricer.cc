@@ -1,84 +1,133 @@
+// Copyright 2022 CodingBuddies
 #include <curl/curl.h>
-#include <iostream>
 #include <crow.h>
 
-#include "base_pricer.h"
-#include "pricer.h"
+#include <algorithm>
+#include <iostream>
+
+#include "pricer/base_pricer.h"
+#include "pricer/pricer.h"
 
 /*
  * 
  */
-std::string convert_to_string(const crow::json::rvalue jrvalue){
-	std::ostringstream os;
-        os << jrvalue;
-        std::string s = os.str();
-        s = s.substr(1, s.length() - 2);
-        return s;
+std::string convert_to_string(const crow::json::rvalue jrvalue) {
+    std::ostringstream os;
+    os << jrvalue;
+    std::string s = os.str();
+    s = s.substr(1, s.length() - 2);
+    return s;
 }
 
 /*
  *
  */
-size_t pricer_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+size_t pricer_write_callback(char *ptr, size_t size,
+                            size_t nmemb, void *userdata) {
     std::string *response = reinterpret_cast<std::string *> (userdata);
     response->append(ptr, size * nmemb);
     return size * nmemb;
 }
 
 /*
- * 
+ *
  */
-double Pricer::process_response(std::string response_buffer, std::string currency_pair) {
-    double ans = 0;
-    auto x = crow::json::load(response_buffer);
-    if (!x["result"] || !x["result"][currency_pair] || !x["result"][currency_pair]["a"]) {
-        goto out;
-    }
-
-    ans = std::__cxx11::stod(convert_to_string(x["result"][currency_pair]["a"][0]));
-
-out:
-    return ans;
-}
-
-/*
- * PAIR HAS TO BE FORMATTED ACCORDING TO KRAKEN API DOC.
- * SEE: https://docs.kraken.com/rest/#tag/Market-Data/operation/getTradableAssetPairs
- */
-double Pricer::get_usd_price(std::string currency_pair) {
+std::string Pricer::perform_curl_request(std::string url) {
     std::string response_buffer;
-    CURLcode res;
-    double ans;
 
-    std::string url = "https://api.kraken.com/0/public/Ticker?pair=" + currency_pair;
-
+    // Get the history of trades for that day for this asset
     CURL *curl = curl_easy_init();
-    if(curl) {
+    if (curl) {
         // Perform a GET request
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "CodeBuddies Crypto Portfolio Tracker");
+        curl_easy_setopt(curl, CURLOPT_USERAGENT,
+                            "CodeBuddies Crypto Portfolio Tracker");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, pricer_write_callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, static_cast<void*> (&response_buffer));
-        
-        res = curl_easy_perform(curl);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA,
+                            static_cast<void*> (&response_buffer));
+
+        curl_easy_perform(curl);
     } else {
         goto out;
     }
 
-    if (!(res == CURLE_OK)) {
-        goto full_out;
-    }
-
-    std::cout << "I'm here" << std::endl;
-
-
-    ans = process_response(response_buffer, currency_pair);
-
-full_out:
     // Deallocate resources
     curl_easy_cleanup(curl);
 
 out:
+    return response_buffer;
+}
+
+/*
+ *
+ */
+std::string Pricer::get_asset_id(std::string currency) {
+    size_t i;
+    std::string url_list = "https://api.coingecko.com/api/v3/coins/list";
+
+    std::string list_of_ids = this->perform_curl_request(url_list);
+    auto jsonified_ids = crow::json::load(list_of_ids);
+
+    for (i = 0; i < jsonified_ids.size(); i++) {
+        if (convert_to_string(jsonified_ids[i]["symbol"]) == currency) {
+            return convert_to_string(jsonified_ids[i]["id"]);
+        }
+    }
+
+    return "";
+}
+
+/*
+ *
+ */
+std::string Pricer::format_timestamp(Timestamp tstamp) {
+    // Format : DD-MM-YEAR
+    std::string day = std::to_string(get_day(tstamp));
+    std::string month = std::to_string(get_month(tstamp));
+    std::string year = std::to_string(get_year(tstamp));
+    return (day + "-" + month + "-" + year);
+}
+
+/*
+ *
+ */
+double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
+    double ans = 0;
+
+    std::string timestamp_str = format_timestamp(tstamp);
+
+    std::string url_list = "https://api.coingecko.com/api/v3/coins/" +
+                                currency_id + "/history?date=" + timestamp_str;
+
+    std::string price_records = this->perform_curl_request(url_list);
+    auto jsonified_ids = crow::json::load(price_records);
+
+    if (jsonified_ids["market_data"] &&
+        jsonified_ids["market_data"]["current_price"] &&
+        jsonified_ids["market_data"]["current_price"]["usd"]) {
+            ans = jsonified_ids["market_data"]["current_price"]["usd"].d();
+    }
+
     return ans;
+}
+
+/*
+ * CURRENCY HAS TO BE THE TICKER (e.g. 'BTC' for BITCOIN).
+ * SEE: https://www.coingecko.com/en/api/documentation
+ */
+double Pricer::get_usd_price(std::string currency, Timestamp tstamp) {
+    // Ensure that the currency is in lower case
+    std::transform(currency.begin(),
+                    currency.end(), currency.begin(), [](unsigned char x) {
+        return std::tolower(x);
+    });
+
+    // Get the asset id for CoinGecko
+    std::string currency_id = this->get_asset_id(currency);
+    if (currency_id == "") {
+        return 0;
+    }
+
+    return this->get_asset_price(currency_id, tstamp);
 }

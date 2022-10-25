@@ -1,38 +1,27 @@
 //
 // Coinbase exchange driver
-//
+// Copyright 2022 CodingBuddies
 
 #pragma once
 
-#include "common/types.h"
-#include "driver.h"
-
 #include <vector>
+#include <string>
+
+#include "common/types.h"
+#include "exchanges/driver.h"
 
 class CoinbaseDriver final : public ExchangeDriver {
-public:
-    CoinbaseDriver(User _user, API_key _key, API_key _privatekey, std::string _password, std::string _uid) : ExchangeDriver(_user, _key, _privatekey) {
-        _uname = _user;
-        _upassword = _password;
-        _ukey = _key;
-        _uprivatekey = _privatekey;
-        _uaccountid = _uid;
-    }
+ public:
+    CoinbaseDriver() : ExchangeDriver() {}
 
-    virtual std::vector<Trade> get_trades() final;
+    std::vector<Trade> get_trades(API_key public_key,
+                                          API_key private_key) final;
 
-private:
-    User _uname; 
-    std::string _upassword;
-    std::string _uaccountid;
-
-    API_key _ukey;
-    API_key _uprivatekey;
-
+ private:
     /*
      * Get trades of a user, return as string.
      */
-    std::string query_for_trades();
+    std::string query_for_trades(API_key public_key, API_key private_key);
 
     /*
      * Generates a timestamp for request expiration/validation.
@@ -42,15 +31,16 @@ private:
     /*
      * Generate a full
      */
-    std::string generate_url();
+    std::string generate_url(std::string account_id);
 
     /*
      * Generate a URI
      */
-    std::string generate_path();
+    std::string generate_path(std::string account_id);
 
     /*
      * Generate a signature for the message, using HMAC SHA256.
      */
-    std::string generate_signature(std::string timestamp, std::string method, std::string path);
+    std::string generate_signature(std::string timestamp, std::string method,
+                                   std::string path, API_key private_key);
 };

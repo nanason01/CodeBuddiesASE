@@ -190,11 +190,9 @@ using API_key = std::string;
 // Interface for getting trades from a source
 class Driver {
 protected:
-    User user;
 public:
-    Driver(User _user) : user(_user) {}
     virtual ~Driver() = default;
 
     // TODO: add a more fine-grained option
-    virtual std::vector<Trade> get_trades() = 0;
+    virtual std::vector<Trade> get_trades(API_key public_key, API_key private_key) = 0;
 };
