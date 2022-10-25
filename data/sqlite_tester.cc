@@ -35,7 +35,7 @@ static tuple<T, Ts...> _digest_strings(char** p_flds) {
     if constexpr (sizeof...(Ts) == 0)
         return make_tuple(db_digest<T>(*p_flds));
     else
-        return tuple_cat(tie(db_digest<T>(*p_flds)), _digest_strings<Ts...>(p_flds + 1));
+        return tuple_cat(make_tuple(db_digest<T>(*p_flds)), _digest_strings<Ts...>(p_flds + 1));
 }
 
 template<typename... Ts>
@@ -73,7 +73,7 @@ public:
         vector<tuple<Ts...>> ret;
         char* err_msg;
 
-        if (sqlite3_exec(db_conn, sql.c_str(), fill_row, &ret, &err_msg) != SQLITE_OK) {
+        if (sqlite3_exec(db_conn, sql.c_str(), fill_row<Ts...>, &ret, &err_msg) != SQLITE_OK) {
             cerr << err_msg << endl;
             free(err_msg);
             throw SqlError();
@@ -92,7 +92,7 @@ int main() {
     vector<tuple<string, string, string>> exp;
     const auto res = dc.exec_sql<string, string, string>("SELECT * FROM Test;");
 
-    for (const auto row : res) {
+    for (const auto& row : res) {
         cout << get<0>(row) << " " << get<1>(row) << " " << get<2>(row);
         cout << "\n";
     }
