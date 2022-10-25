@@ -30,6 +30,16 @@ string db_digest(string db_str) {
     return db_str;
 }
 
+template<>
+int db_digest(string db_str) {
+    return stoi(db_str);
+}
+
+template<>
+double db_digest(string db_str) {
+    return stod(db_str);
+}
+
 template<typename T, typename... Ts>
 static tuple<T, Ts...> _digest_strings(char** p_flds) {
     if constexpr (sizeof...(Ts) == 0)
@@ -68,6 +78,9 @@ public:
             throw DatabaseConnError();
     }
 
+    // if there's some template error for this, you're probably using an unsupported datatype
+    // if there's some runtime error for this, make sure your field types match what's expected
+    // int will work in decimal fields, be careful with that
     template<typename... Ts>
     vector<tuple<Ts...>> exec_sql(string sql) {
         vector<tuple<Ts...>> ret;
@@ -89,8 +102,7 @@ public:
 int main() {
     DataConn dc("/Users/nick/Desktop/COMS/4156/CodeBuddiesASE/data/test_db");
 
-    vector<tuple<string, string, string>> exp;
-    const auto res = dc.exec_sql<string, string, string>("SELECT * FROM Test;");
+    const auto res = dc.exec_sql<int, int, string, string>("SELECT * FROM Test;");
 
     for (const auto& row : res) {
         cout << get<0>(row) << " " << get<1>(row) << " " << get<2>(row);

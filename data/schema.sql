@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS ExchangeKeys (
 
 CREATE TABLE IF NOT EXISTS Trades (
     UserID VARCHAR(16) NOT NULL,
-    TradeDate DATE NOT NULL,
+    TradeYear int,
+    TradeMonth int,
+    TradeDay int,
     BoughtCurrency VARCHAR(16),
     SoldCurrency VARCHAR(16),
     BoughtAmount DECIMAL,
