@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../common/types.h"
+#include "common/types.h"
 #include "driver.h"
 
 #include <vector>
@@ -19,7 +19,7 @@ public:
         _uaccountid = _uid;
     }
 
-    std::vector<Trade> get_trades(User user, API_key key) final;
+    virtual std::vector<Trade> get_trades() final;
 
 private:
     User _uname; 

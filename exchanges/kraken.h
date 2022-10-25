@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../common/types.h"
+#include "common/types.h"
 #include "driver.h"
 
 #include <vector>
@@ -23,7 +23,7 @@ public:
      * function was called, and sends their info to
      * db.
      */
-    std::vector<Trade> get_trades() final;
+    virtual std::vector<Trade> get_trades() final;
 
 private:
     User _uname;

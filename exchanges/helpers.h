@@ -1,8 +1,10 @@
 #pragma once
 
+#include "common/types.h"
+
 #include <vector>
 #include <string>
-#include "types.h"
+#include <crow.h>
 
 /*
  * Helper function for sha256 digest.
@@ -29,3 +31,8 @@ std::string convert_vec_to_str(std::vector<unsigned char> data);
  * Write callback function for cURL.
  */
 size_t kraken_write_callback(char *ptr, size_t size, size_t nmeb, void *userdata);
+
+/*
+ * Helper to convert crow::json to string.
+ */
+std::string convert_to_string(const crow::json::rvalue jrvalue);

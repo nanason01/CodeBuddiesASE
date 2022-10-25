@@ -1,4 +1,5 @@
-#include "../common/helpers.h"
+#include "helpers.h"
+
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 #include <sstream>
@@ -121,4 +122,15 @@ size_t kraken_write_callback(char *ptr, size_t size, size_t nmemb, void *userdat
     std::string *response = reinterpret_cast<std::string *> (userdata);
     response->append(ptr, size * nmemb);
     return size * nmemb;
+}
+
+/*
+ *
+ */
+std::string convert_to_string(const crow::json::rvalue jrvalue){
+	std::ostringstream os;
+        os << jrvalue;
+        std::string s = os.str();
+        s = s.substr(1, s.length() - 2);
+        return s;
 }
