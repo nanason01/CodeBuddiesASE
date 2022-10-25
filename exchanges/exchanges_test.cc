@@ -3,7 +3,7 @@
 //
 
 #include "coinbase.h"
-#include "crypto_com.h"
+#include "kraken.h"
 #include <gtest/gtest.h>
 
 class CoinbaseFixture : public ::testing::Test {
