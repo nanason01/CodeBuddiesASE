@@ -63,20 +63,22 @@ double Pricer::get_usd_price(std::string currency_pair) {
         
         res = curl_easy_perform(curl);
     } else {
-        goto err_out;
+        goto out;
     }
 
     if (!(res == CURLE_OK)) {
-        goto err_out;
+        goto full_out;
     }
+
+    std::cout << "I'm here" << std::endl;
 
 
     ans = process_response(response_buffer, currency_pair);
 
+full_out:
     // Deallocate resources
     curl_easy_cleanup(curl);
-    return ans;
 
-err_out:
-    return 0;
+out:
+    return ans;
 }

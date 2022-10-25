@@ -1,6 +1,8 @@
 cc_library(
     name = "pricer",
-    srcs = [],
+    srcs = [
+        "pricer.cc",
+    ],
     hdrs = [
         "base_pricer.h",
         "pricer.h",
