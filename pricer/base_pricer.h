@@ -1,6 +1,6 @@
 //
 // The interface to query the price of a security on a day
-//
+// Copyright 2022 CodingBuddies
 
 #pragma once
 
@@ -10,8 +10,9 @@
 #include "common/types.h"
 
 class PricerBase {
-public:
+ public:
     virtual ~PricerBase() = default;
     // returns the price per unit of currency on date
-    virtual double get_usd_price(std::string currency_pair, Timestamp tstamp) = 0;
+    virtual double get_usd_price(std::string currency_pair,
+                                        Timestamp tstamp) = 0;
 };
