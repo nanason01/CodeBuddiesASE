@@ -7,7 +7,7 @@
 #include "base_pricer.h"
 #include "gmock/gmock.h"
 
-class MockPricer final : public PricerBase {
+class MockPricer : public PricerBase {
 public:
     MOCK_METHOD(double, get_usd_price, (std::string, Timestamp), (override));
 };

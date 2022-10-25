@@ -168,6 +168,7 @@ void auth::parse_trade_from_json(const crow::request& req){
 	t.bought_amount = std::stod(bought_amount);
 	// t.timestamp = What exactly?
 	*/
+
 	
 	/*
 	 * TODO :

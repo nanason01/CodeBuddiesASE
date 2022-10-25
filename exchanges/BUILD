@@ -1,12 +1,14 @@
 cc_library(
     name = "exchanges",
     srcs = [
-        # whatever source files u use go here @Aleks
+        "exchanges.cc",
+        "helpers.cc",
     ],
     hdrs = [
         "coinbase.h",
-        "crypto_com.h",
+        "kraken.h",
         "driver.h",
+        "helpers.h",
     ],
     visibility = [
         "//data:__pkg__",
