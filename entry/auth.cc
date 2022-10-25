@@ -1,4 +1,5 @@
 #include "auth.h"
+//#include "../common/types.h"
 
 std::string auth::gen_random(const int len) {
     static const char alphanum[] =
@@ -159,6 +160,14 @@ void auth::parse_trade_from_json(const crow::request& req){
 	std::string bought_currency = convert_to_string(x["bought_currency"]);
 	std::string sold_amount = convert_to_string(x["sold_amount"]);
 	std::string bought_amount = convert_to_string(x["bought_amount"]);
+
+	/*
+	t.sold_currency = sold_currency;
+	t.bought_courrency = bought_currency;
+	t.sold_amount = std::stod(sold_amount);
+	t.bought_amount = std::stod(bought_amount);
+	// t.timestamp = What exactly?
+	*/
 	
 	/*
 	 * TODO :
