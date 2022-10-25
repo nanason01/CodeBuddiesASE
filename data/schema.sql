@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS ExchangeKeys (
     UserID VARCHAR(16) NOT NULL,
     ExchangeID int NOT NULL,
     APIKey VARCHAR(256),
-    LastUpdated DATE,
+    LastUpdatedYear int,
+    LastUpdatedMonth int,
+    LastUpdatedDay int,
     PRIMARY KEY(UserID, ExchangeID),
     FOREIGN KEY(UserID) REFERENCES Users(UserID)
 );

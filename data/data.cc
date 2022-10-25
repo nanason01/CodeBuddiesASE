@@ -9,17 +9,88 @@
 #include "exchanges/crypto_com.h"
 
 #include <exception>
+#include <iostream>
+#include <cassert>
+#include <tuple>
 #include <string>
 #include <chrono>
 
+using std::vector;
 using std::string;
+using std::tuple;
 
-// writing operations
+// various templating to clean up fetching data from the database
 
-// add a user to our system
-// throws UserExists if user exists
+// Convert a db_str to a T
+template<typename T>
+static T db_digest(string db_str);
+
+template<>
+string db_digest(string db_str) {
+    return db_str;
+}
+
+template<>
+int db_digest(string db_str) {
+    return stoi(db_str);
+}
+
+template<>
+double db_digest(string db_str) {
+    return stod(db_str);
+}
+
+template<typename T, typename... Ts>
+static tuple<T, Ts...> _digest_strings(char** p_flds) {
+    if constexpr (sizeof...(Ts) == 0)
+        return make_tuple(db_digest<T>(*p_flds));
+    else
+        return tuple_cat(make_tuple(db_digest<T>(*p_flds)), _digest_strings<Ts...>(p_flds + 1));
+}
+
+template<typename... Ts>
+static tuple<Ts...> digest_strings(char** p_flds) {
+    if constexpr (sizeof...(Ts) == 0)
+        return tuple<>();
+    else
+        return _digest_strings<Ts...>(p_flds);
+}
+
+template<typename... Ts>
+static int fill_row(void* vec_ptr, int n_flds, char** p_flds, char** p_cols) {
+    // make sure we aren't accidentally dropping fields
+    assert(n_flds == sizeof...(Ts));
+
+    reinterpret_cast<vector<tuple<Ts...>>*>(vec_ptr)->push_back(
+        digest_strings<Ts...>(p_flds)
+    );
+
+    return 0;
+}
+
+// if there's some template error for this, you're probably using an unsupported datatype
+// if there's some runtime error for this, make sure your field types match what's expected
+// int will work in decimal fields, be careful with that
+template<typename... Ts>
+vector<tuple<Ts...>> exec_sql(sqlite3* db_conn, string sql) {
+    vector<tuple<Ts...>> ret;
+    char* err_msg;
+
+    if (sqlite3_exec(db_conn, sql.c_str(), fill_row<Ts...>, &ret, &err_msg) != SQLITE_OK) {
+        cerr << err_msg << endl;
+        free(err_msg);
+        throw SqlError();
+    }
+
+    return ret;
+}
+
 void Data::add_user(AuthenticUser user) {
     // TODO: wait for @Urvee to define creds
+}
+
+static string get_delete_sql(AuthenticUser user, string table) {
+    return "DELETE FROM " + table + " WHERE UserID = \'" + user.user + "\';";
 }
 
 // remove a user from our system
@@ -27,37 +98,80 @@ void Data::add_user(AuthenticUser user) {
 void Data::remove_user(AuthenticUser user) {
     check_user(user);
 
-    const auto sql_beg = "DELETE FROM ";
-    const auto sql_mid = " WHERE UserID = \'";
-    const auto sql_end = "\'";
+    exec_sql<>(db_conn, get_delete_sql(user, "Trades"));
+    exec_sql<>(db_conn, get_delete_sql(user, "ExchangeKeys"));
+    exec_sql<>(db_conn, get_delete_sql(user, "Users"));
+}
 
-    string trades_sql = sql_beg + string("Trades") + sql_mid + user.user + sql_end;
-    string exchange_sql = sql_beg + string("ExchangeKeys") + sql_mid + user.user + sql_end;
-    string users_sql = sql_beg + string("Users") + sql_mid + user.user + sql_end;
-
-    auto noop = [](void*, int, char**, char**) -> int {
-        return 0;
-    };
-
-    char** errmsg = nullptr;
-
-    if (sqlite3_exec(db_conn, trades_sql.c_str(), noop, nullptr, errmsg)) {
-        delete errmsg;
-        throw DatabaseConnError();
-    }
-    if (sqlite3_exec(db_conn, exchange_sql.c_str(), noop, nullptr, errmsg)) {
-        delete errmsg;
-        throw DatabaseConnError();
-    }
-    if (sqlite3_exec(db_conn, users_sql.c_str(), noop, nullptr, errmsg)) {
-        delete errmsg;
-        throw DatabaseConnError();
-    }
+// returns whether this date is over 1 day old
+// in this case, we should refresh
+static bool is_stale(int year, int month, int day) {
+    return now() - from_usa_date(month, day, year) > from_cal(0, 1, 0);
 }
 
 // add an exchange for user
 // may throw ExchangeDriver level errors
-void Data::register_exchange(AuthenticUser user, Exchange exch, API_key key);
+void Data::register_exchange(AuthenticUser user, Exchange exch, API_key key) {
+    check_user(user);
+
+    // check if we already have this apikey for user
+    // not an error
+    const string check_sql = "SELECT APIKey FROM ExchangeKeys " +
+        "UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(exch) + ";";
+    const auto check_res = exec_sql<string>(db_conn, check_sql);
+
+    if (check_res.size() && get<0>(check_res[0]) == key)
+        return;
+
+    if (check_res.size()) {
+        const string update_key_sql =
+            "UPDATE ExchangeKeys " +
+            "SET APIKey = \'" + key + "\',"
+            "LastUpdatedYear = " + std::to_string(get_year(now())) + ", "
+            "LastUpdatedMonth = " + std::to_string(get_month(now())) + ", "
+            "LastUpdatedDay = " + std::to_string(get_day(now())) + " " +
+            "WHERE UserID = " + user.user + " AND " +
+            "ExchangeID = " + std::to_string(exch) + ";";
+
+        exec_sql<>(db_conn, update_key_sql);
+    } else {
+        const string insert_key_sql =
+            "INSERT INTO ExchangeKeys VALUES (" +
+            "\'" + user.user + "\', " +
+            std::to_string(exch) + ", " +
+            std::to_string(get_year(now())) + ", "
+            std::to_string(get_month(now())) + ", "
+            std::to_string(get_day(now())) +
+            ");";
+
+        exec_sql<>(db_conn, insert_key_sql);
+    }
+
+    // TODO: wait for @Alek to change his interface to support:
+    // vector<Trade> trades = get_driver(exch)->get_trades(user, key);
+    vector<Trade> trades = { // tmp until TODO
+        {
+            entry_time,
+            "DECR",
+            "INCR",
+            2.0,
+            2.0,
+        },
+        {
+            entry_time,
+            "INCR",
+            "DECR",
+            1.0,
+            1.0,
+        }
+    };
+
+    if (trades.empty())
+        return; // no need to insert anything
+
+    string insert_stmt = "INSERT INTO Trades VALUES "
+
+}
 
 // add a trade for user
 void Data::upload_trade(AuthenticUser user, Trade trade) final;
