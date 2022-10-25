@@ -14,9 +14,10 @@ using namespace std::chrono_literals;
 constexpr TimeDelta REFRESH_INTERVAL = std::chrono::days{ 1 };
 
 // TODO: subject to change on 0Auth exploration
-struct const AuthenticUser& {
+struct AuthenticUser {
     User user;
     Creds creds;
+    mutable bool validated = false;
 };
 
 // errors
