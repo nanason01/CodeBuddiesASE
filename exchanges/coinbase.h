@@ -1,21 +1,23 @@
 //
 // Coinbase exchange driver
-//
+// Copyright 2022 CodingBuddies
 
 #pragma once
 
-#include "common/types.h"
-#include "driver.h"
-
 #include <vector>
+#include <string>
+
+#include "common/types.h"
+#include "exchanges/driver.h"
 
 class CoinbaseDriver final : public ExchangeDriver {
-public:
+ public:
     CoinbaseDriver() : ExchangeDriver() {}
 
-    virtual std::vector<Trade> get_trades(API_key public_key, API_key private_key) final;
+    std::vector<Trade> get_trades(API_key public_key,
+                                          API_key private_key) final;
 
-private:
+ private:
     /*
      * Get trades of a user, return as string.
      */
@@ -39,5 +41,6 @@ private:
     /*
      * Generate a signature for the message, using HMAC SHA256.
      */
-    std::string generate_signature(std::string timestamp, std::string method, std::string path, API_key private_key);
+    std::string generate_signature(std::string timestamp, std::string method,
+                                   std::string path, API_key private_key);
 };

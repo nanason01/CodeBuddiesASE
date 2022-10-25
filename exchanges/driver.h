@@ -1,12 +1,13 @@
 //
 // Base driver for exchanges
-//
+// Copyright 2022 CodingBuddies
 
 #pragma once
 
-#include "common/types.h"
 #include <exception>
 #include <vector>
+
+#include "common/types.h"
 
 struct InvalidAPIKey : std::exception {
     const char* what() const noexcept override {
@@ -33,7 +34,7 @@ struct CurlRequestFailed : std::exception {
 } curl_request_fail;
 
 class ExchangeDriver : Driver {
-public:
+ public:
     ExchangeDriver() : Driver() {}
     virtual ~ExchangeDriver() = default;
 };
