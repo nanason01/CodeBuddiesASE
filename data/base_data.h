@@ -56,7 +56,7 @@ public:
 
     // add an exchange for user
     // may throw ExchangeDriver level errors
-    virtual void register_exchange(const AuthenticUser& user, Exchange exch, const API_key& key) = 0;
+    virtual void register_exchange(const AuthenticUser& user, Exchange exch, API_key pub_key, API_key pvt_key) = 0;
 
     // add a trade for user
     virtual void upload_trade(const AuthenticUser& user, const Trade& trade) = 0;

@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS Users (
 CREATE TABLE IF NOT EXISTS ExchangeKeys (
     UserID VARCHAR(16) NOT NULL,
     ExchangeID int NOT NULL,
-    APIKey VARCHAR(256),
+    PubKey VARCHAR(256),
+    PvtKey VARCHAR(256), --@TODO: is this long enough @Aleks
     LastUpdatedYear int,
     LastUpdatedMonth int,
     LastUpdatedDay int,

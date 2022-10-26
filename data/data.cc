@@ -134,35 +134,39 @@ static string to_insert(const AuthenticUser& user, const Trade& tr) {
         std::to_string(tr.sold_amount) + ")";
 }
 
-void Data::update_exchange(const AuthenticUser& user, Exchange exch, const API_key& key) {
+void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub_key, API_key pvt_key) {
     assert(exch != Exchange::All);
     assert(exch != Exchange::Invalid);
 
     // get current api key for this exchange
-    const string check_sql = "SELECT APIKey FROM ExchangeKeys " +
+    const string check_sql = "SELECT PubKey, PvtKey FROM ExchangeKeys " +
         "UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(exch) + ";";
-    const auto check_res = exec_sql<string>(db_conn, check_sql);
+    const auto check_res = exec_sql<string, string>(db_conn, check_sql);
 
     if (check_res.empty()) {
-        assert(key != "");
+        assert(pub_key != "");
+        assert(pvt_key != "");
 
         // if we don't have a key, insert it
         const string insert_key_sql =
             "INSERT INTO ExchangeKeys VALUES (" +
             "\'" + user.user + "\', " +
             std::to_string(exch) + ", " +
+            "\'" + pub_key + "\'" +
+            "\'" + pvt_key + "\'" +
             std::to_string(get_year(now())) + ", "
             std::to_string(get_month(now())) + ", "
             std::to_string(get_day(now())) +
             ");";
 
         exec_sql<>(db_conn, insert_key_sql);
-    }
-    else if (key != "" && get<0>(check_res[0]) != key) {
+    } else if (key != "" &&
+        (get<0>(check_res[0]) != pub_key || get<0>(check_res[0]) != pvt_key) {
         // if we are overwriting a key, update it
         const string update_key_sql =
             "UPDATE ExchangeKeys " +
-            "SET APIKey = \'" + key + "\',"
+            "SET PubKey = \'" + pub_key + "\'," +
+            "PvtKey = \'" + pvt_key + "\'," +
             "LastUpdatedYear = " + std::to_string(get_year(now())) + ", "
             "LastUpdatedMonth = " + std::to_string(get_month(now())) + ", "
             "LastUpdatedDay = " + std::to_string(get_day(now())) + " " +
@@ -170,10 +174,13 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, const API_k
             "ExchangeID = " + std::to_string(exch) + ";";
 
         exec_sql<>(db_conn, update_key_sql);
+    } else {
+        pub_key = get<0>(check_res[0]);
+        pvt_key = get<1>(check_res[0]);
     }
 
     // then fetch data from the exchange and insert it
-    vector<Trade> trades = get_driver(exch)->get_trades(user, key);
+    vector<Trade> trades = get_driver(exch)->get_trades(user, pub_key, pvt_key);
 
     string insert_stmt = "INSERT INTO Trades VALUES ";
     for (const Trade& tr : trades)
@@ -187,13 +194,13 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, const API_k
 
 // add an exchange for user
 // may throw ExchangeDriver level errors
-void Data::register_exchange(const AuthenticUser& user, Exchange exch, const API_key& key) {
+void Data::register_exchange(const AuthenticUser& user, Exchange exch, const API_key& pub_key, const API_key& pvt_key) {
     assert(exch != Exchange::All);
     assert(exch != Exchange::Invalid);
 
     check_user(user);
 
-    update_exchange(user, exch, key);
+    update_exchange(user, exch, pub_key, pvt_key);
 }
 
 // add a trade for user
