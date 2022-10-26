@@ -12,5 +12,5 @@
 
 class MockExchangeDriver final: public ExchangeDriver {
 public:
-    MOCK_METHOD(std::vector<Trade>, get_trades, (User, API_key, API_key), (const, override));
+    MOCK_METHOD(std::vector<Trade>, get_trades, (API_key, API_key), (override));
 };

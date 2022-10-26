@@ -33,6 +33,7 @@ cc_library(
 cc_test(
     name="test",
     srcs=["pricer_test.cc"],
+    linkopts=["-lcurl"],
     deps=[
         "//common",
         "//pricer",

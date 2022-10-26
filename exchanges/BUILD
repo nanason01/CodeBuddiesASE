@@ -13,7 +13,7 @@ cc_library(
     linkopts=["-pthread"],
     visibility=[
         "//data:__pkg__",
-        "//entry:__pkg__",
+        "//exchanges:__pkg__",
     ],
     deps=["//common"],
 )
@@ -27,7 +27,6 @@ cc_library(
     ],
     visibility=[
         "//data:__pkg__",
-        "//entry:__pkg__",
     ],
     deps=["//common"],
 )
@@ -35,6 +34,8 @@ cc_library(
 cc_test(
     name="test",
     srcs=["exchanges_test.cc"],
+    linkopts=["-pthread", "-lcrypto", "-lcurl",
+              "-lboost_date_time"],
     deps=[
         "//common",
         "//exchanges",

@@ -18,6 +18,12 @@ struct AuthenticUser {
     User user;
     Creds creds;
     mutable bool validated = false;
+
+    bool operator==(const AuthenticUser& other) const {
+        return
+            user == other.user &&
+            creds == other.creds;
+    }
 };
 
 // errors
@@ -49,6 +55,8 @@ struct InvalidCreds: std::exception {
 
 class BaseData {
 public:
+    virtual ~BaseData() {}
+
     // writing operations
 
     // add a user to our system
@@ -62,7 +70,7 @@ public:
     // add an exchange for user
     // may throw ExchangeDriver level errors
     virtual void register_exchange(const AuthenticUser& user, Exchange exch,
-        const API_key& pub_key, const API_key& pvt_key);
+        const API_key& pub_key, const API_key& pvt_key) = 0;
 
     // add a trade for user
     virtual void upload_trade(const AuthenticUser& user, const Trade& trade) = 0;

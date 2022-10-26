@@ -144,7 +144,15 @@ struct MatchedTrade {
     PNL pnl;
 
     friend std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt);
-    // bool operator==(const MatchedTrade& other) const = default;
+    bool operator==(const MatchedTrade& other) const {
+        return
+            bought_timestamp == other.bought_timestamp &&
+            sold_timestamp == other.sold_timestamp &&
+            term == other.term &&
+            currency == other.currency &&
+            sz == other.sz &&
+            pnl == other.pnl;
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt) {

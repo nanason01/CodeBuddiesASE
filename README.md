@@ -13,8 +13,8 @@ gcc --version >= 9.0.0
 To run service:
 
 ```
-bazel run //entry
-bazel build //entry # to just build the binary, then the binary will exist in bazel-bin/
+bazel run //entry:service
+bazel build //entry:service # to just build the binary, then the binary will exist in bazel-bin/
 ```
 
 To modify database ddl:\

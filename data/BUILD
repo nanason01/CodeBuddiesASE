@@ -9,8 +9,8 @@ cc_library(
     ],
     visibility=[
         "//entry:__pkg__",
+        "//data:__pkg__",
     ],
-    linkopts=["-pthread"],
     deps=[
         "//common",
         "//data/sqlite_stuff:sqlite3",
@@ -36,7 +36,10 @@ cc_library(
 cc_test(
     name="test",
     srcs=["data_test.cc"],
+    linkopts=["-pthread", "-lcrypto", "-lcurl",
+              "-lboost_date_time", "-ldl"],
     deps=[
+        "//data",
         "//common",
         "//exchanges:mock",
         "@com_google_googletest//:gtest_main",

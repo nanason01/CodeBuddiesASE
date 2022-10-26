@@ -1,33 +1,34 @@
 cc_library(
-    name = "engine",
-    srcs = ["matcher.cc"],
-    hdrs = [
+    name="engine",
+    srcs=["matcher.cc"],
+    hdrs=[
         "base_matcher.h",
         "matcher.h",
     ],
-    visibility = [
+    visibility=[
         "//entry:__pkg__",
     ],
-    deps = [
+    deps=[
         "//common",
         "//pricer",
     ],
 )
 
 cc_library(
-    name = "mock",
-    hdrs = [
+    name="mock",
+    hdrs=[
         "base_matcher.h",
         "mock_matcher.h",
     ],
-    visibility = ["//entry:__pkg__"],
-    deps = ["//engine"],
+    visibility=["//entry:__pkg__"],
+    deps=["//engine"],
 )
 
 cc_test(
-    name = "test",
-    srcs = ["matcher_test.cc"],
-    deps = [
+    name="test",
+    srcs=["matcher_test.cc"],
+    linkopts=["-lcurl"],
+    deps=[
         "//common",
         "//engine",
         "//pricer:mock",

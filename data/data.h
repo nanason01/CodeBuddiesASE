@@ -57,7 +57,7 @@ public:
             throw DatabaseConnError();
     }
 
-    ~Data() {
+    ~Data() override {
         sqlite3_close(db_conn);
     }
 

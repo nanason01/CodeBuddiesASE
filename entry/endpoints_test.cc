@@ -10,7 +10,7 @@
 
 using ::testing::Return;
 
-class EndpointsFixture : public ::testing::Test {
+class EndpointsFixture: public ::testing::Test {
 protected:
     // define any variables you want to use in tests here
     int num;
@@ -25,7 +25,9 @@ protected:
     void SetUp() override {
         endpoints = new Endpoints(&data, &matcher);
 
-        ON_CALL(data, check_creds({ "nick", "nick_key" }))
+        AuthenticUser nick{ "nick", "nick_key" };
+
+        ON_CALL(data, check_user(nick))
             .WillByDefault(Return());
 
         // EXPECT_CALL can do more fine grained expectation checking
