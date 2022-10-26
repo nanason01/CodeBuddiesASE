@@ -10,10 +10,9 @@
 #include "common/types.h"
 #include "exchanges/driver.h"
 
-class KrakenDriver final : ExchangeDriver {
- public:
-    KrakenDriver() : ExchangeDriver() {
-    }
+class KrakenDriver final: public ExchangeDriver {
+public:
+    KrakenDriver(): ExchangeDriver() {}
 
     /*
      * On success, processes the trades, checks that
@@ -22,9 +21,9 @@ class KrakenDriver final : ExchangeDriver {
      * db.
      */
     std::vector<Trade> get_trades(API_key public_key,
-                                  API_key private_key) final;
+        API_key private_key) final;
 
- private:
+private:
     /*
      * Get trades of user as a string, throw exception on error
      */
@@ -41,9 +40,9 @@ class KrakenDriver final : ExchangeDriver {
      * Returns: string signature
      */
     std::string generate_signature(std::string uri_path,
-                                   std::string post_data,
-                                   std::string nonce,
-                                   std::vector<unsigned char> api_key_secret);
+        std::string post_data,
+        std::string nonce,
+        std::vector<unsigned char> api_key_secret);
 
     /*
      * Function that returns formatted payload to be sent

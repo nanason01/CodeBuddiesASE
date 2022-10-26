@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <ctime>
 
-enum class Exchange : uint8_t {
+enum class Exchange: uint8_t {
     Invalid,
     Coinbase,
     Kraken,
@@ -21,7 +21,7 @@ enum class Exchange : uint8_t {
     All = std::numeric_limits<uint8_t>::max(),
 };
 
-enum class Term : uint8_t {
+enum class Term: uint8_t {
     Short,
     Long,
     Held,
@@ -144,7 +144,7 @@ struct MatchedTrade {
     PNL pnl;
 
     friend std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt);
-    bool operator==(const MatchedTrade& other) const = default;
+    // bool operator==(const MatchedTrade& other) const = default;
 };
 
 std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt) {

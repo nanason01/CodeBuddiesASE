@@ -1,21 +1,20 @@
 cc_library(
-    name = "auth",
-    srcs = ["auth.cc"],
-    hdrs = ["auth.h"],
-    visibility = [
+    name="auth",
+    srcs=["auth.cc"],
+    hdrs=["auth.h"],
+    visibility=[
         "//entry:__pkg__",
     ],
 )
 
 
 cc_binary(
-    name = "entry",
-    srcs = [
+    name="entry",
+    srcs=[
         "main.cc"
-        # Add your .cc files here probs endpoints.cc
     ],
-    #hdrs = ["endpoints.h","auth.h",],
-    deps = [
+    linkopts=["-pthread", "-lcrypto"],
+    deps=[
         "//common",
         "//data",
         "//engine",
@@ -26,10 +25,9 @@ cc_binary(
 # no mock, nothing depends on this
 
 cc_test(
-    name = "test",
-    srcs = ["endpoints_test.cc"],
-    #hdrs = ["endpoints.h"],
-    deps = [
+    name="test",
+    srcs=["endpoints_test.cc"],
+    deps=[
         "//common",
         "//data:mock",
         "//engine:mock",

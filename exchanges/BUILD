@@ -1,40 +1,41 @@
 cc_library(
-    name = "exchanges",
-    srcs = [
+    name="exchanges",
+    srcs=[
         "exchanges.cc",
         "helpers.cc",
     ],
-    hdrs = [
+    hdrs=[
         "coinbase.h",
         "kraken.h",
         "driver.h",
         "helpers.h",
     ],
-    visibility = [
+    linkopts=["-pthread"],
+    visibility=[
         "//data:__pkg__",
         "//entry:__pkg__",
     ],
-    deps = ["//common"],
+    deps=["//common"],
 )
 
 cc_library(
-    name = "mock",
-    srcs = [],
-    hdrs = [
+    name="mock",
+    srcs=[],
+    hdrs=[
         "driver.h",
         "mock_driver.h",
     ],
-    visibility = [
+    visibility=[
         "//data:__pkg__",
         "//entry:__pkg__",
     ],
-    deps = ["//common"],
+    deps=["//common"],
 )
 
 cc_test(
-    name = "test",
-    srcs = ["exchanges_test.cc"],
-    deps = [
+    name="test",
+    srcs=["exchanges_test.cc"],
+    deps=[
         "//common",
         "//exchanges",
         "@com_google_googletest//:gtest_main",

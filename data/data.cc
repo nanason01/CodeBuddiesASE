@@ -5,8 +5,6 @@
 #include "data.h"
 
 #include "common/types.h"
-#include "exchanges/coinbase.h"
-#include "exchanges/crypto_com.h"
 
 #include <exception>
 #include <iostream>
@@ -18,6 +16,9 @@
 using std::vector;
 using std::string;
 using std::tuple;
+using std::get;
+using std::tuple_cat;
+using std::make_tuple;
 
 // various templating to clean up fetching data from the database
 
@@ -54,6 +55,7 @@ static tuple<Ts...> digest_strings(char** p_flds) {
         return tuple<>();
     else
         return _digest_strings<Ts...>(p_flds);
+    p_flds++; // suppress compiler warning unused param
 }
 
 template<typename... Ts>
@@ -77,9 +79,9 @@ vector<tuple<Ts...>> exec_sql(sqlite3* db_conn, const string& sql) {
     char* err_msg;
 
     if (sqlite3_exec(db_conn, sql.c_str(), fill_row<Ts...>, &ret, &err_msg) != SQLITE_OK) {
-        cerr << err_msg << endl;
+        std::cerr << err_msg << std::endl;
         free(err_msg);
-        throw SqlError();
+        throw SqlError{};
     }
 
     return ret;
@@ -91,14 +93,14 @@ void Data::add_user(const AuthenticUser& user) {
     // for this user is what is passed into this function
 
     // first, check whether user exists
-    const string check_user_sql = "SELECT COUNT(*) FROM Users WHERE " +
+    const string check_user_sql = "SELECT COUNT(*) FROM Users WHERE "
         "UserID = \'" + user.user + "\';";
     const auto check_user_res = exec_sql<int>(db_conn, check_user_sql);
 
     if (get<0>(check_user_res[0]) > 0)
         throw UserExists{};
 
-    const string add_user_sql = "INSERT INTO Users VALUES " +
+    const string add_user_sql = "INSERT INTO Users VALUES "
         "(\'" + user.user + "\', \'" + user.creds + "\');";
     exec_sql<>(db_conn, add_user_sql);
 }
@@ -120,27 +122,27 @@ void Data::remove_user(const AuthenticUser& user) {
 // returns whether this date is over 1 day old
 // in this case, we should refresh
 static bool is_stale(Timestamp ts) {
-    return now() - ts > from_cal(0, 1, 0);
+    return now() - ts > REFRESH_INTERVAL;
 }
 
 static string to_insert(const AuthenticUser& user, const Trade& tr) {
     return "(\'" + user.user + "\', " +
         std::to_string(get_year(tr.timestamp)) + ", " +
         std::to_string(get_month(tr.timestamp)) + ", " +
-        std::to_string(get_day(tr.timestamp)) + ", " +
+        std::to_string(get_day(tr.timestamp)) + ", "
         "\'" + tr.bought_currency + "\', " +
         "\'" + tr.sold_currency + "\', " +
         std::to_string(tr.bought_amount) + ", " +
         std::to_string(tr.sold_amount) + ")";
 }
 
-void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub_key, API_key pvt_key) {
+void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub_key, API_key pvt_key) const {
     assert(exch != Exchange::All);
     assert(exch != Exchange::Invalid);
 
     // get current api key for this exchange
-    const string check_sql = "SELECT PubKey, PvtKey FROM ExchangeKeys " +
-        "UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(exch) + ";";
+    const string check_sql = "SELECT PubKey, PvtKey FROM ExchangeKeys "
+        "UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(static_cast<int>(exch)) + ";";
     const auto check_res = exec_sql<string, string>(db_conn, check_sql);
 
     if (check_res.empty()) {
@@ -149,29 +151,29 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
 
         // if we don't have a key, insert it
         const string insert_key_sql =
-            "INSERT INTO ExchangeKeys VALUES (" +
+            "INSERT INTO ExchangeKeys VALUES ("
             "\'" + user.user + "\', " +
-            std::to_string(exch) + ", " +
-            "\'" + pub_key + "\'" +
+            std::to_string(static_cast<int>(exch)) + ", "
+            "\'" + pub_key + "\'"
             "\'" + pvt_key + "\'" +
-            std::to_string(get_year(now())) + ", "
-            std::to_string(get_month(now())) + ", "
+            std::to_string(get_year(now())) + ", " +
+            std::to_string(get_month(now())) + ", " +
             std::to_string(get_day(now())) +
             ");";
 
         exec_sql<>(db_conn, insert_key_sql);
-    } else if (key != "" &&
-        (get<0>(check_res[0]) != pub_key || get<0>(check_res[0]) != pvt_key) {
+    } else if (pub_key != "" &&
+        (get<0>(check_res[0]) != pub_key || get<1>(check_res[0]) != pvt_key)) {
         // if we are overwriting a key, update it
         const string update_key_sql =
-            "UPDATE ExchangeKeys " +
-            "SET PubKey = \'" + pub_key + "\'," +
-            "PvtKey = \'" + pvt_key + "\'," +
+            "UPDATE ExchangeKeys "
+            "SET PubKey = \'" + pub_key + "\',"
+            "PvtKey = \'" + pvt_key + "\',"
             "LastUpdatedYear = " + std::to_string(get_year(now())) + ", "
             "LastUpdatedMonth = " + std::to_string(get_month(now())) + ", "
-            "LastUpdatedDay = " + std::to_string(get_day(now())) + " " +
-            "WHERE UserID = " + user.user + " AND " +
-            "ExchangeID = " + std::to_string(exch) + ";";
+            "LastUpdatedDay = " + std::to_string(get_day(now())) + " "
+            "WHERE UserID = " + user.user + " AND "
+            "ExchangeID = " + std::to_string(static_cast<int>(exch)) + ";";
 
         exec_sql<>(db_conn, update_key_sql);
     } else {
@@ -180,7 +182,7 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
     }
 
     // then fetch data from the exchange and insert it
-    vector<Trade> trades = get_driver(exch)->get_trades(user, pub_key, pvt_key);
+    vector<Trade> trades = get_driver(exch)->get_trades(pub_key, pvt_key);
 
     string insert_stmt = "INSERT INTO Trades VALUES ";
     for (const Trade& tr : trades)
@@ -208,7 +210,7 @@ void Data::upload_trade(const AuthenticUser& user, const Trade& trade) {
     check_user(user);
 
     const string insert_sql = "INSERT INTO Trades VALUES " +
-        to_insert(trade) + ";";
+        to_insert(user, trade) + ";";
     exec_sql<>(db_conn, insert_sql);
 }
 
@@ -218,7 +220,7 @@ void Data::upload_trade(const AuthenticUser& user, const Trade& trade) {
 // if exchange key is no longer valid, mark it as invalid and rethrow
 // so consecutive calls will invalidate one exchange at a time until all
 // remaining exchanges are valid, then return the valid list of trades
-std::vector<Trade> Data::get_trades(const AuthenticUser& user) {
+std::vector<Trade> Data::get_trades(const AuthenticUser& user) const {
     check_user(user);
 
     for (const Exchange e : get_exchanges(user)) {
@@ -226,10 +228,10 @@ std::vector<Trade> Data::get_trades(const AuthenticUser& user) {
             update_exchange(user, e);
     }
 
-    const string get_all_trades_sql = "SELECT " +
-        "TradeYear, TradeMonth, TradeDay, " +
-        "BoughtCurrency, SoldCurrency, " +
-        "BoughtAmount, SoldAmount " +
+    const string get_all_trades_sql = "SELECT "
+        "TradeYear, TradeMonth, TradeDay, "
+        "BoughtCurrency, SoldCurrency, "
+        "BoughtAmount, SoldAmount "
         "FROM Trades WHERE UserID = \'" + user.user + "\';";
     const auto get_all_trades_res =
         exec_sql<int, int, int, string, string, double, double>(
@@ -250,26 +252,26 @@ std::vector<Trade> Data::get_trades(const AuthenticUser& user) {
 }
 
 // get exchanges associated with user
-vector<Exchange> Data::get_exchanges(const AuthenticUser& user) {
+vector<Exchange> Data::get_exchanges(const AuthenticUser& user) const {
     check_user(user);
 
-    const string get_exch_sql = "SELECT ExchangeID FROM ExchangeKeys " +
+    const string get_exch_sql = "SELECT ExchangeID FROM ExchangeKeys "
         "WHERE UserID = \'" + user.user + "\';";
     const auto get_exch_res = exec_sql<int>(db_conn, get_exch_sql);
 
     // I wish the formatting was a bit cleaner
     vector<Exchange> ret;
     for (const auto& [exch] : get_exch_res)
-        ret.push_back(exch);
+        ret.push_back(static_cast<Exchange>(exch));
     return ret;
 }
 
 // throws UserNotFound if user does not exist
-void Data::check_user(const AuthenticUser& user) {
+void Data::check_user(const AuthenticUser& user) const {
     if (user.validated)
         return;
 
-    const string find_user_sql = "SELECT Creds FROM Users " +
+    const string find_user_sql = "SELECT Creds FROM Users "
         "WHERE UserID = \'" + user.user + "\';";
     const auto find_user_res = exec_sql<Creds>(db_conn, find_user_sql);
 
@@ -283,16 +285,16 @@ void Data::check_user(const AuthenticUser& user) {
 }
 
 // get last time this exchange was updated for user
-Timestamp Data::get_last_update(const AuthenticUser& user, Exchange e) {
+Timestamp Data::get_last_update(const AuthenticUser& user, Exchange e) const {
     assert(e != Exchange::All);
     assert(e != Exchange::Invalid);
 
     check_user(user);
 
-    const string update_date_sql = "SELECT " +
-        "LastUpdatedYear, LastUpdatedMonth, LastUpdatedDay " +
+    const string update_date_sql = "SELECT "
+        "LastUpdatedYear, LastUpdatedMonth, LastUpdatedDay "
         "FROM ExchangeKeys WHERE UserID = \'" + user.user +
-        "\' AND ExchangeID = " + std::to_string(e) + ";";
+        "\' AND ExchangeID = " + std::to_string(static_cast<int>(e)) + ";";
     const auto update_date_res = exec_sql<int, int, int>(db_conn, update_date_sql);
 
     if (update_date_res.empty())

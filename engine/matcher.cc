@@ -53,11 +53,11 @@ static std::vector<MatchedTrade> condense(std::vector<MatchedTrade> mts) {
     std::vector<MatchedTrade> ret;
 
     // simple O(n2) algo
-    for (int i = 0; i < mts.size(); i++) {
+    for (int i = 0; i < static_cast<int>(mts.size()); i++) {
         if (mts[i].sz == 0.0 || (mts[i].currency == "USD" && (mts[i].term == Term::Long || mts[i].term == Term::Short)))
             continue;
         // look for duplicates
-        for (int j = i + 1; j < mts.size(); j++) {
+        for (int j = i + 1; j < static_cast<int>(mts.size()); j++) {
             if (isSameMatchedMeta(mts[i], mts[j])) {
                 mts[i].sz += mts[j].sz;
                 mts[i].pnl += mts[j].pnl;
