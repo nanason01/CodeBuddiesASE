@@ -1,20 +1,18 @@
 //
 // Kraken exchange driver
-//
+// Copyright 2022 CodingBuddies
 
 #pragma once
 
-#include "common/types.h"
-#include "driver.h"
-
 #include <vector>
+#include <string>
+
+#include "common/types.h"
+#include "exchanges/driver.h"
 
 class KrakenDriver final : ExchangeDriver {
-public:
-    KrakenDriver(User _user, API_key _key, API_key _privatekey) : ExchangeDriver(_user, _key, _privatekey) {
-        _uname = _user;
-        _ukey = _key;
-        _uprivatekey = _privatekey;
+ public:
+    KrakenDriver() : ExchangeDriver() {
     }
 
     /*
@@ -23,17 +21,14 @@ public:
      * function was called, and sends their info to
      * db.
      */
-    virtual std::vector<Trade> get_trades() final;
+    std::vector<Trade> get_trades(API_key public_key,
+                                  API_key private_key) final;
 
-private:
-    User _uname;
-    API_key _ukey;
-    API_key _uprivatekey;
-
+ private:
     /*
      * Get trades of user as a string, throw exception on error
      */
-    std::string query_for_trades();
+    std::string query_for_trades(API_key public_key, API_key private_key);
 
     /*
      * Generate a nonce for requests to Kraken
@@ -45,8 +40,8 @@ private:
      * Generate API-sign for request header, message signature
      * Returns: string signature
      */
-    std::string generate_signature(std::string uri_path, 
-                                   std::string post_data, 
+    std::string generate_signature(std::string uri_path,
+                                   std::string post_data,
                                    std::string nonce,
                                    std::vector<unsigned char> api_key_secret);
 
