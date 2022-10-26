@@ -173,24 +173,7 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, const API_k
     }
 
     // then fetch data from the exchange and insert it
-    // TODO: wait for @Alek to change his interface to support:
-    // vector<Trade> trades = get_driver(exch)->get_trades(user, key);
-    vector<Trade> trades = { // tmp until TODO
-        {
-            entry_time,
-            "DECR",
-            "INCR",
-            2.0,
-            2.0,
-        },
-        {
-            entry_time,
-            "INCR",
-            "DECR",
-            1.0,
-            1.0,
-        }
-    };
+    vector<Trade> trades = get_driver(exch)->get_trades(user, key);
 
     string insert_stmt = "INSERT INTO Trades VALUES ";
     for (const Trade& tr : trades)
