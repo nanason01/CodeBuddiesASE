@@ -1,7 +1,7 @@
 cc_library(
     name = "data",
     srcs = [
-        # add src file used here
+        "data.cc",
     ],
     hdrs = [
         "base_data.h",
@@ -12,6 +12,7 @@ cc_library(
     ],
     deps = [
         "//common",
+        "//data/sqlite_stuff:sqlite3",
         "//exchanges",
     ],
 )

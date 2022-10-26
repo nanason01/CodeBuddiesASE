@@ -33,8 +33,10 @@ struct CurlRequestFailed : std::exception {
     }
 } curl_request_fail;
 
-class ExchangeDriver : Driver {
- public:
+class ExchangeDriver {
+public:
     ExchangeDriver() : Driver() {}
     virtual ~ExchangeDriver() = default;
+    virtual std::vector<Trade> get_trades(API_key public_key,
+        API_key private_key) = 0;
 };
