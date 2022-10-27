@@ -10,7 +10,6 @@ cc_library(
         "driver.h",
         "helpers.h",
     ],
-    linkopts=["-pthread"],
     visibility=[
         "//data:__pkg__",
         "//exchanges:__pkg__",

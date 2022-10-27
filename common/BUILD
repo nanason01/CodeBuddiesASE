@@ -1,14 +1,8 @@
 cc_library(
     name = "common",
-    srcs = glob(["*.cpp"]),
-    hdrs = glob(["*.h"]),
-    visibility = [
-        "//data:__pkg__",
-        "//engine:__pkg__",
-        "//entry:__pkg__",
-        "//exchanges:__pkg__",
-        "//pricer:__pkg__",
-    ],
+    srcs = ["types.cc"],
+    hdrs = ["types.h"],
+    visibility = ["//visibility:public"],
 )
 
 # gtest build rule, copied from https://bazel.build/tutorials/cpp-use-cases

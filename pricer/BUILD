@@ -10,7 +10,6 @@ cc_library(
     visibility=[
         "//engine:__pkg__",
     ],
-    linkopts=["-pthread"],
     deps=["//common"],
 )
 

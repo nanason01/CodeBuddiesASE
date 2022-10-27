@@ -15,15 +15,11 @@ protected:
     // define any variables you want to use in tests here
     int num;
 
-    // use this to call endpoints functions with mocked exchange calls
-    Endpoints* endpoints;
-
-    // use this to mock data, matcher functions
     MockData data;
     MockMatcher matcher;
 
     void SetUp() override {
-        endpoints = new Endpoints(&data, &matcher);
+        set_mode_mock(data, matcher);
 
         AuthenticUser nick{ "nick", "nick_key" };
 
@@ -36,12 +32,6 @@ protected:
 
         num = 420;
         // @TODO
-    }
-    void TearDown() override {
-        delete endpoints;
-        // @TODO
-        // you could put expects in here
-        // but please don't
     }
 };
 

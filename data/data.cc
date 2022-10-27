@@ -4,8 +4,6 @@
 
 #include "data.h"
 
-#include "common/types.h"
-
 #include <exception>
 #include <iostream>
 #include <cassert>
@@ -205,6 +203,20 @@ void Data::register_exchange(const AuthenticUser& user, Exchange exch, const API
     update_exchange(user, exch, pub_key, pvt_key);
 }
 
+// deletes exchange for user
+void Data::delete_exchange(const AuthenticUser& user, Exchange exch) {
+    assert(exch != Exchange::Invalid);
+    assert(exch != Exchange::All); // currently unhandled
+
+    check_user(user);
+
+    const string delete_sql = "DELETE FROM ExchangeKeys "
+        "WHERE UserID = \'" + user.user + "\' AND "
+        "ExchangeID = " + std::to_string(static_cast<int>(exch)) +
+        ";";
+    exec_sql<>(db_conn, delete_sql);
+}
+
 // add a trade for user
 void Data::upload_trade(const AuthenticUser& user, const Trade& trade) {
     check_user(user);
@@ -282,6 +294,18 @@ void Data::check_user(const AuthenticUser& user) const {
 
     // this prevents overhead from unnecessary check_user calls
     user.validated = true;
+}
+
+// throws UserNotFound if user does not exist
+void Data::check_refr(const User& user, const Refresh& refr) const {
+    const string find_refr_sql = "SELECT Refrs FROM Users "
+        "WHERE UserID = \'" + user + "\';";
+    const auto find_refr_res = exec_sql<Refresh>(db_conn, find_refr_sql);
+
+    if (find_refr_res.empty())
+        throw UserNotFound{};
+    if (refr != get<0>(find_refr_res[0]))
+        throw InvalidCreds{};
 }
 
 // get last time this exchange was updated for user

@@ -1,12 +1,17 @@
+
+# not amazing separation, but makes main 1000x cleaner
+# using a static class with global dependencies
 cc_library(
     name="entry",
-    srcs=["auth.cc"],  # will eventually have endpoints.cc
-    hdrs=["auth.h", "endpoints.h"],
-    linkopts=["-pthread", "-lcrypto"],
+    srcs=["endpoints.cc"],
+    hdrs=["endpoints.h"],
     deps=[
         "//common",
         "//data",
+        "//data:mock",
         "//engine",
+        "//engine:mock",
+        "@com_google_googletest//:gtest_main",
     ],
     visibility=[
         "//entry:__pkg__",
@@ -16,10 +21,9 @@ cc_library(
 
 cc_binary(
     name="service",
-    srcs=[
-        "main.cc"
-    ],
-    linkopts=["-pthread", "-lcrypto"],
+    srcs=["main.cc"],
+    linkopts=["-pthread", "-lcrypto", "-lcurl",
+              "-lboost_date_time", "-ldl"],
     deps=[
         "//entry"
     ],
@@ -34,9 +38,6 @@ cc_test(
               "-lboost_date_time", "-ldl"],
     deps=[
         "//entry",
-        "//common",
-        "//data:mock",
-        "//engine:mock",
         "@com_google_googletest//:gtest_main",
     ],
 )

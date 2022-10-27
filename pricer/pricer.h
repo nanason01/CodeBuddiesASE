@@ -13,11 +13,6 @@
 #include "common/types.h"
 
 /*
- * Convert a crow::json element to a string.
- */
-std::string convert_to_string(const crow::json::rvalue jrvalue);
-
-/*
  * Write callback function for cURL
  */
 size_t pricer_write_callback(char* ptr, size_t size,

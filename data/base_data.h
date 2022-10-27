@@ -72,6 +72,10 @@ public:
     virtual void register_exchange(const AuthenticUser& user, Exchange exch,
         const API_key& pub_key, const API_key& pvt_key) = 0;
 
+    // delete exchange for user
+    // doesn't check whether user actually has exch registered
+    virtual void delete_exchange(const AuthenticUser& user, Exchange exch) = 0;
+
     // add a trade for user
     virtual void upload_trade(const AuthenticUser& user, const Trade& trade) = 0;
 
@@ -89,6 +93,10 @@ public:
     // throws UserNotFound if user does not exist
     // throws InvalidCreds if credentials don't match
     virtual void check_user(const AuthenticUser& user) const = 0;
+
+    // throws UserNotFound if user does not exist
+    // throws InvalidCreds if refresh key doesn't match
+    virtual void check_refr(const User& user, const Refresh& refr_key) const = 0;
 
     // get last time this exchange was updated for user
     virtual Timestamp get_last_update(const AuthenticUser& user, Exchange e) const = 0;

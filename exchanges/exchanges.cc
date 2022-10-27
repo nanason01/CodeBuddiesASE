@@ -103,7 +103,7 @@ std::string CoinbaseDriver::query_for_trades(API_key public_key,
     //                                          since UNIX epoch in UTC
 
     if (public_key == "" || private_key == "") {
-        throw inv_key;
+        throw InvalidAPIKey{};
     }
 
     // Get the user account id
@@ -169,12 +169,12 @@ std::string CoinbaseDriver::query_for_trades(API_key public_key,
         res = curl_easy_perform(curl);
         std::cout << "[cURL RESPONSE] " << res << std::endl;
     } else {
-        throw curl_setup_fail;
+        throw CurlSetupFailed{};
     }
 
     // Check return value of cURL query
     if (!(res == CURLE_OK)) {
-        throw curl_request_fail;
+        throw CurlRequestFailed{};
     }
 
     // Deallocate resources
@@ -272,7 +272,7 @@ std::string KrakenDriver::query_for_trades(API_key public_key,
     // Part 1: Generate the required request headers                         //
     ///////////////////////////////////////////////////////////////////////////
     if (public_key == "" || private_key == "") {
-        throw creds_mia;
+        throw APICredsMissing{};
     }
 
     // Decode secret api key
@@ -338,12 +338,12 @@ std::string KrakenDriver::query_for_trades(API_key public_key,
         // Execute the request
         res = curl_easy_perform(curl);
     } else {
-        throw curl_setup_fail;
+        throw CurlSetupFailed{};
     }
 
     // Check return value of cURL query
     if (!(res == CURLE_OK)) {
-        throw curl_request_fail;
+        throw CurlRequestFailed{};
     }
 
     // Deallocate resources
