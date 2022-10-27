@@ -3,3 +3,11 @@
 .vscode*
 bazel*
 *.DS_Store
+
+*.o
+*.lo
+*.1
+*.ac
+
+*.dSYM*
+*db*

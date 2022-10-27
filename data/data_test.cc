@@ -1,9 +1,6 @@
 //
 // Testing suite for data.h
 //
-// I can't build this as data.cc isn't implemented
-// so there may be some build errors in here
-//
 
 #include "data.h"
 #include "exchanges/mock_driver.h"
@@ -11,7 +8,9 @@
 
 using ::testing::Return;
 
-class DataFixture : public ::testing::Test {
+const std::string TEST_DB_FILENAME = "test_db";
+
+class DataFixture: public ::testing::Test {
 protected:
     // define any variables you want to use in tests here
     int num;
@@ -20,10 +19,10 @@ protected:
     Data* data;
 
     // use this to mock cb, cc functions
-    MockExchangeDriver cb, cc;
+    MockExchangeDriver cb, k;
 
     void SetUp() override {
-        data = new Data(&cb, &cc);
+        data = new Data(&cb, &k, TEST_DB_FILENAME);
 
         ON_CALL(cb, get_trades("nick", "nick_key"))
             .WillByDefault(Return(std::vector<Trade>()));
@@ -50,9 +49,10 @@ TEST_F(DataFixture, Example) {
         { "nick", "creds" },
         Exchange::Coinbase,
         "nick_key",
-        );
+        "nick_pri_key"
+    );
     EXPECT_TRUE(data->get_trades({ "nick", "nick_key" }).empty());
-    EXPECT_THROW(data->check_creds({ "nick", "not_nicks_creds" }), InvalidCreds);
-    EXPECT_NO_THROW(data->check_creds({ "nick", "creds" }));
+    EXPECT_THROW(data->check_user({ "nick", "not_nicks_creds" }), InvalidCreds);
+    EXPECT_NO_THROW(data->check_user({ "nick", "creds" }));
     EXPECT_EQ(num, 420);
 }

@@ -10,8 +10,7 @@
 
 #include <vector>
 
-class MockExchangeDriver final : public ExchangeDriver {
+class MockExchangeDriver final: public ExchangeDriver {
 public:
-    MOCK_METHOD(std::vector<Trade>, get_trades, (User user, API_key key), (override));
-    MOCK_METHOD(void, check_api_key, (User user, API_key key), (override));
+    MOCK_METHOD(std::vector<Trade>, get_trades, (API_key, API_key), (override));
 };

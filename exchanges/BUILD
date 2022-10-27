@@ -1,38 +1,41 @@
 cc_library(
-    name = "exchanges",
-    srcs = [
-        # whatever source files u use go here @Aleks
+    name="exchanges",
+    srcs=[
+        "exchanges.cc",
+        "helpers.cc",
     ],
-    hdrs = [
+    hdrs=[
         "coinbase.h",
-        "crypto_com.h",
+        "kraken.h",
         "driver.h",
+        "helpers.h",
     ],
-    visibility = [
+    visibility=[
         "//data:__pkg__",
-        "//entry:__pkg__",
+        "//exchanges:__pkg__",
     ],
-    deps = ["//common"],
+    deps=["//common"],
 )
 
 cc_library(
-    name = "mock",
-    srcs = [],
-    hdrs = [
+    name="mock",
+    srcs=[],
+    hdrs=[
         "driver.h",
         "mock_driver.h",
     ],
-    visibility = [
+    visibility=[
         "//data:__pkg__",
-        "//entry:__pkg__",
     ],
-    deps = ["//common"],
+    deps=["//common"],
 )
 
 cc_test(
-    name = "test",
-    srcs = ["exchanges_test.cc"],
-    deps = [
+    name="test",
+    srcs=["exchanges_test.cc"],
+    linkopts=["-pthread", "-lcrypto", "-lcurl",
+              "-lboost_date_time"],
+    deps=[
         "//common",
         "//exchanges",
         "@com_google_googletest//:gtest_main",

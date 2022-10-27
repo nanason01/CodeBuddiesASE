@@ -11,22 +11,82 @@ using std::unordered_map;
 using std::map;
 using std::priority_queue;
 
-constexpr Term Matcher::get_term(Timestamp buy, Timestamp sell) {
-    using namespace std::chrono;
+static inline bool is_long_term(const Timestamp& bought, const Timestamp& sold) {
+    // @TODO refactor this
+    // @TODO leap year accounting
 
-    buy = normalize(buy);
-    sell = normalize(sell);
+    std::tm* bought_tm = localtime(&bought);
+    std::tm bought_tm_save = *bought_tm;
+    bought_tm = &bought_tm_save;
+    std::tm* sold_tm = localtime(&sold);
+    std::tm sold_tm_save = *sold_tm;
+    sold_tm = &sold_tm_save;
 
-    if (buy.year() - sell.year() != years{ 1 })
-        return buy.year() - sell.year() > years{ 1 } ? Term::Long : Term::Short;
-    else
-        return buy.month() - sell.month() >= months{ 1 } || buy.day() - sell.day() >= days{ 1 } ?
-        Term::Long : Term::Short;
+    if (sold_tm->tm_year - bought_tm->tm_year != 1)
+        return sold_tm->tm_year - bought_tm->tm_year > 1;
+
+    if (sold_tm->tm_mon != bought_tm->tm_mon)
+        return sold_tm->tm_mon > bought_tm->tm_mon;
+
+    return sold_tm->tm_mday > bought_tm->tm_mday;
+}
+
+Term Matcher::get_term(Timestamp buy, Timestamp sell) {
+    return is_long_term(buy, sell) ? Term::Long : Term::Short;
+}
+
+static inline bool isSameMatchedMeta(const MatchedTrade& a, const MatchedTrade& b) {
+    if (a.term != b.term || a.currency != b.currency)
+        return false;
+
+    switch (a.term) {
+    case (Term::Held):
+        return a.bought_timestamp == b.bought_timestamp;
+    case (Term::UnmatchedSell):
+        return a.sold_timestamp == b.sold_timestamp;
+    default:
+        return a.sold_timestamp == b.sold_timestamp && a.bought_timestamp == b.bought_timestamp;
+    }
+}
+
+static std::vector<MatchedTrade> condense(std::vector<MatchedTrade> mts) {
+    std::vector<MatchedTrade> ret;
+
+    // simple O(n2) algo
+    for (int i = 0; i < static_cast<int>(mts.size()); i++) {
+        if (mts[i].sz == 0.0 || (mts[i].currency == "USD" && (mts[i].term == Term::Long || mts[i].term == Term::Short)))
+            continue;
+        // look for duplicates
+        for (int j = i + 1; j < static_cast<int>(mts.size()); j++) {
+            if (isSameMatchedMeta(mts[i], mts[j])) {
+                mts[i].sz += mts[j].sz;
+                mts[i].pnl += mts[j].pnl;
+                mts[j].sz = 0.0;
+            }
+        }
+
+        ret.push_back(mts[i]);
+    }
+
+    return ret;
+}
+
+// roundabout to work with leap years
+inline Timestamp long_term_date(const Timestamp& ts) {
+    std::tm* ts_tm = localtime(&ts);
+    std::tm out_tm = *ts_tm;
+
+    out_tm.tm_year += 1;
+    std::time_t out_ts = mktime(&out_tm);
+
+    out_ts += from_cal(0, 1, 0);
+
+    return out_ts;
 }
 
 // get all matched trades for user
 // see README for details on how this is done
-vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in) {
+vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in, const Timestamp end_time) {
     vector<MatchedTrade> ret;
 
     if (trades_in.empty())
@@ -38,11 +98,15 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
         double rem_sz;
     };
 
-    map<std::chrono::year, vector<Trade>> year_to_trades;
+    map<int, vector<Trade>> year_to_trades;
 
     for (const Trade& trade : trades_in) {
-        year_to_trades[trade.timestamp.year()].push_back(trade);
+        if (trade.timestamp <= end_time)
+            year_to_trades[get_year(trade.timestamp)].push_back(trade);
     }
+
+    if (year_to_trades.empty())
+        return ret;
 
     // curr -> (list of trade sz and date info)
     unordered_map<std::string, vector<TradePayload>> unmatched_buys;
@@ -54,7 +118,7 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
                 continue; // should this throw ?? is this even worth checking ?
 
             const double basis_bought = trade.bought_currency == "USD" ? 1 :
-                trade.sold_currency == "USD" ? trade.bought_amount / trade.sold_amount :
+                trade.sold_currency == "USD" ? trade.sold_amount / trade.bought_amount :
                 pricer->get_usd_price(trade.bought_currency, trade.timestamp);
 
             unmatched_buys[trade.bought_currency].push_back({
@@ -64,7 +128,7 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
                 });
 
             const double basis_sold = trade.sold_currency == "USD" ? 1 :
-                trade.bought_currency == "USD" ? trade.sold_amount / trade.bought_amount :
+                trade.bought_currency == "USD" ? trade.bought_amount / trade.sold_amount :
                 pricer->get_usd_price(trade.sold_currency, trade.timestamp);
             // all of the sold_amount must be matched with a corresponding buy
             double sz = trade.sold_amount;
@@ -160,7 +224,7 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in)
         }
     }
 
-    return ret;
+    return condense(ret);
 }
 
 // get pnl of trade
@@ -194,20 +258,24 @@ PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time) {
 YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Timestamp year) {
     PNL net = 0.0, lt = 0.0, st = 0.0;
 
-    for (const auto& matched_trade : get_matched_trades(trades)) {
-        if (matched_trade.sold_timestamp.year() != year.year())
-            continue;
+    const int year_int = get_year(year);
+    const Timestamp year_end = from_usa_date(12, 31, year_int);
 
-        net += matched_trade.pnl;
+    for (const auto& matched_trade : get_matched_trades(trades, year_end)) {
+        if (get_year(matched_trade.sold_timestamp) != year_int)
+            continue;
 
         switch (matched_trade.term) {
         case(Term::Long):
+            net += matched_trade.pnl;
             lt += matched_trade.pnl;
+            break;
         case(Term::Short):
+            net += matched_trade.pnl;
             st += matched_trade.pnl;
-        case (Term::Held):
-        case (Term::UnmatchedSell):
-            throw;
+            break;
+        default:
+            break;
         }
     }
 
@@ -224,7 +292,7 @@ vector<SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vect
     vector<SnapshotPNL> ret;
 
     for (const auto delta : timedeltas) {
-        const auto next_timestamp = normalize(now() - delta);
+        const auto next_timestamp = now() - delta;
 
         ret.push_back({
             .timestamp = next_timestamp,
@@ -238,7 +306,7 @@ vector<SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vect
 // returns the earliest dates user could sell each of his cryptos for
 // all of them to be considered long term cap gains
 // Trade::bought_amount is meaningless as the future price is unknown
-vector<Trade> Matcher::get_earliest_long_term_sells(const vector<Trade>& trades) {
+vector<Trade> Matcher::get_earliest_long_term_sells(const vector<Trade>& trades, const Timestamp end_time) {
     using namespace std::chrono;
 
     vector<Trade> ret;
@@ -248,8 +316,8 @@ vector<Trade> Matcher::get_earliest_long_term_sells(const vector<Trade>& trades)
             continue;
 
         ret.push_back({
-            .timestamp = std::max(
-                normalize(mt.bought_timestamp + years{1} + days{1}),
+            .timestamp = std::min(
+                long_term_date(mt.bought_timestamp),
                 now()
             ),
             .sold_currency = mt.currency,
