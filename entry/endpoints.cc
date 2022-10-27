@@ -15,17 +15,12 @@ using std::string;
 using std::cerr;
 using std::endl;
 
-std::unique_ptr<BaseData> data;
-std::unique_ptr<BaseMatcher> matcher;
+std::unique_ptr<BaseData> Endpoints::data = std::make_unique<Data>();
+std::unique_ptr<BaseMatcher> Endpoints::matcher = std::make_unique<Matcher>();
 
-void set_mode_prod() {
-    data = std::make_unique<Data>();
-    matcher = std::make_unique<Matcher>();
-}
-
-void set_mode_mock(MockData& data, MockMatcher& matcher) {
-    ::data.reset(&data);
-    ::matcher.reset(&matcher);
+void Endpoints::set_mode_test(MockData& mock_data, MockMatcher& mock_matcher) {
+    Endpoints::data.reset(&mock_data);
+    Endpoints::matcher.reset(&mock_matcher);
 }
 
 static string gen_random_str(const int len) {
