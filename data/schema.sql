@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS Users (
     UserID VARCHAR(16) NOT NULL,
     Creds CHAR(256) NOT NULL,
+    Refrs CHAR(256) NOT NULL,
     PRIMARY KEY(UserID)
 );
 

@@ -12,11 +12,15 @@
 
 using std::vector;
 
-class Matcher : BaseMatcher {
+class Matcher: public BaseMatcher {
+    Pricer _pricer;
     PricerBase* pricer;
 public:
 
-    Matcher(PricerBase* _pricer) : pricer(_pricer) {}
+    Matcher(): pricer(&_pricer) {}
+
+    // only for testing
+    Matcher(PricerBase* _pricer_in): pricer(_pricer_in) {}
 
     // get all matched trades for user
     // note: no contract on condensing results,

@@ -10,9 +10,9 @@
 #include "common/types.h"
 
 class PricerBase {
- public:
+public:
     virtual ~PricerBase() = default;
     // returns the price per unit of currency on date
     virtual double get_usd_price(std::string currency_pair,
-                                        Timestamp tstamp) = 0;
+        Timestamp tstamp = now()) = 0;
 };

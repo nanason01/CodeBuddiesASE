@@ -1,41 +1,45 @@
 cc_library(
-    name = "data",
-    srcs = [
+    name="data",
+    srcs=[
         "data.cc",
     ],
-    hdrs = [
+    hdrs=[
         "base_data.h",
         "data.h",
     ],
-    visibility = [
+    visibility=[
         "//entry:__pkg__",
+        "//data:__pkg__",
     ],
-    deps = [
+    linkopts=["-lsqlite3"],
+    deps=[
         "//common",
-        "//data/sqlite_stuff:sqlite3",
         "//exchanges",
     ],
 )
 
 cc_library(
-    name = "mock",
-    hdrs = [
+    name="mock",
+    hdrs=[
         "base_data.h",
         "mock_data.h",
     ],
-    visibility = [
+    visibility=[
         "//entry:__pkg__",
     ],
-    deps = [
+    deps=[
         "//common",
         "//exchanges",
     ],
 )
 
 cc_test(
-    name = "test",
-    srcs = ["data_test.cc"],
-    deps = [
+    name="test",
+    srcs=["data_test.cc"],
+    linkopts=["-pthread", "-lcrypto", "-lcurl",
+              "-lboost_date_time", "-ldl"],
+    deps=[
+        "//data",
         "//common",
         "//exchanges:mock",
         "@com_google_googletest//:gtest_main",

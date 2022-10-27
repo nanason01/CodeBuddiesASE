@@ -13,19 +13,34 @@
 #include <iomanip>
 #include <ctime>
 
-enum class Exchange : uint8_t {
+enum class Term: uint8_t {
+    Short,
+    Long,
+    Held,
+    UnmatchedSell,
+};
+
+constexpr const char* to_string(const Term term) {
+    switch (term) {
+    case(Term::Short):
+        return "Short term";
+    case(Term::Long):
+        return "Long term";
+    case(Term::Held):
+        return "Held";
+    case(Term::UnmatchedSell):
+        return "Unmatched sell";
+    default:
+        return "Invalid";
+    }
+}
+
+enum class Exchange: uint8_t {
     Invalid,
     Coinbase,
     Kraken,
 
     All = std::numeric_limits<uint8_t>::max(),
-};
-
-enum class Term : uint8_t {
-    Short,
-    Long,
-    Held,
-    UnmatchedSell,
 };
 
 constexpr const char* to_string(const Exchange e) {
@@ -98,13 +113,29 @@ inline int get_day(Timestamp ts) {
     return ts_tm->tm_mday;
 }
 
+inline std::string to_string(const Timestamp& ts) {
+    // yyyy-mm-dd
+    const int yr = get_year(ts);
+    const int mo = get_month(ts);
+    const int da = get_day(ts);
+
+    std::string yr_str = to_string(yr);
+    std::string mo_str = to_string(mo);
+    std::string da_str = to_string(da);
+
+    while (yr_str.size() < 4)
+        yr_str = "0" + yr_str;
+    while (mo_str.size() < 2)
+        mo_str = "0" + mo_str;
+    while (da_str.size() < 2)
+        da_str = "0" + da_str;
+
+    return yr_str + "-" + mo_str + "-" + da_str;
+}
+
 // this is needed for gtest to print human-readable dates
 namespace std {
-    void PrintTo(const Timestamp& ts, std::ostream* os) {
-        std::tm* cal_ts = localtime(&ts);
-
-        *os << std::put_time(cal_ts, "%c %Z");
-    }
+    void PrintTo(const Timestamp& ts, std::ostream* os);
 }
 
 using PNL = double;
@@ -119,15 +150,7 @@ struct Trade {
     friend std::ostream& operator<<(std::ostream& os, const Trade& tr);
 };
 
-std::ostream& operator<<(std::ostream& os, const Trade& tr) {
-    os << "trade at ";
-    std::PrintTo(tr.timestamp, &os);
-    os << " exchanged " << tr.sold_amount << " " <<
-        tr.sold_currency << " for " << tr.bought_amount <<
-        tr.bought_currency;
-
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const Trade& tr);
 
 // Matched buy with sell swap
 // if term == Term::Held, the position is still open,
@@ -144,45 +167,21 @@ struct MatchedTrade {
     PNL pnl;
 
     friend std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt);
-    bool operator==(const MatchedTrade& other) const = default;
+    bool operator==(const MatchedTrade& other) const {
+        return
+            bought_timestamp == other.bought_timestamp &&
+            sold_timestamp == other.sold_timestamp &&
+            term == other.term &&
+            currency == other.currency &&
+            sz == other.sz &&
+            pnl == other.pnl;
+    }
 };
 
-std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt) {
-    switch (mt.term) {
-    case(Term::Short):
-        os << "Short term " << mt.sz << ":" << mt.currency <<
-            " bought at ";
-        std::PrintTo(mt.bought_timestamp, &os);
-        os << " sold at ";
-        std::PrintTo(mt.sold_timestamp, &os);
-        os << " pnl: " << mt.pnl;
-        break;
-    case(Term::Long):
-        os << "Long term " << mt.sz << ":" << mt.currency <<
-            " bought at ";
-        std::PrintTo(mt.bought_timestamp, &os);
-        os << " sold at ";
-        std::PrintTo(mt.sold_timestamp, &os);
-        os << " pnl: " << mt.pnl;
-        break;
-    case(Term::UnmatchedSell):
-        os << "Unmatched Sell " << mt.sz << ":" << mt.currency <<
-            " sold at ";
-        std::PrintTo(mt.sold_timestamp, &os);
-        os << " pnl: " << mt.pnl;
-        break;
-    case(Term::Held):
-        os << "Held " << mt.sz << ":" << mt.currency <<
-            " bought at ";
-        std::PrintTo(mt.bought_timestamp, &os);
-        os << " pnl: " << mt.pnl;
-        break;
-    }
-
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt);
 
 // TODO define these types with 0Auth
 using User = std::string;
 using Creds = std::string;
+using Refresh = std::string;
 using API_key = std::string;
