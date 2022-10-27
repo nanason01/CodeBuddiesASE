@@ -11,9 +11,9 @@ cc_library(
         "//entry:__pkg__",
         "//data:__pkg__",
     ],
+    linkopts=["-lsqlite3"],
     deps=[
         "//common",
-        "//data/sqlite_stuff:sqlite3",
         "//exchanges",
     ],
 )
