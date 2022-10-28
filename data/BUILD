@@ -37,7 +37,7 @@ cc_test(
     name="test",
     srcs=["data_test.cc"],
     linkopts=["-pthread", "-lcrypto", "-lcurl",
-              "-lboost_date_time", "-ldl"],
+              "-lboost_date_time","-ldl"],
     deps=[
         "//data",
         "//common",

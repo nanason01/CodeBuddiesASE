@@ -61,6 +61,8 @@ public:
         sqlite3_close(db_conn);
     }
 
+    void create_table();
+
     // writing operations
 
     // add a user to our system
