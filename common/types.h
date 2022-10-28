@@ -148,6 +148,14 @@ struct Trade {
     double sold_amount, bought_amount;
 
     friend std::ostream& operator<<(std::ostream& os, const Trade& tr);
+    bool operator==(const Trade& other) const{
+	    return 
+		   timestamp == other.timestamp &&
+		   sold_currency == other.sold_currency &&
+		   bought_currency == other.bought_currency &&
+		   sold_amount == other.sold_amount &&
+		   bought_amount == other.bought_amount;
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const Trade& tr);

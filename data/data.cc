@@ -84,7 +84,36 @@ vector<tuple<Ts...>> exec_sql(sqlite3* db_conn, const string& sql) {
 
     return ret;
 }
-
+// just used for test since still don't know what Refrs is for this structure we remove Refrs from the table
+// not changing the type AuthenticUser
+void Data::create_table(){
+	const string create_t_sql = "CREATE TABLE IF NOT EXISTS Users ("\
+				     "UserID VARCHAR(16) NOT NULL,"\
+				     "Creds CHAR(256) NOT NULL,"\
+				     "Refrs CHAR(256),"\
+				     "PRIMARY KEY(UserID));"\
+				     "CREATE TABLE IF NOT EXISTS ExchangeKeys ("\
+				     "UserID VARCHAR(16) NOT NULL,"\
+				     "ExchangeID int NOT NULL,"\
+				     "PubKey VARCHAR(256),"\
+				     "PvtKey VARCHAR(256),"\
+				     "LastUpdatedYear int,"\
+				     "LastUpdatedMonth int,"\
+				     "LastUpdatedDay int,"\
+				     "PRIMARY KEY(UserID, ExchangeID),"\
+				     "FOREIGN KEY(UserID) REFERENCES Users(UserID));"\
+				     "CREATE TABLE IF NOT EXISTS Trades ("\
+				     "UserID VARCHAR(16) NOT NULL,"\
+				     "TradeYear int,"\
+				     "TradeMonth int,"\
+				     "TradeDay int,"\
+				     "BoughtCurrency VARCHAR(16),"\
+				     "SoldCurrency VARCHAR(16),"\
+				     "BoughtAmount DECIMAL,"\
+				     "SoldAmount DECIMAL,"\
+				     "FOREIGN KEY(UserID) REFERENCES Users(UserID));";
+	exec_sql<>(db_conn,create_t_sql);
+}
 void Data::add_user(const AuthenticUser& user) {
     // @TODO Urvee define what creds are
     // this simply check that what we have stored as the "creds"
@@ -97,10 +126,11 @@ void Data::add_user(const AuthenticUser& user) {
 
     if (get<0>(check_user_res[0]) > 0)
         throw UserExists{};
-
+    //set the Refr value to ? since we don't know
     const string add_user_sql = "INSERT INTO Users VALUES "
-        "(\'" + user.user + "\', \'" + user.creds + "\');";
+        "(\'" + user.user + "\', \'" + user.creds + "\', \'?\');";
     exec_sql<>(db_conn, add_user_sql);
+
 }
 
 static string get_delete_sql(const AuthenticUser& user, const string& table) {
@@ -242,8 +272,8 @@ std::vector<Trade> Data::get_trades(const AuthenticUser& user) const {
 
     const string get_all_trades_sql = "SELECT "
         "TradeYear, TradeMonth, TradeDay, "
-        "BoughtCurrency, SoldCurrency, "
-        "BoughtAmount, SoldAmount "
+        "SoldCurrency, BoughtCurrency, "
+        "SoldAmount, BoughtAmount "
         "FROM Trades WHERE UserID = \'" + user.user + "\';";
     const auto get_all_trades_res =
         exec_sql<int, int, int, string, string, double, double>(
