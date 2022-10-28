@@ -28,7 +28,7 @@ static string gen_random_str(const int len) {
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz";
-    std::string ret(sizeof(alphanum), 'a');
+    std::string ret(sizeof(len), 'a');
 
     for (int i = 0; i < len; ++i)
         ret[i] = alphanum[rand() % sizeof(alphanum)];
@@ -51,16 +51,22 @@ static string hash_str(string key) {
 }
 
 static AuthenticUser parse_user(const request& req) {
+    //std::cout << req.get_header_value("Authorization")
+    //           .substr(7).substr(CLIENTIDLEN, APIKEYLEN) << endl;
     return AuthenticUser{
            req.get_header_value("Authorization")
-               .substr(CLIENTIDLEN),
+               .substr(7).substr(0, CLIENTIDLEN),
            hash_str(req.get_header_value("Authorization")
-               .substr(CLIENTIDLEN, APIKEYLEN))
+               .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
+
+    
 }
 
 response Endpoints::validate_credentials(const request& req) {
     const auto user = parse_user(req);
+    std::cout << user.user << std::endl;
+    std::cout << user.creds << std::endl;
 
     try {
         data->check_user(user);
@@ -77,6 +83,12 @@ response Endpoints::validate_credentials(const request& req) {
 
 response Endpoints::generate_credentials(const request& req) {
     crow::json::wvalue ret_val;
+    static int created = 0;
+    if(created == 0){
+        // table not yet created. Create table
+        data->create_table();
+    }
+    std::cout << "in generate_credentials" << std::endl;
 
     string client_id = gen_random_str(CLIENTIDLEN);
     string api_key = gen_random_str(APIKEYLEN);
@@ -86,19 +98,37 @@ response Endpoints::generate_credentials(const request& req) {
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
 
+    // TODO : save retval in db
+
     return ret_val;
 }
 
 response Endpoints::refresh_credentials(const request& req) {
     crow::json::wvalue resp;
 
-    string client_id = gen_random_str(CLIENTIDLEN);
+    const auto user = parse_user(req);
+
+    // TODO : implement check_user_refresh_key()
+    
+    /*try {
+        data->check_user_refresh_key(user);
+    } catch (UserNotFound* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    } catch (InvalidCreds* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    }*/
+
+    string client_id = user.user;
     string api_key = gen_random_str(APIKEYLEN);
     string refresh_key = gen_random_str(APIKEYLEN);
 
     resp["client_id"] = client_id;
     resp["api_key"] = client_id + api_key;
     resp["refresh_token"] = client_id + refresh_key;
+
+    // TODO : update user credentials in db
 
     return resp;
 }
