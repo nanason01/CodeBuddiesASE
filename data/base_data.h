@@ -17,6 +17,7 @@ const TimeDelta REFRESH_INTERVAL = from_cal(0, 1, 0);
 struct AuthenticUser {
     User user;
     Creds creds;
+    Refresh refrToken;
     mutable bool validated = false;
 
     bool operator==(const AuthenticUser& other) const {
@@ -63,6 +64,8 @@ public:
     // add a user to our system
     // throws UserExists if user exists
     virtual void add_user(const AuthenticUser& user) = 0;
+
+    virtual void update_user_creds(const AuthenticUser& user) = 0;
 
     // remove a user from our system
     // throws UserNotFound if user doesn't exist

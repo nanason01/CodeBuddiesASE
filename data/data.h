@@ -69,6 +69,9 @@ public:
     // throws UserExists if user exists
     void add_user(const AuthenticUser& user) final;
 
+    // update the credentials of a user
+    void update_user_creds(const AuthenticUser& user) final;
+
     // remove a user from our system
     // throws UserNotFound if user doesn't exist
     void remove_user(const AuthenticUser& user) final;

@@ -109,11 +109,28 @@ response Endpoints::generate_credentials(const request& req) {
     string api_key = gen_random_str(APIKEYLEN);
     string refresh_key = gen_random_str(APIKEYLEN);
 
+    AuthenticUser newuser{
+        client_id,
+        hash_str(client_id + api_key),
+        hash_str(client_id + refresh_key)
+    };
+
     ret_val["client_id"] = client_id;
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
 
-    // TODO : save retval in db
+    // TODO : test if this works
+    try {
+        data->add_user(user);
+    } catch (UserNotFound* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    } catch (InvalidCreds* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    }
+
+
 
     return ret_val;
 }
@@ -125,15 +142,15 @@ response Endpoints::refresh_credentials(const request& req) {
 
     // TODO : implement check_user_refresh_key()
     
-    /*try {
-        data->check_user_refresh_key(user);
+    try {
+        data->check_refr(user.user, user.creds);
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
-    }*/
+    }
 
     string client_id = user.user;
     string api_key = gen_random_str(APIKEYLEN);
@@ -143,7 +160,23 @@ response Endpoints::refresh_credentials(const request& req) {
     resp["api_key"] = client_id + api_key;
     resp["refresh_token"] = client_id + refresh_key;
 
-    // TODO : update user credentials in db
+    AuthenticUser newcreds{
+        client_id,
+        hash_str(client_id + api_key),
+        hash_str(client_id + refresh_key)
+    };
+
+
+    // TODO : test if this works
+    try {
+        data->update_user_creds(user);
+    } catch (UserNotFound* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    } catch (InvalidCreds* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    }
 
     return resp;
 }
@@ -215,8 +248,7 @@ response Endpoints::remove_exchange_key(const request& req) {
     auto body = crow::json::load(req.body);
 
     Exchange exch = from_string(string(body["exchange"]));
-    // the to-be-deleted fields are unnecessary
-    // @TODO: update the README
+    // the to-be-deleted fields are unnecessary, readme updated.
 
     try {
         data->delete_exchange(user, exch);

@@ -129,8 +129,21 @@ void Data::add_user(const AuthenticUser& user) {
         throw UserExists{};
     //set the Refr value to ? since we don't know
     const string add_user_sql = "INSERT INTO Users VALUES "
-        "(\'" + user.user + "\', \'" + user.creds + "\', \'?\');";
+        "(\'" + user.user + "\', \'" + user.creds + "\', \'" + user.refrToken + "\');";
     exec_sql<>(db_conn, add_user_sql);
+
+}
+
+void Data::update_user_creds(const AuthenticUser& user) {
+    // updates the user credentials in db
+    // check_refr needs to be called before this function is called
+    // now update the creds and the refrToken
+    const string update_user_creds_sql = 
+        "UPDATE Users "
+        "SET Creds = \'" + user.creds + "\',"
+        "Refrs = \'" + user.refrToken + "\',"
+        "WHERE UserID = " + user.user + ";";
+    exec_sql<>(db_conn, update_user_creds_sql);
 
 }
 
