@@ -17,7 +17,7 @@ using std::endl;
 
 std::unique_ptr<BaseData> data;
 std::unique_ptr<BaseMatcher> matcher;
-\-
+
 void set_mode_prod() {
     data = std::make_unique<Data>();
     matcher = std::make_unique<Matcher>();
@@ -121,7 +121,7 @@ response Endpoints::generate_credentials(const request& req) {
 
     // TODO : test if this works
     try {
-        data->add_user(user);
+        data->add_user(newuser);
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
