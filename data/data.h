@@ -47,14 +47,19 @@ public:
     // normal call
     Data()
         : cb_driver_ptr(&cb_driver), k_driver_ptr(&k_driver) {
-        if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK)
+        if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
+	}
+	this->create_table();
+
     }
     // only for testing
     Data(ExchangeDriver* _cb, ExchangeDriver* _k, const std::string& test_db_filename)
         : cb_driver_ptr(_cb), k_driver_ptr(_k) {
-        if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK)
+        if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
+	}
+	this->create_table();
     }
 
     ~Data() override {
