@@ -114,6 +114,7 @@ void Data::create_table(){
 				     "FOREIGN KEY(UserID) REFERENCES Users(UserID));";
 	exec_sql<>(db_conn,create_t_sql);
 }
+
 void Data::add_user(const AuthenticUser& user) {
     // @TODO Urvee define what creds are
     // this simply check that what we have stored as the "creds"

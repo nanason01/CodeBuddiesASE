@@ -8,7 +8,7 @@
 
 using ::testing::Return;
 
-const std::string TEST_DB_FILENAME = "test_db";
+const std::string TEST_DB_FILENAME = "db";
 
 class DataFixture: public ::testing::Test {
 protected:
@@ -46,7 +46,7 @@ protected:
 };
 
 TEST_F(DataFixture,AddUserTest) {
-	data->create_table();
+	//data->create_table();
 	data->add_user({"nick","creds"});
 	EXPECT_THROW(data->add_user({"nick","creds"}), UserExists);
 	data->remove_user({"nick","creds"});	
@@ -54,7 +54,7 @@ TEST_F(DataFixture,AddUserTest) {
 
 TEST_F(DataFixture,UploadGetTrades){
 	/*data->remove_user({"urvee","creds1"});*/
-	data->create_table();
+	//data->create_table();
 	Timestamp t1 = from_usa_date(1,2,2018);
 	Trade s1{
 		t1,
@@ -93,6 +93,7 @@ TEST_F(DataFixture,UploadGetTrades){
 	EXPECT_EQ(s2,s2_res);
 	data->remove_user({"urvee","creds1"});
 }
+
 
 /*
 TEST_F(DataFixture, Example) {
