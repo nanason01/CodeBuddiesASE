@@ -270,22 +270,27 @@ response Endpoints::get_annotated_trades(const request& req) {
         const auto user_trades = data->get_trades(user);
         const auto mts = matcher->get_matched_trades(user_trades);
 
-        vector<crow::json::wvalue> ret;
+        //vector<crow::json::wvalue> ret;
+
+        crow::json::wvalue ret;
+        int i = 0;
 
         for (const MatchedTrade& mt : mts) {
-            crow::json::wvalue wv;
+            //crow::json::wvalue wv;
 
-            wv["bought_timestamp"] = to_string(mt.bought_timestamp);
-            wv["sold_timestamp"] = to_string(mt.sold_timestamp);
-            wv["term"] = to_string(mt.term);
-            wv["currency"] = mt.currency;
-            wv["size"] = to_string(mt.sz);
-            wv["pnl"] = to_string(mt.pnl);
+            ret[i]["bought_timestamp"] = to_string(mt.bought_timestamp);
+            ret[i]["sold_timestamp"] = to_string(mt.sold_timestamp);
+            ret[i]["term"] = to_string(mt.term);
+            ret[i]["currency"] = mt.currency;
+            ret[i]["size"] = to_string(mt.sz);
+            ret[i]["pnl"] = to_string(mt.pnl);
 
-            ret.emplace_back(std::move(wv));
+            i = i + 1;
+
+            //ret.emplace_back(std::move(wv));
         }
 
-        return response(200);
+        return crow::response(ret);
         // @TODO: how to return a list of values as a crow json
         // return response(std::move(ret));
     } catch (UserNotFound* e) {
