@@ -11,6 +11,11 @@ int main() {
     // seed our rng
     srand((unsigned)time(NULL) * getpid());
 
+    /*MockData data;
+    MockMatcher matcher;
+    set_mode_mock();*/
+    set_mode_prod();
+
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")(Endpoints::validate_credentials);

@@ -104,6 +104,7 @@ response Endpoints::generate_credentials(const request& req) {
         created++;
     }*/
     std::cout << "in generate_credentials" << std::endl;
+    std::cout << data << std::endl;
 
     string client_id = gen_random_str(CLIENTIDLEN);
     string api_key = gen_random_str(APIKEYLEN);
@@ -114,14 +115,15 @@ response Endpoints::generate_credentials(const request& req) {
         hash_str(client_id + api_key),
         hash_str(client_id + refresh_key)
     };
-
+    std::cout << "in generate_credentials2" << std::endl;
     ret_val["client_id"] = client_id;
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
-
+    std::cout << "in generate_credentials3" << std::endl;
     // TODO : test if this works
     try {
         data->add_user(newuser);
+        std::cout << "in generate_credentials4" << std::endl;
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
@@ -129,6 +131,7 @@ response Endpoints::generate_credentials(const request& req) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
     }
+    std::cout << "in generate_credentials5" << std::endl;
 
 
 

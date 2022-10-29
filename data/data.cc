@@ -119,18 +119,19 @@ void Data::add_user(const AuthenticUser& user) {
     // @TODO Urvee define what creds are
     // this simply check that what we have stored as the "creds"
     // for this user is what is passed into this function
-
+    std::cout << "line 122 adduser" << std::endl;
     // first, check whether user exists
     const string check_user_sql = "SELECT COUNT(*) FROM Users WHERE "
         "UserID = \'" + user.user + "\';";
     const auto check_user_res = exec_sql<int>(db_conn, check_user_sql);
-
+    std::cout << "line 127 adduser" << std::endl;
     if (get<0>(check_user_res[0]) > 0)
         throw UserExists{};
     //set the Refr value to ? since we don't know
     const string add_user_sql = "INSERT INTO Users VALUES "
         "(\'" + user.user + "\', \'" + user.creds + "\', \'" + user.refrToken + "\');";
     exec_sql<>(db_conn, add_user_sql);
+    std::cout << "line 134 adduser" << std::endl;
 
 }
 
