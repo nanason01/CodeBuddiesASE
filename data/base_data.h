@@ -58,6 +58,7 @@ public:
     virtual ~BaseData() {}
 
     // writing operations
+    virtual void create_table(void) = 0;
 
     // add a user to our system
     // throws UserExists if user exists

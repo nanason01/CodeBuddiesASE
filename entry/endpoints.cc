@@ -17,7 +17,7 @@ using std::endl;
 
 std::unique_ptr<BaseData> data;
 std::unique_ptr<BaseMatcher> matcher;
-
+\-
 void set_mode_prod() {
     data = std::make_unique<Data>();
     matcher = std::make_unique<Matcher>();
@@ -89,10 +89,20 @@ response Endpoints::validate_credentials(const request& req) {
 response Endpoints::generate_credentials(const request& req) {
     crow::json::wvalue ret_val;
     static int created = 0;
-    if(created == 0){
+    /*if(created == 0){
         // table not yet created. Create table
-        data->create_table();
-    }
+        
+        try {
+            data->create_table();
+        } catch (UserNotFound* e) {
+            cerr << "validate_credentials: " << e->what() << endl;
+            return response(401);
+        } catch (InvalidCreds* e) {
+            cerr << "validate_credentials: " << e->what() << endl;
+            return response(401);
+        }
+        created++;
+    }*/
     std::cout << "in generate_credentials" << std::endl;
 
     string client_id = gen_random_str(CLIENTIDLEN);

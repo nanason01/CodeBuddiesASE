@@ -16,7 +16,7 @@
 #include <exception>
 #include <chrono>
 
-constexpr auto DB_FILENAME = "db";
+constexpr auto DB_FILENAME = "../data/db";
 
 class Data final: public BaseData {
     CoinbaseDriver cb_driver;
@@ -61,7 +61,7 @@ public:
         sqlite3_close(db_conn);
     }
 
-    void create_table();
+    void create_table(void) final;
 
     // writing operations
 
