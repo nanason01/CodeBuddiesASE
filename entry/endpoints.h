@@ -20,6 +20,7 @@ extern std::unique_ptr<BaseMatcher> matcher;
 
 void set_mode_prod();
 void set_mode_mock(MockData& data, MockMatcher& matcher);
+void set_up_mock_mode();
 
 class Endpoints {
 public:

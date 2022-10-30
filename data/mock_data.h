@@ -14,6 +14,9 @@
 class MockData final: public BaseData {
 public:
     ~MockData() override = default;
+    MOCK_METHOD(void, create_table, (), (override));
+    MOCK_METHOD(void, update_user_creds, (const AuthenticUser&), (override));
+
     MOCK_METHOD(void, add_user, (const AuthenticUser&), (override));
     MOCK_METHOD(void, remove_user, (const AuthenticUser&), (override));
     MOCK_METHOD(void, register_exchange, (const AuthenticUser&, Exchange, const API_key&, const API_key&), (override));

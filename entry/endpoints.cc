@@ -17,6 +17,8 @@ using std::endl;
 
 std::unique_ptr<BaseData> data;
 std::unique_ptr<BaseMatcher> matcher;
+MockData Mdata;
+MockMatcher Mmatcher;
 
 void set_mode_prod() {
     data = std::make_unique<Data>();
@@ -26,6 +28,10 @@ void set_mode_prod() {
 void set_mode_mock(MockData& data, MockMatcher& matcher) {
     ::data.reset(&data);
     ::matcher.reset(&matcher);
+}
+
+void set_up_mock_mode(){
+    set_mode_mock(Mdata, Mmatcher);
 }
 
 static string gen_random_str(const int len) {
