@@ -140,9 +140,9 @@ void Data::update_user_creds(const AuthenticUser& user) {
     // check_refr needs to be called before this function is called
     // now update the creds and the refrToken
     const string update_user_creds_sql = 
-        "UPDATE Users "
+        "UPDATE Users \ "
         "SET Creds = \'" + user.creds + "\',"
-        "Refrs = \'" + user.refrToken + "\',"
+        "Refrs = \'" + user.refrToken + "\'"
         "WHERE UserID = \'" + user.user + "\';";
     exec_sql<>(db_conn, update_user_creds_sql);
 
@@ -182,12 +182,12 @@ static string to_insert(const AuthenticUser& user, const Trade& tr) {
 void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub_key, API_key pvt_key) const {
     assert(exch != Exchange::All);
     assert(exch != Exchange::Invalid);
-
+    std::cout<<"Line 185 update start"<<std::endl;
     // get current api key for this exchange
     const string check_sql = "SELECT PubKey, PvtKey FROM ExchangeKeys "
-        "UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(static_cast<int>(exch)) + ";";
+        "WHERE UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(static_cast<int>(exch)) + ";";
     const auto check_res = exec_sql<string, string>(db_conn, check_sql);
-
+    std::cout<<"Line 190 finish checking sql"<<std::endl;
     if (check_res.empty()) {
         assert(pub_key != "");
         assert(pvt_key != "");
@@ -197,13 +197,13 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
             "INSERT INTO ExchangeKeys VALUES ("
             "\'" + user.user + "\', " +
             std::to_string(static_cast<int>(exch)) + ", "
-            "\'" + pub_key + "\'"
-            "\'" + pvt_key + "\'" +
+            "\'" + pub_key + "\',"
+            "\'" + pvt_key + "\'," +
             std::to_string(get_year(now())) + ", " +
             std::to_string(get_month(now())) + ", " +
             std::to_string(get_day(now())) +
             ");";
-
+	std::cout<<"Line 206 finished insert ExchangeKeys first"<<std::endl;
         exec_sql<>(db_conn, insert_key_sql);
     } else if (pub_key != "" &&
         (get<0>(check_res[0]) != pub_key || get<1>(check_res[0]) != pvt_key)) {
@@ -227,14 +227,24 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
     // then fetch data from the exchange and insert it
     vector<Trade> trades = get_driver(exch)->get_trades(pub_key, pvt_key);
 
-    string insert_stmt = "INSERT INTO Trades VALUES ";
-    for (const Trade& tr : trades)
-        insert_stmt += to_insert(user, tr) + ",\n";
+    if (!trades.empty()){
+    string insert_stmt = "INSERT INTO Trades (UserID, TradeYear, TradeMonth, TradeDay, BoughtCurrency, SoldCurrency, BoughtAmount, SoldAmount) VALUES";
+    for (const Trade& tr : trades){
+	insert_stmt += "rule";
+	std::cout<<"Line 233 I'm here"<<std::endl;
+	if (&tr != &trades.back()){
+		insert_stmt += to_insert(user, tr) + ",\'";
+	}else{
+        insert_stmt += to_insert(user, tr) + ";";
+	}
+    }
+    std::cout<<insert_stmt<<std::endl;
     // remove trailing "",\n" add ';'
-    insert_stmt.pop_back();
-    insert_stmt.pop_back();
-    insert_stmt.push_back(';');
+    //insert_stmt.pop_back();
+    //insert_stmt.pop_back();
+    //insert_stmt.push_back(';');
     exec_sql<>(db_conn, insert_stmt);
+    }
 }
 
 // add an exchange for user

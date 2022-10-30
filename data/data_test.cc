@@ -8,7 +8,7 @@
 
 using ::testing::Return;
 
-const std::string TEST_DB_FILENAME = "db";
+const std::string TEST_DB_FILENAME = "/home/zx2395/jennice_new_test/CodeBuddiesASE/data/db";
 
 class DataFixture: public ::testing::Test {
 protected:
@@ -24,11 +24,11 @@ protected:
     void SetUp() override {
         data = new Data(&cb, &k, TEST_DB_FILENAME);
 
-        ON_CALL(cb, get_trades("nick", "nick_key"))
+        /*ON_CALL(cb, get_trades({"nick", "nick_key","nick_refr"}))
             .WillByDefault(Return(std::vector<Trade>()));
-	/*
+	
         ON_CALL(cb, get_exchanges("urvee","urvee_key"))
-	    .WillByDefault(Return(std::vector<Exchange>()));
+	    .WillByDefault(Return(std::vector<Exchange>()))
 	*/
 	// EXPECT_CALL can do more fine grained expectation checking
         // ie how many times it should be called
@@ -47,14 +47,21 @@ protected:
 
 TEST_F(DataFixture,AddUserTest) {
 	//data->create_table();
-	data->add_user({"nick","creds"});
-	EXPECT_THROW(data->add_user({"nick","creds"}), UserExists);
-	data->remove_user({"nick","creds"});	
+	//data->remove_user({"nick","creds"});
+	data->add_user({"nick","creds","refrs"});
+	EXPECT_THROW(data->add_user({"nick","creds","refrs"}), UserExists);
+	data->remove_user({"nick","creds","refrs"});	
+}
+TEST_F(DataFixture,UpdateCreds) {
+	data->add_user({"jennice1","creds66","refrs66"});
+	data->update_user_creds({"jennice1","creds77","refrs77"});
+	EXPECT_THROW(data->check_user({"jennice1","creds66","refrs66"}),InvalidCreds);
+	data->remove_user({"jennice1","creds77","refrs77"});
 }
 
-TEST_F(DataFixture,UploadGetTrades){
-	/*data->remove_user({"urvee","creds1"});*/
+TEST_F(DataFixture,UploadGetTrades) {
 	//data->create_table();
+	//EXPECT_TRUE(data->get_trades({"nico","cred4","refrs4"}).empty());
 	Timestamp t1 = from_usa_date(1,2,2018);
 	Trade s1{
 		t1,
@@ -71,15 +78,15 @@ TEST_F(DataFixture,UploadGetTrades){
 		900.0,
 		2.0,
 	};
-	data->add_user({"urvee","creds1"});	
-	data->upload_trade({"urvee","creds1"},s1);
+	data->add_user({"urvee","creds1","refrs1"});	
+	data->upload_trade({"urvee","creds1","refrs1"},s1);
 	
-	data->upload_trade({"urvee","creds1"},s2);
+	data->upload_trade({"urvee","creds1","refrs1"},s2);
 	
-	EXPECT_THROW(data->upload_trade({"urvee","creds2"},s2),InvalidCreds);
-	EXPECT_THROW(data->upload_trade({"Alek","creds3"},s2),UserNotFound);
+	EXPECT_THROW(data->upload_trade({"urvee","creds2","refrs2"},s2),InvalidCreds);
+	EXPECT_THROW(data->upload_trade({"Alek","creds3","refrs3"},s2),UserNotFound);
 	
-	std::vector<Trade> res = data->get_trades({"urvee","creds1"});
+	std::vector<Trade> res = data->get_trades({"urvee","creds1","refrs1"});
 	Trade s2_res = res.back();
 	res.pop_back();
 	
@@ -91,12 +98,30 @@ TEST_F(DataFixture,UploadGetTrades){
 	//I assume that I cannot change any struct in type.h to set operator ==
 	EXPECT_EQ(s1,s1_res);
 	EXPECT_EQ(s2,s2_res);
-	data->remove_user({"urvee","creds1"});
+	data->remove_user({"urvee","creds1","refrs1"});
 }
 
+TEST_F(DataFixture, RegisterExchange) {
+	data->add_user({"Franck","creds6","refrs6"});
+	EXPECT_THROW(data->register_exchange({"jennice","creds5","refrs5"},Exchange::Coinbase, "jennice_key1","jennice_prikey1"),UserNotFound);
+	data->register_exchange({"Franck","creds6","refrs3"}, Exchange::Coinbase, "alek_key1","alek_prikey1");
+	data->register_exchange({"Franck","creds6","refrs3"}, Exchange::Kraken, "alek_key2", "alek_prikey2");	
+	
+	std::vector<Exchange> res = data->get_exchanges({"Franck","creds6","refrs6"});
+	Exchange coinV = Exchange::Coinbase;
+	Exchange kraV = Exchange::Kraken;
+	Exchange eK = res.back();
+	res.pop_back();
+	EXPECT_EQ(kraV,eK);
 
+	Exchange eC = res.back();
+	res.pop_back();
+	EXPECT_EQ(coinV,eC);	
+	data->remove_user({"Franck","creds6","refrs6"});
+
+}
 /*
-TEST_F(DataFixture, Example) {
+TEST_F(DataFixture, Example) {i
     EXPECT_NE("hello", "world");
     data->add_user({ "nick", "creds" });
     data->register_exchange(
