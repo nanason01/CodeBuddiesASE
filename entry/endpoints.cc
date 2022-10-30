@@ -359,8 +359,9 @@ response Endpoints::calc_trade_pnl(const request& req) {
         // maybe this isn't necessary, but rules are rules
         data->check_user(user);
         const auto pnl = matcher->get_pnl_from(trade_in);
-
-        return response(pnl);
+        crow::json::wvalue pnl_crow;
+        pnl_crow['pnl'] = pnl;
+        return pnl_crow;
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
@@ -377,8 +378,9 @@ response Endpoints::get_net_pnl(const request& req) {
         // maybe this isn't necessary, but rules are rules
         const auto user_trades = data->get_trades(user);
         const auto pnl = matcher->get_net_pnl(user_trades);
-
-        return response(pnl);
+        crow::json::wvalue net_pnl_crow;
+        net_pnl_crow['pnl'] = pnl;
+        return response(net_pnl_crow);
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
