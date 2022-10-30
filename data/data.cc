@@ -143,7 +143,7 @@ void Data::update_user_creds(const AuthenticUser& user) {
         "UPDATE Users "
         "SET Creds = \'" + user.creds + "\',"
         "Refrs = \'" + user.refrToken + "\',"
-        "WHERE UserID = " + user.user + ";";
+        "WHERE UserID = \'" + user.user + "\';";
     exec_sql<>(db_conn, update_user_creds_sql);
 
 }
@@ -334,6 +334,7 @@ void Data::check_user(const AuthenticUser& user) const {
 
     if (find_user_res.empty())
         throw UserNotFound{};
+    std::cout << "in checkuser " + get<0>(find_user_res[0]) << std::endl;
     if (user.creds != get<0>(find_user_res[0]))
         throw InvalidCreds{};
 

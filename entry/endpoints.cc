@@ -62,15 +62,19 @@ static string hash_str(string key) {
 }
 
 static AuthenticUser parse_user(const request& req) {
-    //std::cout << req.get_header_value("Authorization")
-    //           .substr(7).substr(CLIENTIDLEN, APIKEYLEN) << endl;
+    std::cout << req.get_header_value("Authorization")
+               .substr(7).substr(0, CLIENTIDLEN) << endl;
+    std::cout << req.get_header_value("Authorization")
+               .substr(7).substr(CLIENTIDLEN, APIKEYLEN) << std::endl;
+    std::cout << hash_str(req.get_header_value("Authorization")
+               .substr(7).substr(CLIENTIDLEN, APIKEYLEN)) << std::endl;
+    std::cout << "in parse_user" << std::endl;
     return AuthenticUser{
            req.get_header_value("Authorization")
                .substr(7).substr(0, CLIENTIDLEN),
            hash_str(req.get_header_value("Authorization")
                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
-
     
 }
 
@@ -118,10 +122,13 @@ response Endpoints::generate_credentials(const request& req) {
 
     AuthenticUser newuser{
         client_id,
-        hash_str(client_id + api_key),
-        hash_str(client_id + refresh_key)
+        hash_str(api_key),
+        hash_str(refresh_key)
     };
     std::cout << "in generate_credentials2" << std::endl;
+    std::cout << client_id << std::endl;
+    std::cout << hash_str(client_id + api_key) << std::endl;
+    std::cout << hash_str(client_id + refresh_key) << std::endl;
     ret_val["client_id"] = client_id;
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
@@ -161,6 +168,8 @@ response Endpoints::refresh_credentials(const request& req) {
         return response(401);
     }
 
+    std::cout << "in refresh credentials after chec refr" << std::endl;
+
     string client_id = user.user;
     string api_key = gen_random_str(APIKEYLEN);
     string refresh_key = gen_random_str(APIKEYLEN);
@@ -171,8 +180,8 @@ response Endpoints::refresh_credentials(const request& req) {
 
     AuthenticUser newcreds{
         client_id,
-        hash_str(client_id + api_key),
-        hash_str(client_id + refresh_key)
+        hash_str(api_key),
+        hash_str(refresh_key)
     };
 
 

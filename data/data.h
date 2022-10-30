@@ -16,7 +16,7 @@
 #include <exception>
 #include <chrono>
 
-constexpr auto DB_FILENAME = "../data/db";
+constexpr auto DB_FILENAME = "/home/urvee/Desktop/ASE/CodeBuddiesASE/data/db";
 
 class Data final: public BaseData {
     CoinbaseDriver cb_driver;
