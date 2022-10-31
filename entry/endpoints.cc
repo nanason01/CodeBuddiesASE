@@ -184,10 +184,14 @@ response Endpoints::refresh_credentials(const request& req) {
         hash_str(refresh_key)
     };
 
+    std::cout << client_id << std::endl;
+    std::cout << hash_str(api_key) << std::endl;
+    std::cout << hash_str(refresh_key) << std::endl;
+
 
     // TODO : test if this works
     try {
-        data->update_user_creds(user);
+        data->update_user_creds(newcreds);
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
