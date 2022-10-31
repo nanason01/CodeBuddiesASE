@@ -54,3 +54,6 @@ Except for /getcredentials, calls to all other endpoints must be authenticated w
 | /year_end_stats       | GET  | Gets year end statistics for a year                                                                                                           | None                                                                                                   | Json data with keys _lt_realized_pnl_, _st_realized_pnl_ and _actual_pnl_      |
 | /trade_pnl            | POST | Gets the profit and loss for the input trade and returns it                                                                                   | Json data with keys _timestamp_, _sold_currency_, _bought_currency_, _sold_amount_ and _bought_amount_ | The profit or loss : Json data with key _pnl_ whose value is the profit or loss |
 | /portfolio_pnl        | GET  | Get profit and loss of portfolio at various points in time                                                                                    | None                                                                                                   | Profit and loss over time                                                      |
+
+
+Example curl commands to send requests to the endpoints are in entry/README.md
