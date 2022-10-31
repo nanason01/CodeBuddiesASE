@@ -1,4 +1,4 @@
-#Some Instructions for data:
+#Some Instructions for /data:
 
 1.In order to make this excutable on your local, please change the `DB_FILENAME` inside `data.h` to:
 ```
