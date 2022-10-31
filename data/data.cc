@@ -126,14 +126,13 @@ void Data::add_user(const AuthenticUser& user) {
     const string check_user_sql = "SELECT COUNT(*) FROM Users WHERE "
         "UserID = \'" + user.user + "\';";
     const auto check_user_res = exec_sql<int>(db_conn, check_user_sql);
-
+    
     if (get<0>(check_user_res[0]) > 0)
         throw UserExists{};
     //set the Refr value to ? since we don't know
     const string add_user_sql = "INSERT INTO Users VALUES "
         "(\'" + user.user + "\', \'" + user.creds + "\', \'" + user.refrToken + "\');";
     exec_sql<>(db_conn, add_user_sql);
-
 
 }
 
@@ -184,12 +183,12 @@ static string to_insert(const AuthenticUser& user, const Trade& tr) {
 void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub_key, API_key pvt_key) const {
     assert(exch != Exchange::All);
     assert(exch != Exchange::Invalid);
-
+    
     // get current api key for this exchange
     const string check_sql = "SELECT PubKey, PvtKey FROM ExchangeKeys "
         "WHERE UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(static_cast<int>(exch)) + ";";
     const auto check_res = exec_sql<string, string>(db_conn, check_sql);
-
+    
     if (check_res.empty()) {
         assert(pub_key != "");
         assert(pvt_key != "");
