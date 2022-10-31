@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <bits/stdc++.h>
 
 #include "pricer/pricer.h"
 
@@ -56,7 +57,7 @@ std::string Pricer::get_asset_id(std::string currency) {
 
     std::string list_of_ids = this->perform_curl_request(url_list);
     auto jsonified_ids = crow::json::load(list_of_ids);
-
+    
     for (i = 0; i < jsonified_ids.size(); i++) {
         if (std::string(jsonified_ids[i]["symbol"]) == currency) {
             return std::string(jsonified_ids[i]["id"]);
@@ -89,6 +90,7 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
         currency_id + "/history?date=" + timestamp_str;
 
     std::string price_records = this->perform_curl_request(url_list);
+    //std::cout<<price_records<<std::endl;
     auto jsonified_ids = crow::json::load(price_records);
 
     if (jsonified_ids["market_data"] &&
@@ -111,11 +113,14 @@ double Pricer::get_usd_price(std::string currency, Timestamp tstamp) {
             return std::tolower(x);
         });
 
+    //transform(currency.begin(),currency.end(),currency.begin(),::tolower);
+    //std::cout<<currency<<std::endl;
+
     // Get the asset id for CoinGecko
     std::string currency_id = this->get_asset_id(currency);
     if (currency_id == "") {
         return 0;
     }
-
+    //std::cout<<currency_id<<std::endl;
     return this->get_asset_price(currency_id, tstamp);
 }

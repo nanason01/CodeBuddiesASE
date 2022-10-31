@@ -1,4 +1,4 @@
-#Some Instructions
+#Some Instructions for data:
 
 1.In order to make this excutable on your local, please change the `DB_FILENAME` inside `data.h` to:
 ```
@@ -22,3 +22,4 @@ constexpr auto DB_FILENAME = "/your/full/path/to/CodeBuddiesASE/data/db";
 
 4. For running the `data_test.cc`, run `bazel run test` inside the directory or `bazel run //data:test`.
 Before running the test, follow step 1 to change `TEST_DB_FILENAME` inside `data_test.cc` to the full path.
+
