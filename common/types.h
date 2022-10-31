@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
 #include <string_view>
-#include <limits>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
+#include <string>
+#include <limits>
 #include <ctime>
 
 enum class Term: uint8_t {
