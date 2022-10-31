@@ -63,8 +63,6 @@ static string hash_str(string key) {
 }
 
 static AuthenticUser parse_user(const request& req) {
-    //std::cout << req.get_header_value("Authorization")
-    //           .substr(7).substr(CLIENTIDLEN, APIKEYLEN) << endl;
     return AuthenticUser{
            req.get_header_value("Authorization")
                .substr(7).substr(0, CLIENTIDLEN),
