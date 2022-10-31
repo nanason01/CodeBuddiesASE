@@ -20,6 +20,7 @@ size_t pricer_write_callback(char* ptr, size_t size,
 
 class Pricer final: public PricerBase {
 public:
+    friend class PricerFixture;
     // returns the price per unit of currency on date
     double get_usd_price(std::string currency_pair,
         Timestamp tstamp = now()) final;
