@@ -17,7 +17,7 @@
 #include <chrono>
 
 //Please change the DB_FILENAME to the FULL PATH to the db file in your local directory
-constexpr auto DB_FILENAME = "/home/.../CodeBuddiesASE/data/db";
+constexpr auto DB_FILENAME = "~/CodeBuddiesASE/data/db";
 
 class Data final: public BaseData {
     CoinbaseDriver cb_driver;
