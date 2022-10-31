@@ -51,7 +51,8 @@ public:
         if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
 	}
-	this->create_table();
+	//old instruction of creating table
+	//this->create_table();
 
     }
     // only for testing
@@ -60,7 +61,7 @@ public:
         if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
 	}
-	this->create_table();
+	//this->create_table();
     }
 
     ~Data() override {
