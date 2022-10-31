@@ -11,9 +11,16 @@ int main() {
     // seed our rng
     srand((unsigned)time(NULL) * getpid());
 
+    /*MockData data;
+    MockMatcher matcher;
+    set_mode_mock();*/
+    set_up_mock_mode();
+    //set_mode_prod();
+
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")(Endpoints::validate_credentials);
+    CROW_ROUTE(app, "/getcredentials")(Endpoints::generate_credentials);
     CROW_ROUTE(app, "/refreshcredentials")(Endpoints::refresh_credentials);
     CROW_ROUTE(app, "/trade").methods("POST"_method)(Endpoints::upload_trade);
     CROW_ROUTE(app, "/exchangekey").methods("POST"_method)(Endpoints::upload_exchange_key);

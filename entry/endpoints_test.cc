@@ -19,7 +19,7 @@ protected:
     MockMatcher matcher;
 
     void SetUp() override {
-        Endpoints::set_mode_test(data, matcher);
+        set_mode_mock(data, matcher);
 
         AuthenticUser nick{ "nick", "nick_key" };
 

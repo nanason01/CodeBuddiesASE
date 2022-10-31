@@ -15,12 +15,23 @@ using std::string;
 using std::cerr;
 using std::endl;
 
-std::unique_ptr<BaseData> Endpoints::data = std::make_unique<Data>();
-std::unique_ptr<BaseMatcher> Endpoints::matcher = std::make_unique<Matcher>();
+std::unique_ptr<BaseData> data;
+std::unique_ptr<BaseMatcher> matcher;
+MockData Mdata;
+MockMatcher Mmatcher;
 
-void Endpoints::set_mode_test(MockData& mock_data, MockMatcher& mock_matcher) {
-    Endpoints::data.reset(&mock_data);
-    Endpoints::matcher.reset(&mock_matcher);
+void set_mode_prod() {
+    data = std::make_unique<Data>();
+    matcher = std::make_unique<Matcher>();
+}
+
+void set_mode_mock(MockData& data, MockMatcher& matcher) {
+    ::data.reset(&data);
+    ::matcher.reset(&matcher);
+}
+
+void set_up_mock_mode(){
+    set_mode_mock(Mdata, Mmatcher);
 }
 
 static string gen_random_str(const int len) {
@@ -28,7 +39,7 @@ static string gen_random_str(const int len) {
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz";
-    std::string ret(sizeof(alphanum), 'a');
+    std::string ret(sizeof(len), 'a');
 
     for (int i = 0; i < len; ++i)
         ret[i] = alphanum[rand() % sizeof(alphanum)];
@@ -51,16 +62,22 @@ static string hash_str(string key) {
 }
 
 static AuthenticUser parse_user(const request& req) {
+    //std::cout << req.get_header_value("Authorization")
+    //           .substr(7).substr(CLIENTIDLEN, APIKEYLEN) << endl;
     return AuthenticUser{
            req.get_header_value("Authorization")
-               .substr(CLIENTIDLEN),
+               .substr(7).substr(0, CLIENTIDLEN),
            hash_str(req.get_header_value("Authorization")
-               .substr(CLIENTIDLEN, APIKEYLEN))
+               .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
+
+    
 }
 
 response Endpoints::validate_credentials(const request& req) {
     const auto user = parse_user(req);
+    std::cout << user.user << std::endl;
+    std::cout << user.creds << std::endl;
 
     try {
         data->check_user(user);
@@ -77,14 +94,52 @@ response Endpoints::validate_credentials(const request& req) {
 
 response Endpoints::generate_credentials(const request& req) {
     crow::json::wvalue ret_val;
+    static int created = 0;
+    /*if(created == 0){
+        // table not yet created. Create table
+        
+        try {
+            data->create_table();
+        } catch (UserNotFound* e) {
+            cerr << "validate_credentials: " << e->what() << endl;
+            return response(401);
+        } catch (InvalidCreds* e) {
+            cerr << "validate_credentials: " << e->what() << endl;
+            return response(401);
+        }
+        created++;
+    }*/
+    std::cout << "in generate_credentials" << std::endl;
+    std::cout << data << std::endl;
 
     string client_id = gen_random_str(CLIENTIDLEN);
     string api_key = gen_random_str(APIKEYLEN);
     string refresh_key = gen_random_str(APIKEYLEN);
 
+    AuthenticUser newuser{
+        client_id,
+        hash_str(client_id + api_key),
+        hash_str(client_id + refresh_key)
+    };
+    std::cout << "in generate_credentials2" << std::endl;
     ret_val["client_id"] = client_id;
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
+    std::cout << "in generate_credentials3" << std::endl;
+    // TODO : test if this works
+    try {
+        data->add_user(newuser);
+        std::cout << "in generate_credentials4" << std::endl;
+    } catch (UserNotFound* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    } catch (InvalidCreds* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    }
+    std::cout << "in generate_credentials5" << std::endl;
+
+
 
     return ret_val;
 }
@@ -92,13 +147,45 @@ response Endpoints::generate_credentials(const request& req) {
 response Endpoints::refresh_credentials(const request& req) {
     crow::json::wvalue resp;
 
-    string client_id = gen_random_str(CLIENTIDLEN);
+    const auto user = parse_user(req);
+
+    // TODO : implement check_user_refresh_key()
+    
+    try {
+        data->check_refr(user.user, user.creds);
+    } catch (UserNotFound* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    } catch (InvalidCreds* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    }
+
+    string client_id = user.user;
     string api_key = gen_random_str(APIKEYLEN);
     string refresh_key = gen_random_str(APIKEYLEN);
 
     resp["client_id"] = client_id;
     resp["api_key"] = client_id + api_key;
     resp["refresh_token"] = client_id + refresh_key;
+
+    AuthenticUser newcreds{
+        client_id,
+        hash_str(client_id + api_key),
+        hash_str(client_id + refresh_key)
+    };
+
+
+    // TODO : test if this works
+    try {
+        data->update_user_creds(user);
+    } catch (UserNotFound* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    } catch (InvalidCreds* e) {
+        cerr << "validate_credentials: " << e->what() << endl;
+        return response(401);
+    }
 
     return resp;
 }
@@ -170,8 +257,7 @@ response Endpoints::remove_exchange_key(const request& req) {
     auto body = crow::json::load(req.body);
 
     Exchange exch = from_string(string(body["exchange"]));
-    // the to-be-deleted fields are unnecessary
-    // @TODO: update the README
+    // the to-be-deleted fields are unnecessary, readme updated.
 
     try {
         data->delete_exchange(user, exch);
@@ -193,22 +279,27 @@ response Endpoints::get_annotated_trades(const request& req) {
         const auto user_trades = data->get_trades(user);
         const auto mts = matcher->get_matched_trades(user_trades);
 
-        vector<crow::json::wvalue> ret;
+        //vector<crow::json::wvalue> ret;
+
+        crow::json::wvalue ret;
+        int i = 0;
 
         for (const MatchedTrade& mt : mts) {
-            crow::json::wvalue wv;
+            //crow::json::wvalue wv;
 
-            wv["bought_timestamp"] = to_string(mt.bought_timestamp);
-            wv["sold_timestamp"] = to_string(mt.sold_timestamp);
-            wv["term"] = to_string(mt.term);
-            wv["currency"] = mt.currency;
-            wv["size"] = to_string(mt.sz);
-            wv["pnl"] = to_string(mt.pnl);
+            ret[i]["bought_timestamp"] = to_string(mt.bought_timestamp);
+            ret[i]["sold_timestamp"] = to_string(mt.sold_timestamp);
+            ret[i]["term"] = to_string(mt.term);
+            ret[i]["currency"] = mt.currency;
+            ret[i]["size"] = to_string(mt.sz);
+            ret[i]["pnl"] = to_string(mt.pnl);
 
-            ret.emplace_back(std::move(wv));
+            i = i + 1;
+
+            //ret.emplace_back(std::move(wv));
         }
 
-        return response(200);
+        return crow::response(ret);
         // @TODO: how to return a list of values as a crow json
         // return response(std::move(ret));
     } catch (UserNotFound* e) {

@@ -16,7 +16,8 @@
 #include <exception>
 #include <chrono>
 
-constexpr auto DB_FILENAME = "db";
+//Please change the DB_FILENAME to the FULL PATH to the db file in your local directory
+constexpr auto DB_FILENAME = "/home/zx2395/jennice_new_test/CodeBuddiesASE/data/db";
 
 class Data final: public BaseData {
     CoinbaseDriver cb_driver;
@@ -47,25 +48,35 @@ public:
     // normal call
     Data()
         : cb_driver_ptr(&cb_driver), k_driver_ptr(&k_driver) {
-        if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK)
+        if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
+	}
+	this->create_table();
+
     }
     // only for testing
     Data(ExchangeDriver* _cb, ExchangeDriver* _k, const std::string& test_db_filename)
         : cb_driver_ptr(_cb), k_driver_ptr(_k) {
-        if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK)
+        if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
+	}
+	this->create_table();
     }
 
     ~Data() override {
         sqlite3_close(db_conn);
     }
 
+    void create_table(void) final;
+
     // writing operations
 
     // add a user to our system
     // throws UserExists if user exists
     void add_user(const AuthenticUser& user) final;
+
+    // update the credentials of a user
+    void update_user_creds(const AuthenticUser& user) final;
 
     // remove a user from our system
     // throws UserNotFound if user doesn't exist

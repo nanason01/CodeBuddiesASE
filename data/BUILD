@@ -7,6 +7,7 @@ cc_library(
         "base_data.h",
         "data.h",
     ],
+    data=["db"],
     visibility=[
         "//entry:__pkg__",
         "//data:__pkg__",
@@ -37,7 +38,7 @@ cc_test(
     name="test",
     srcs=["data_test.cc"],
     linkopts=["-pthread", "-lcrypto", "-lcurl",
-              "-lboost_date_time", "-ldl"],
+              "-lboost_date_time","-ldl"],
     deps=[
         "//data",
         "//common",
