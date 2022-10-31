@@ -16,12 +16,8 @@
 #include <exception>
 #include <chrono>
 
-
-constexpr auto DB_FILENAME = "/home/urvee/Desktop/ASE/CodeBuddiesASE/data/db";
-
 //Please change the DB_FILENAME to the FULL PATH to the db file in your local directory
-//constexpr auto DB_FILENAME = "/home/zx2395/jennice_new_test/CodeBuddiesASE/data/db";
-
+constexpr auto DB_FILENAME = "~/CodeBuddiesASE/data/db";
 
 class Data final: public BaseData {
     CoinbaseDriver cb_driver;
@@ -55,7 +51,8 @@ public:
         if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
 	}
-	this->create_table();
+	//old instruction of creating table
+	//this->create_table();
 
     }
     // only for testing
@@ -64,7 +61,7 @@ public:
         if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK){
             throw DatabaseConnError();
 	}
-	this->create_table();
+	//this->create_table();
     }
 
     ~Data() override {

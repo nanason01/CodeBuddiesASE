@@ -69,6 +69,8 @@ static AuthenticUser parse_user(const request& req) {
            hash_str(req.get_header_value("Authorization")
                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
+
+    
 }
 
 response Endpoints::validate_credentials(const request& req) {

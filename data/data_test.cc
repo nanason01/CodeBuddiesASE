@@ -30,9 +30,7 @@ protected:
 
     void SetUp() override {
         data = new Data(&cb, &k, TEST_DB_FILENAME);
-
 	data2 = new Data(&coin_client, &kraken_client, TEST_DB_FILENAME);
-
         /*ON_CALL(cb, get_trades({"nick", "nick_key","nick_refr"}))
             .WillByDefault(Return(std::vector<Trade>()));
 	
@@ -70,7 +68,6 @@ TEST_F(DataFixture,UpdateCreds) {
 
 TEST_F(DataFixture,UploadGetTrades) {
 	//data->create_table();
-
 	Timestamp t1 = from_usa_date(1,2,2018);
 	Trade s1{
 		t1,
@@ -110,7 +107,6 @@ TEST_F(DataFixture,UploadGetTrades) {
 	data->remove_user({"urvee","creds1","refrs1"});
 }
 
-
 TEST_F(DataFixture, emptyTrade) {
 	EXPECT_THROW(data->get_trades({"nico","cred4","refrs4"}),UserNotFound);
 	data->add_user({"nico","cred4","refrs4"});
@@ -146,7 +142,6 @@ TEST_F(DataFixture, LastUpdate) {
 	std::cout<<std::put_time(&last,"%c %Z")<<std::endl;
 	data->remove_user({"n1","c1","r1"});
 }
-
 /*
 TEST_F(DataFixture, Example) {i
     EXPECT_NE("hello", "world");

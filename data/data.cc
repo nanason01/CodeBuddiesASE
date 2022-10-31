@@ -119,21 +119,18 @@ void Data::add_user(const AuthenticUser& user) {
     // @TODO Urvee define what creds are
     // this simply check that what we have stored as the "creds"
     // for this user is what is passed into this function
-
     //std::cout << "line 122 adduser" << std::endl;
-
     // first, check whether user exists
     const string check_user_sql = "SELECT COUNT(*) FROM Users WHERE "
         "UserID = \'" + user.user + "\';";
     const auto check_user_res = exec_sql<int>(db_conn, check_user_sql);
-
+    
     if (get<0>(check_user_res[0]) > 0)
         throw UserExists{};
     //set the Refr value to ? since we don't know
     const string add_user_sql = "INSERT INTO Users VALUES "
         "(\'" + user.user + "\', \'" + user.creds + "\', \'" + user.refrToken + "\');";
     exec_sql<>(db_conn, add_user_sql);
-
 
 }
 
@@ -143,7 +140,7 @@ void Data::update_user_creds(const AuthenticUser& user) {
     // now update the creds and the refrToken
     const string update_user_creds_sql = 
         "UPDATE Users \ "
-        "SET Creds = \'" + user.creds + "\',"
+	"SET Creds = \'" + user.creds + "\',"
         "Refrs = \'" + user.refrToken + "\'"
         "WHERE UserID = \'" + user.user + "\';";
     exec_sql<>(db_conn, update_user_creds_sql);
@@ -184,12 +181,12 @@ static string to_insert(const AuthenticUser& user, const Trade& tr) {
 void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub_key, API_key pvt_key) const {
     assert(exch != Exchange::All);
     assert(exch != Exchange::Invalid);
-
+    
     // get current api key for this exchange
     const string check_sql = "SELECT PubKey, PvtKey FROM ExchangeKeys "
         "WHERE UserID = \'" + user.user + "\' AND ExchangeID = " + std::to_string(static_cast<int>(exch)) + ";";
     const auto check_res = exec_sql<string, string>(db_conn, check_sql);
-
+    
     if (check_res.empty()) {
         assert(pub_key != "");
         assert(pvt_key != "");
@@ -205,8 +202,8 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
             std::to_string(get_month(now())) + ", " +
             std::to_string(get_day(now())) +
             ");";
-
-        exec_sql<>(db_conn, insert_key_sql);
+        
+	exec_sql<>(db_conn, insert_key_sql);
     } else if (pub_key != "" &&
         (get<0>(check_res[0]) != pub_key || get<1>(check_res[0]) != pvt_key)) {
         // if we are overwriting a key, update it
