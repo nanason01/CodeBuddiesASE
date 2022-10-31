@@ -62,19 +62,14 @@ static string hash_str(string key) {
 }
 
 static AuthenticUser parse_user(const request& req) {
-    std::cout << req.get_header_value("Authorization")
-               .substr(7).substr(0, CLIENTIDLEN) << endl;
-    std::cout << req.get_header_value("Authorization")
-               .substr(7).substr(CLIENTIDLEN, APIKEYLEN) << std::endl;
-    std::cout << hash_str(req.get_header_value("Authorization")
-               .substr(7).substr(CLIENTIDLEN, APIKEYLEN)) << std::endl;
-    std::cout << "in parse_user" << std::endl;
+
     return AuthenticUser{
            req.get_header_value("Authorization")
                .substr(7).substr(0, CLIENTIDLEN),
            hash_str(req.get_header_value("Authorization")
                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
+
     
 }
 
@@ -129,6 +124,7 @@ response Endpoints::generate_credentials(const request& req) {
     std::cout << client_id << std::endl;
     std::cout << hash_str(client_id + api_key) << std::endl;
     std::cout << hash_str(client_id + refresh_key) << std::endl;
+
     ret_val["client_id"] = client_id;
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
@@ -168,7 +164,6 @@ response Endpoints::refresh_credentials(const request& req) {
         return response(401);
     }
 
-    std::cout << "in refresh credentials after chec refr" << std::endl;
 
     string client_id = user.user;
     string api_key = gen_random_str(APIKEYLEN);
@@ -192,6 +187,7 @@ response Endpoints::refresh_credentials(const request& req) {
     // TODO : test if this works
     try {
         data->update_user_creds(newcreds);
+
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
@@ -296,6 +292,7 @@ response Endpoints::get_annotated_trades(const request& req) {
 
         //vector<crow::json::wvalue> ret;
 
+
         crow::json::wvalue ret;
         int i = 0;
 
@@ -314,6 +311,7 @@ response Endpoints::get_annotated_trades(const request& req) {
             //ret.emplace_back(std::move(wv));
         }
         
+
         return crow::response(ret);
         // @TODO: how to return a list of values as a crow json
         // return response(std::move(ret));
