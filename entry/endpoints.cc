@@ -325,8 +325,16 @@ response Endpoints::get_year_end_stats(const request& req) {
 
     try {
         const auto user_trades = data->get_trades(user);
+        std::cout << "after get_trades(user)" << std::endl;
+        for (const Trade& t : user_trades){
+            std::cout << t.sold_currency << std::endl;
+            std::cout << t.bought_currency << std::endl;
+            std::cout << t.sold_amount << std::endl;
+            std::cout << t.bought_amount << std::endl;
+        }
+        
         const auto ye_pnl = matcher->get_year_end_pnl(user_trades);
-
+        std::cout << "after matcher fn" << std::endl;
         crow::json::wvalue ye_pnl_crow;
 
         ye_pnl_crow["lt_realized_pnl"] = ye_pnl.lt_realized;
