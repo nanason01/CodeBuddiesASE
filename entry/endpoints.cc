@@ -286,7 +286,9 @@ response Endpoints::get_annotated_trades(const request& req) {
 
     try {
         const auto user_trades = data->get_trades(user);
+        std::cout << "after getting trades" << std::endl;
         const auto mts = matcher->get_matched_trades(user_trades);
+        std::cout << "after getting matched trades" << std::endl;
 
         //vector<crow::json::wvalue> ret;
 
@@ -295,7 +297,7 @@ response Endpoints::get_annotated_trades(const request& req) {
 
         for (const MatchedTrade& mt : mts) {
             //crow::json::wvalue wv;
-
+            std::cout << "parsing matched trades" << std::endl;
             ret[i]["bought_timestamp"] = to_string(mt.bought_timestamp);
             ret[i]["sold_timestamp"] = to_string(mt.sold_timestamp);
             ret[i]["term"] = to_string(mt.term);
@@ -307,7 +309,7 @@ response Endpoints::get_annotated_trades(const request& req) {
 
             //ret.emplace_back(std::move(wv));
         }
-
+        
         return crow::response(ret);
         // @TODO: how to return a list of values as a crow json
         // return response(std::move(ret));
@@ -368,7 +370,7 @@ response Endpoints::calc_trade_pnl(const request& req) {
         data->check_user(user);
         const auto pnl = matcher->get_pnl_from(trade_in);
         crow::json::wvalue pnl_crow;
-        pnl_crow['pnl'] = pnl;
+        pnl_crow["pnl"] = pnl;
         return pnl_crow;
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
@@ -387,7 +389,7 @@ response Endpoints::get_net_pnl(const request& req) {
         const auto user_trades = data->get_trades(user);
         const auto pnl = matcher->get_net_pnl(user_trades);
         crow::json::wvalue net_pnl_crow;
-        net_pnl_crow['pnl'] = pnl;
+        net_pnl_crow["pnl"] = pnl;
         return response(net_pnl_crow);
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
