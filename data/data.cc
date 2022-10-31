@@ -228,6 +228,7 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
     vector<Trade> trades = get_driver(exch)->get_trades(pub_key, pvt_key);
 
     if (!trades.empty()){
+
     //std::cout<<"Line 231 fetch data from exchange"<<std::endl;
     string insert_stmt = "INSERT INTO Trades (UserID, TradeYear, TradeMonth, TradeDay, BoughtCurrency, SoldCurrency, BoughtAmount, SoldAmount) VALUES";
     for (const Trade& tr : trades){

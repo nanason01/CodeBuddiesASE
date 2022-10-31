@@ -1,12 +1,14 @@
+// Copyright 2022 CodingBuddies
 //
 // API endpoints
 //
 
 #pragma once
 
+#include <openssl/sha.h>
+
 #include <memory>
 
-#include <openssl/sha.h>
 
 #include "common/types.h"
 #include "data/data.h"

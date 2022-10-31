@@ -1,4 +1,6 @@
-#Some Instructions for /data:
+#Overview
+DATA module provides sqlite3 database supports by applying the sqlite3 connector for Endpoint to store and get data for Users, ExchangeKeys, and Trades.
+#Instructions for /data:
 
 1.In order to make this excutable on your local, please change the `DB_FILENAME` inside `data.h` to:
 ```
