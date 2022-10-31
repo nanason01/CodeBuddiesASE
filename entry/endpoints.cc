@@ -1,3 +1,4 @@
+// Copyright 2022 CodingBuddies
 //
 // Implementation of API entpoints
 //
@@ -30,7 +31,7 @@ void set_mode_mock(MockData& data, MockMatcher& matcher) {
     ::matcher.reset(&matcher);
 }
 
-void set_up_mock_mode(){
+void set_up_mock_mode() {
     set_mode_mock(Mdata, Mmatcher);
 }
 
@@ -62,15 +63,12 @@ static string hash_str(string key) {
 }
 
 static AuthenticUser parse_user(const request& req) {
-
     return AuthenticUser{
            req.get_header_value("Authorization")
                .substr(7).substr(0, CLIENTIDLEN),
            hash_str(req.get_header_value("Authorization")
                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
-
-    
 }
 
 response Endpoints::validate_credentials(const request& req) {
@@ -129,7 +127,7 @@ response Endpoints::generate_credentials(const request& req) {
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
     std::cout << "in generate_credentials3" << std::endl;
-    // TODO : test if this works
+
     try {
         data->add_user(newuser);
         std::cout << "in generate_credentials4" << std::endl;
@@ -152,8 +150,6 @@ response Endpoints::refresh_credentials(const request& req) {
 
     const auto user = parse_user(req);
 
-    // TODO : implement check_user_refresh_key()
-    
     try {
         data->check_refr(user.user, user.creds);
     } catch (UserNotFound* e) {
@@ -183,11 +179,8 @@ response Endpoints::refresh_credentials(const request& req) {
     std::cout << hash_str(api_key) << std::endl;
     std::cout << hash_str(refresh_key) << std::endl;
 
-
-    // TODO : test if this works
     try {
         data->update_user_creds(newcreds);
-
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
@@ -255,7 +248,7 @@ response Endpoints::upload_exchange_key(const request& req) {
     } catch (InvalidCreds* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
-    } // should we catch exchanges level errors ??
+    } //  should we catch exchanges level errors ??
 
     return response(200);
 }
@@ -290,14 +283,11 @@ response Endpoints::get_annotated_trades(const request& req) {
         const auto mts = matcher->get_matched_trades(user_trades);
         std::cout << "after getting matched trades" << std::endl;
 
-        //vector<crow::json::wvalue> ret;
-
-
         crow::json::wvalue ret;
         int i = 0;
 
         for (const MatchedTrade& mt : mts) {
-            //crow::json::wvalue wv;
+            // crow::json::wvalue wv;
             std::cout << "parsing matched trades" << std::endl;
             ret[i]["bought_timestamp"] = to_string(mt.bought_timestamp);
             ret[i]["sold_timestamp"] = to_string(mt.sold_timestamp);
@@ -308,12 +298,10 @@ response Endpoints::get_annotated_trades(const request& req) {
 
             i = i + 1;
 
-            //ret.emplace_back(std::move(wv));
+            // ret.emplace_back(std::move(wv));
         }
-        
 
         return crow::response(ret);
-        // @TODO: how to return a list of values as a crow json
         // return response(std::move(ret));
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
@@ -330,13 +318,13 @@ response Endpoints::get_year_end_stats(const request& req) {
     try {
         const auto user_trades = data->get_trades(user);
         std::cout << "after get_trades(user)" << std::endl;
-        for (const Trade& t : user_trades){
+        for (const Trade& t : user_trades) {
             std::cout << t.sold_currency << std::endl;
             std::cout << t.bought_currency << std::endl;
             std::cout << t.sold_amount << std::endl;
             std::cout << t.bought_amount << std::endl;
         }
-        
+
         const auto ye_pnl = matcher->get_year_end_pnl(user_trades);
         std::cout << "after matcher fn" << std::endl;
         crow::json::wvalue ye_pnl_crow;
@@ -400,5 +388,4 @@ response Endpoints::get_net_pnl(const request& req) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
     }
-
 }

@@ -1,3 +1,4 @@
+// Copyright 2022 CodingBuddies
 //
 // The main instance of our service
 //
