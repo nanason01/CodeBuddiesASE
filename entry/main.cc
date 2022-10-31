@@ -14,8 +14,10 @@ int main() {
     /*MockData data;
     MockMatcher matcher;
     set_mode_mock();*/
-    set_up_mock_mode();
-    //set_mode_prod();
+
+    //set_up_mock_mode();
+    set_mode_prod();
+
 
     crow::SimpleApp app;
 
