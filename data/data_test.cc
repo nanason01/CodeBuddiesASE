@@ -12,7 +12,7 @@
 
 using ::testing::Return;
 
-const std::string TEST_DB_FILENAME = "/home/zx2395/jennice_new_test/CodeBuddiesASE/data/db";
+const std::string TEST_DB_FILENAME = "/home/urvee/Desktop/ASE/CodeBuddiesASE/data/db";
 
 class DataFixture: public ::testing::Test {
 protected:
