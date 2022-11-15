@@ -1,0 +1,27 @@
+on: [push, pull_request]
+
+jobs:
+  cpp_style_check:
+    runs-on: ubuntu-latest
+    name: Check C++ Style
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+    - run: pip install cpplint
+    - run: cpplint --recursive .
+    
+  bazel_build:
+    runs-on: ubuntu-latest
+    name: Verify that every target builds
+    steps:
+    - uses: actions/checkout@v2
+    - uses: bazelbuild/setup-bazelisk@v2
+    - run: bazel build ...
+    
+  unit_tests:
+    runs-on: ubuntu-latest
+    name: Verify all unit tests pass
+    steps:
+    - uses: actions/checkout@v2
+    - uses: bazelbuild/setup-bazelisk@v2
+    - run: bazel test --test_output=all ...
