@@ -1,12 +1,13 @@
-// Copyright 2022 CodingBuddies
+// Copyright 2022 CodeBuddies ASE Group
+
+#include "pricer/pricer.h"
+
 #include <curl/curl.h>
 #include <crow.h>
 
 #include <algorithm>
 #include <iostream>
-#include <bits/stdc++.h>
 
-#include "pricer/pricer.h"
 
 /*
  *
@@ -57,10 +58,10 @@ std::string Pricer::get_asset_id(std::string currency) {
 
     std::string list_of_ids = this->perform_curl_request(url_list);
     auto jsonified_ids = crow::json::load(list_of_ids);
-    
+
     for (i = 0; i < jsonified_ids.size(); i++) {
-        if (std::string(jsonified_ids[i]["symbol"]) == currency) {
-            return std::string(jsonified_ids[i]["id"]);
+        if (std::string(jsonified_ids[ i ][ "symbol" ]) == currency) {
+            return std::string(jsonified_ids[ i ][ "id" ]);
         }
     }
 
@@ -93,10 +94,10 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
 
     auto jsonified_ids = crow::json::load(price_records);
 
-    if (jsonified_ids["market_data"] &&
-        jsonified_ids["market_data"]["current_price"] &&
-        jsonified_ids["market_data"]["current_price"]["usd"]) {
-        ans = jsonified_ids["market_data"]["current_price"]["usd"].d();
+    if (jsonified_ids[ "market_data" ] &&
+        jsonified_ids[ "market_data" ][ "current_price" ] &&
+        jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ]) {
+        ans = jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ].d();
     }
 
     return ans;

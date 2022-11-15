@@ -7,7 +7,7 @@ cc_library(
         "base_data.h",
         "data.h",
     ],
-    data=["db"],
+    data=["schema.sql", "clear.sql"],
     visibility=[
         "//entry:__pkg__",
         "//data:__pkg__",

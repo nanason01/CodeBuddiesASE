@@ -1,10 +1,14 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Testing suite for matcher.h
 //
 
-#include "matcher.h"
-#include "pricer/mock_pricer.h"
 #include <gtest/gtest.h>
+
+#include <utility>
+
+#include "engine/matcher.h"
+#include "pricer/mock_pricer.h"
 
 /*
 mocked pricer will return between 1/1/2017 and 1/1/2019
@@ -291,31 +295,31 @@ TEST_F(MatcherFixture, GetNetPnlLoss) {
 
 TEST_F(MatcherFixture, GetPnlSnapshotsEmpty) {
     const vector<TimeDelta> samples = {
-        now() - from_usa_date(3,1,2017),
-        now() - from_usa_date(6,1,2017),
-        now() - from_usa_date(1,1,2018),
+        now() - from_usa_date(3, 1, 2017),
+        now() - from_usa_date(6, 1, 2017),
+        now() - from_usa_date(1, 1, 2018),
     };
 
-    EXPECT_EQ(now() - samples[0], from_usa_date(3, 1, 2017));
+    EXPECT_EQ(now() - samples[ 0 ], from_usa_date(3, 1, 2017));
 
     const auto ret = matcher->get_pnl_snapshots({}, samples);
 
     ASSERT_EQ(ret.size(), 3);
 
-    EXPECT_EQ(ret[0].timestamp, from_usa_date(3, 1, 2017));
-    EXPECT_FLOAT_EQ(ret[0].pnl, 0.0);
+    EXPECT_EQ(ret[ 0 ].timestamp, from_usa_date(3, 1, 2017));
+    EXPECT_FLOAT_EQ(ret[ 0 ].pnl, 0.0);
 
-    EXPECT_EQ(ret[1].timestamp, from_usa_date(6, 1, 2017));
-    EXPECT_FLOAT_EQ(ret[1].pnl, 0.0);
+    EXPECT_EQ(ret[ 1 ].timestamp, from_usa_date(6, 1, 2017));
+    EXPECT_FLOAT_EQ(ret[ 1 ].pnl, 0.0);
 
-    EXPECT_EQ(ret[2].timestamp, from_usa_date(1, 1, 2018));
-    EXPECT_FLOAT_EQ(ret[2].pnl, 0.0);
+    EXPECT_EQ(ret[ 2 ].timestamp, from_usa_date(1, 1, 2018));
+    EXPECT_FLOAT_EQ(ret[ 2 ].pnl, 0.0);
 }
 TEST_F(MatcherFixture, GetPnlSnapshotsNormal) {
     const vector<TimeDelta> samples = {
-        now() - from_usa_date(3,1,2017),
-        now() - from_usa_date(6,1,2017),
-        now() - from_usa_date(1,1,2018)
+        now() - from_usa_date(3, 1, 2017),
+        now() - from_usa_date(6, 1, 2017),
+        now() - from_usa_date(1, 1, 2018)
     };
 
     Timestamp entry_time = from_usa_date(1, 1, 2017);
@@ -347,14 +351,14 @@ TEST_F(MatcherFixture, GetPnlSnapshotsNormal) {
 
     ASSERT_EQ(ret.size(), 3);
 
-    EXPECT_EQ(ret[0].timestamp, from_usa_date(3, 1, 2017));
-    EXPECT_FLOAT_EQ(ret[0].pnl, 20.0);
+    EXPECT_EQ(ret[ 0 ].timestamp, from_usa_date(3, 1, 2017));
+    EXPECT_FLOAT_EQ(ret[ 0 ].pnl, 20.0);
 
-    EXPECT_EQ(ret[1].timestamp, from_usa_date(6, 1, 2017));
-    EXPECT_FLOAT_EQ(ret[1].pnl, -50.0);
+    EXPECT_EQ(ret[ 1 ].timestamp, from_usa_date(6, 1, 2017));
+    EXPECT_FLOAT_EQ(ret[ 1 ].pnl, -50.0);
 
-    EXPECT_EQ(ret[2].timestamp, from_usa_date(1, 1, 2018));
-    EXPECT_FLOAT_EQ(ret[2].pnl, -1095.0);
+    EXPECT_EQ(ret[ 2 ].timestamp, from_usa_date(1, 1, 2018));
+    EXPECT_FLOAT_EQ(ret[ 2 ].pnl, -1095.0);
 }
 
 // get_matched_trades
@@ -552,10 +556,10 @@ TEST_F(MatcherFixture, GetMatchedTradesMatchMultiple) {
     ASSERT_EQ(filter_term(res, Term::Short).size(), 1);
     ASSERT_EQ(filter_term(res, Term::Long).size(), 1);
 
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[0].sz, 1.0);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[0].pnl, -10.0);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[0].sz, 1.0);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[0].pnl, -10.0);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[ 0 ].sz, 1.0);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[ 0 ].pnl, -10.0);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[ 0 ].sz, 1.0);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[ 0 ].pnl, -10.0);
 }
 TEST_F(MatcherFixture, GetMatchedTradesSTCLOverLTCL) {
     Timestamp vtop40up = from_usa_date(5, 1, 2017);
@@ -589,9 +593,9 @@ TEST_F(MatcherFixture, GetMatchedTradesSTCLOverLTCL) {
     ASSERT_EQ(filter_term(res, Term::Short).size(), 1);
     EXPECT_EQ(filter_term(res, Term::Long).size(), 0);
 
-    EXPECT_EQ(filter_term(res, Term::Short)[0].bought_timestamp, vtop40down);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[0].sz, 1.0);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[0].pnl, -10.0);
+    EXPECT_EQ(filter_term(res, Term::Short)[ 0 ].bought_timestamp, vtop40down);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[ 0 ].sz, 1.0);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[ 0 ].pnl, -10.0);
 }
 TEST_F(MatcherFixture, GetMatchedTradesLTCGOverSTCG) {
     Timestamp vbot40up = from_usa_date(5, 1, 2017);
@@ -625,9 +629,9 @@ TEST_F(MatcherFixture, GetMatchedTradesLTCGOverSTCG) {
     ASSERT_EQ(filter_term(res, Term::Long).size(), 1);
     EXPECT_EQ(filter_term(res, Term::Short).size(), 0);
 
-    EXPECT_EQ(filter_term(res, Term::Long)[0].bought_timestamp, vbot40up);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[0].sz, 1.0);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[0].pnl, 10.0);
+    EXPECT_EQ(filter_term(res, Term::Long)[ 0 ].bought_timestamp, vbot40up);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[ 0 ].sz, 1.0);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Long)[ 0 ].pnl, 10.0);
 }
 TEST_F(MatcherFixture, GetMatchedTradesSTCGOverLTCG) {
     Timestamp crsh25 = from_usa_date(7, 1, 2017);
@@ -661,9 +665,9 @@ TEST_F(MatcherFixture, GetMatchedTradesSTCGOverLTCG) {
     ASSERT_EQ(filter_term(res, Term::Short).size(), 1);
     EXPECT_EQ(filter_term(res, Term::Long).size(), 0);
 
-    EXPECT_EQ(filter_term(res, Term::Short)[0].bought_timestamp, crsh935);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[0].sz, 1.0);
-    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[0].pnl, 10.0);
+    EXPECT_EQ(filter_term(res, Term::Short)[ 0 ].bought_timestamp, crsh935);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[ 0 ].sz, 1.0);
+    EXPECT_FLOAT_EQ(filter_term(res, Term::Short)[ 0 ].pnl, 10.0);
 }
 TEST_F(MatcherFixture, GetMatchedTradesFlatOverGain) {
     Timestamp vbot30up = from_usa_date(4, 1, 2017);
@@ -697,9 +701,9 @@ TEST_F(MatcherFixture, GetMatchedTradesFlatOverGain) {
     ASSERT_EQ(filter_term(res1, Term::Long).size(), 1);
     EXPECT_EQ(filter_term(res1, Term::Short).size(), 0);
 
-    EXPECT_EQ(filter_term(res1, Term::Long)[0].bought_timestamp, vbot30up);
-    EXPECT_FLOAT_EQ(filter_term(res1, Term::Long)[0].sz, 1.0);
-    EXPECT_FLOAT_EQ(filter_term(res1, Term::Long)[0].pnl, 0.0);
+    EXPECT_EQ(filter_term(res1, Term::Long)[ 0 ].bought_timestamp, vbot30up);
+    EXPECT_FLOAT_EQ(filter_term(res1, Term::Long)[ 0 ].sz, 1.0);
+    EXPECT_FLOAT_EQ(filter_term(res1, Term::Long)[ 0 ].pnl, 0.0);
 
     Timestamp vbot70up = from_usa_date(8, 1, 2017);
     Timestamp vbot80up = from_usa_date(9, 1, 2018);
@@ -732,9 +736,9 @@ TEST_F(MatcherFixture, GetMatchedTradesFlatOverGain) {
     ASSERT_EQ(filter_term(res2, Term::Short).size(), 1);
     EXPECT_EQ(filter_term(res2, Term::Long).size(), 0);
 
-    EXPECT_EQ(filter_term(res2, Term::Short)[0].bought_timestamp, vbot70up);
-    EXPECT_FLOAT_EQ(filter_term(res2, Term::Short)[0].sz, 1.0);
-    EXPECT_FLOAT_EQ(filter_term(res2, Term::Short)[0].pnl, 0.0);
+    EXPECT_EQ(filter_term(res2, Term::Short)[ 0 ].bought_timestamp, vbot70up);
+    EXPECT_FLOAT_EQ(filter_term(res2, Term::Short)[ 0 ].sz, 1.0);
+    EXPECT_FLOAT_EQ(filter_term(res2, Term::Short)[ 0 ].pnl, 0.0);
 }
 TEST_F(MatcherFixture, GetMatchedTradesCalcEachYear) {
     Timestamp crsh2017buy = from_usa_date(3, 1, 2017);
@@ -777,20 +781,20 @@ TEST_F(MatcherFixture, GetMatchedTradesCalcEachYear) {
     ASSERT_EQ(mts.size(), 2);
 
     // technically allowed to return in any order
-    if (mts[0].bought_timestamp == crsh2018buy)
-        std::swap(mts[0], mts[1]);
+    if (mts[ 0 ].bought_timestamp == crsh2018buy)
+        std::swap(mts[ 0 ], mts[ 1 ]);
 
-    EXPECT_EQ(mts[0].bought_timestamp, crsh2017buy);
-    EXPECT_EQ(mts[0].sold_timestamp, crsh2017sell);
-    EXPECT_EQ(mts[0].currency, "CRSH");
-    EXPECT_FLOAT_EQ(mts[0].pnl, 0.0);
-    EXPECT_FLOAT_EQ(mts[0].sz, 1.0);
+    EXPECT_EQ(mts[ 0 ].bought_timestamp, crsh2017buy);
+    EXPECT_EQ(mts[ 0 ].sold_timestamp, crsh2017sell);
+    EXPECT_EQ(mts[ 0 ].currency, "CRSH");
+    EXPECT_FLOAT_EQ(mts[ 0 ].pnl, 0.0);
+    EXPECT_FLOAT_EQ(mts[ 0 ].sz, 1.0);
 
-    EXPECT_EQ(mts[1].bought_timestamp, crsh2018buy);
-    EXPECT_EQ(mts[1].sold_timestamp, crsh2018sell);
-    EXPECT_EQ(mts[1].currency, "CRSH");
-    EXPECT_FLOAT_EQ(mts[1].pnl, 0.0);
-    EXPECT_FLOAT_EQ(mts[1].sz, 1.0);
+    EXPECT_EQ(mts[ 1 ].bought_timestamp, crsh2018buy);
+    EXPECT_EQ(mts[ 1 ].sold_timestamp, crsh2018sell);
+    EXPECT_EQ(mts[ 1 ].currency, "CRSH");
+    EXPECT_FLOAT_EQ(mts[ 1 ].pnl, 0.0);
+    EXPECT_FLOAT_EQ(mts[ 1 ].sz, 1.0);
 }
 TEST_F(MatcherFixture, GetMatchedTradesNormal) {
     Timestamp ts3_1_2017 = from_usa_date(3, 1, 2017);
@@ -911,7 +915,7 @@ TEST_F(MatcherFixture, GetMatchedTradesNormal) {
             1.0,
             -60.0
         }
-    ));
+    ));  // NOLINT (this would look disgusting on one line)
     EXPECT_THAT(lt, ::testing::UnorderedElementsAre(
         MatchedTrade{
             ts6_1_2017,
@@ -929,14 +933,14 @@ TEST_F(MatcherFixture, GetMatchedTradesNormal) {
             1.0,
             160.0
         }
-    ));
+    ));  // NOLINT (this would look disgusting on one line)
     EXPECT_THAT(hld, ::testing::Contains(
         ::testing::AllOf(
             ::testing::Field(&MatchedTrade::bought_timestamp, ts3_1_2017),
             ::testing::Field(&MatchedTrade::currency, "DECR"),
             ::testing::Field(&MatchedTrade::sz, 1.0)
         )
-    ));
+    ));  // NOLINT (this would look disgusting on one line)
 
     double usd_hld = 0.0;
     for (const auto& mt : hld) {
@@ -954,7 +958,7 @@ TEST_F(MatcherFixture, GetMatchedTradesNormal) {
 
     EXPECT_THAT(ums, ::testing::Each(
         ::testing::Field(&MatchedTrade::currency, "USD")
-    ));
+    ));  // NOLINT (this would look disgusting on one line)
 }
 
 // get_year_end_pnl
@@ -1100,7 +1104,7 @@ TEST_F(MatcherFixture, GetEarliestLongTermSells) {
             ::testing::Field(&Trade::timestamp, ts3_2_2018),
             ::testing::Field(&Trade::timestamp, ts6_2_2018)
         )
-    ));
+    ));  // NOLINT (this would look disgusting on one line)
 
     const auto res2 = matcher->get_earliest_long_term_sells(input, ts3_2_2018);
 
@@ -1109,7 +1113,7 @@ TEST_F(MatcherFixture, GetEarliestLongTermSells) {
             ::testing::Field(&Trade::timestamp, ts3_2_2018),
             ::testing::Field(&Trade::timestamp, ts6_2_2018)
         )
-    ));
+    ));  // NOLINT (this would look disgusting on one line)
 
     const auto res3 = matcher->get_earliest_long_term_sells(input, ts3_3_2018);
 
@@ -1118,5 +1122,5 @@ TEST_F(MatcherFixture, GetEarliestLongTermSells) {
             ::testing::Field(&Trade::timestamp, ts3_2_2018),
             ::testing::Field(&Trade::timestamp, ts6_2_2018)
         )
-    ));
+    ));  // NOLINT (this would look disgusting on one line)
 }

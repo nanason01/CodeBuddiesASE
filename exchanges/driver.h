@@ -1,6 +1,7 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Base driver for exchanges
-// Copyright 2022 CodingBuddies
+//
 
 #pragma once
 
@@ -9,25 +10,25 @@
 
 #include "common/types.h"
 
-struct InvalidAPIKey: std::exception {
+struct InvalidAPIKey : std::exception {
     const char* what() const noexcept override {
         return "Invalid API Key";
     }
 };
 
-struct APICredsMissing: std::exception {
+struct APICredsMissing : std::exception {
     const char* what() const noexcept override {
         return "Credentials for API Calls are Missing";
     }
 };
 
-struct CurlSetupFailed: std::exception {
+struct CurlSetupFailed : std::exception {
     const char* what() const noexcept override {
         return "Setting up cURL failed";
     }
 };
 
-struct CurlRequestFailed: std::exception {
+struct CurlRequestFailed : std::exception {
     const char* what() const noexcept override {
         return "Requesting resource with cURL failed";
     }

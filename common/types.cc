@@ -1,4 +1,6 @@
-#include "types.h"
+// Copyright 2022 CodeBuddies ASE Group
+
+#include "common/types.h"
 
 std::ostream& operator<<(std::ostream& os, const Trade& tr) {
     os << "trade at ";
@@ -46,7 +48,8 @@ std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt) {
 }
 
 void std::PrintTo(const Timestamp& ts, std::ostream* os) {
-    std::tm* cal_ts = localtime(&ts);
+    std::tm buf;
+    std::tm* cal_ts = localtime_r(&ts, &buf);
 
     *os << std::put_time(cal_ts, "%c %Z");
 }

@@ -1,16 +1,18 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Testing suite for endpoints.h
 //
 
-#include "endpoints.h"
+#include <gtest/gtest.h>
+
+#include "entry/endpoints.h"
 #include "engine/mock_matcher.h"
 #include "data/mock_data.h"
-#include <gtest/gtest.h>
 
 
 using ::testing::Return;
 
-class EndpointsFixture: public ::testing::Test {
+class EndpointsFixture : public ::testing::Test {
 protected:
     // define any variables you want to use in tests here
     int num;
@@ -19,7 +21,7 @@ protected:
     MockMatcher matcher;
 
     void SetUp() override {
-        set_mode_mock(data, matcher);
+        Endpoints::set_mode_mock();
 
         AuthenticUser nick{ "nick", "nick_key" };
 
