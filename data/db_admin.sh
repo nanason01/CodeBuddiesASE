@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DB_PATH=db
+DB_PATH='/db'
 
 if [ "$1" = "clear" ]; then
     if (sqlite3 $DB_PATH < clear.sql); then
