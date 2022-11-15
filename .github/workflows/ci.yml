@@ -10,29 +10,16 @@ jobs:
     - run: pip install cpplint
     - run: cpplint --recursive .
   
-  setup_build:
+  unit_tests:
     runs-on: ubuntu-latest
-    name: Install dependencies
+    name: Build and run all tests
     steps:
     - uses: bazelbuild/setup-bazelisk@v2
     - run: sudo apt install libboost-all-dev
     - run: wget https://github.com/CrowCpp/Crow/releases/download/v1.0%2B5/crow-v1.0+5.deb
     - run: sudo apt install ./crow-v1.0+5.deb
     - run: sudo apt install libsqlite3-dev
-    
-  bazel_build:
-    needs: setup_build
-    runs-on: ubuntu-latest
-    name: Verify that every target builds
-    steps:
-    - uses: actions/checkout@v2
+
     - run: bazel build ...
-    
-  unit_tests:
-    needs: bazel_build
-    runs-on: ubuntu-latest
-    name: Verify all unit tests pass
-    steps:
-    - uses: actions/checkout@v2
-    - uses: bazelbuild/setup-bazelisk@v2
+
     - run: bazel test --test_output=all ...
