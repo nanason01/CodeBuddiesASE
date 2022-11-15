@@ -28,27 +28,27 @@ struct AuthenticUser {
 };
 
 // errors
-struct SqlError: std::exception {
+struct SqlError : std::exception {
     const char* what() const noexcept override {
         return "Invalid SQL";
     }
 };
-struct DatabaseConnError: std::exception {
+struct DatabaseConnError : std::exception {
     const char* what() const noexcept override {
         return "Can't open database";
     }
 };
-struct UserNotFound: std::exception {
+struct UserNotFound : std::exception {
     const char* what() const noexcept override {
         return "User not found in system";
     }
 };
-struct UserExists: std::exception {
+struct UserExists : std::exception {
     const char* what() const noexcept override {
         return "User already in system";
     }
 };
-struct InvalidCreds: std::exception {
+struct InvalidCreds : std::exception {
     const char* what() const noexcept override {
         return "Failed to authenticate user with given creds";
     }
@@ -59,7 +59,10 @@ public:
     virtual ~BaseData() {}
 
     // writing operations
-    virtual void create_table(void) = 0;
+
+    // unconditionally execute a sql file
+    // should only be called by admin
+    virtual void exec_sql_file(const std::string& sql_filename) = 0;
 
     // add a user to our system
     // throws UserExists if user exists

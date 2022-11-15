@@ -13,7 +13,7 @@
 #include <limits>
 #include <ctime>
 
-enum class Term: uint8_t {
+enum class Term : uint8_t {
     Short,
     Long,
     Held,
@@ -35,12 +35,12 @@ constexpr const char* to_string(const Term term) {
     }
 }
 
-enum class Exchange: uint8_t {
+enum class Exchange : uint8_t {
     Invalid,
     Coinbase,
     Kraken,
 
-    All = std::numeric_limits<uint8_t>::max(),
+    Manual = std::numeric_limits<uint8_t>::max(),
 };
 
 constexpr const char* to_string(const Exchange e) {
@@ -49,6 +49,8 @@ constexpr const char* to_string(const Exchange e) {
         return "Coinbase";
     case Exchange::Kraken:
         return "Kraken";
+    case Exchange::Manual:
+        return "Manual";
     default:
         return "invalid";
     }
@@ -148,13 +150,13 @@ struct Trade {
     double sold_amount, bought_amount;
 
     friend std::ostream& operator<<(std::ostream& os, const Trade& tr);
-    bool operator==(const Trade& other) const{
-	    return 
-		   timestamp == other.timestamp &&
-		   sold_currency == other.sold_currency &&
-		   bought_currency == other.bought_currency &&
-		   sold_amount == other.sold_amount &&
-		   bought_amount == other.bought_amount;
+    bool operator==(const Trade& other) const {
+        return
+            timestamp == other.timestamp &&
+            sold_currency == other.sold_currency &&
+            bought_currency == other.bought_currency &&
+            sold_amount == other.sold_amount &&
+            bought_amount == other.bought_amount;
     }
 };
 

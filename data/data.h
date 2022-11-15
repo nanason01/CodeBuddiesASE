@@ -13,13 +13,12 @@
 #include "exchanges/kraken.h"
 
 #include "sqlite3.h"
+#include <fstream>
+#include <sstream>
 #include <exception>
 #include <chrono>
 
-//Please change the DB_FILENAME to the FULL PATH to the db file in your local directory
-constexpr auto DB_FILENAME = "~/CodeBuddiesASE/data/db";
-
-class Data final: public BaseData {
+class Data final : public BaseData {
     CoinbaseDriver cb_driver;
     KrakenDriver k_driver;
     ExchangeDriver* const cb_driver_ptr, * const k_driver_ptr;
@@ -46,31 +45,29 @@ class Data final: public BaseData {
 
 public:
     // normal call
-    Data()
+    Data(const std::string& db_filename)
         : cb_driver_ptr(&cb_driver), k_driver_ptr(&k_driver) {
-        if (sqlite3_open(DB_FILENAME, &db_conn) != SQLITE_OK){
+        if (sqlite3_open(db_filename.c_str(), &db_conn) != SQLITE_OK) {
             throw DatabaseConnError();
-	}
-	//old instruction of creating table
-	//this->create_table();
-
+        }
     }
     // only for testing
     Data(ExchangeDriver* _cb, ExchangeDriver* _k, const std::string& test_db_filename)
         : cb_driver_ptr(_cb), k_driver_ptr(_k) {
-        if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK){
+        if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK) {
             throw DatabaseConnError();
-	}
-	//this->create_table();
+        }
     }
 
     ~Data() override {
         sqlite3_close(db_conn);
     }
 
-    void create_table(void) final;
-
     // writing operations
+
+    // unconditionally execute a sql file
+    // should only be called by admin
+    void exec_sql_file(const std::string& sql_filename) final;
 
     // add a user to our system
     // throws UserExists if user exists
