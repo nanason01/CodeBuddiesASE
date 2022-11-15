@@ -3,10 +3,11 @@
 // Testing suite for endpoints.h
 //
 
-#include "endpoints.h"
+#include <gtest/gtest.h>
+
+#include "entry/endpoints.h"
 #include "engine/mock_matcher.h"
 #include "data/mock_data.h"
-#include <gtest/gtest.h>
 
 
 using ::testing::Return;

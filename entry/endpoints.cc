@@ -5,7 +5,9 @@
 // the methods do what they say they do
 //
 
-#include "endpoints.h"
+#include "entry/endpoints.h"
+
+#include <string>
 
 constexpr int CLIENTIDLEN = 4;
 constexpr int APIKEYLEN = 4;
@@ -38,13 +40,13 @@ static string gen_random_str(const int len) {
     std::string ret(sizeof(len), 'a');
 
     for (int i = 0; i < len; ++i)
-        ret[i] = alphanum[rand() % sizeof(alphanum)];
+        ret[ i ] = alphanum[ rand() % sizeof(alphanum) ];
 
     return ret;
 }
 
 static string hash_str(string key) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
+    unsigned char hash[ SHA256_DIGEST_LENGTH ];
     SHA256_CTX sha256;
 
     SHA256_Init(&sha256);
@@ -53,7 +55,7 @@ static string hash_str(string key) {
 
     std::stringstream ss;
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-        ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[ i ]);
     return ss.str();
 }
 
@@ -64,8 +66,6 @@ static AuthenticUser parse_user(const request& req) {
            hash_str(req.get_header_value("Authorization")
                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
-
-
 }
 
 response Endpoints::validate_credentials(const request& req) {
@@ -97,9 +97,9 @@ response Endpoints::generate_credentials(const request& req) {
         hash_str(refresh_key)
     };
 
-    ret_val["client_id"] = client_id;
-    ret_val["api_key"] = client_id + api_key;
-    ret_val["refresh_token"] = client_id + refresh_key;
+    ret_val[ "client_id" ] = client_id;
+    ret_val[ "api_key" ] = client_id + api_key;
+    ret_val[ "refresh_token" ] = client_id + refresh_key;
 
     try {
         data->add_user(new_user);
@@ -122,9 +122,9 @@ response Endpoints::refresh_credentials(const request& req) {
     string new_api_key = gen_random_str(APIKEYLEN);
     string new_refresh_key = gen_random_str(APIKEYLEN);
 
-    resp["client_id"] = user.user;
-    resp["api_key"] = user.user + new_api_key;
-    resp["refresh_token"] = user.user + new_refresh_key;
+    resp[ "client_id" ] = user.user;
+    resp[ "api_key" ] = user.user + new_api_key;
+    resp[ "refresh_token" ] = user.user + new_refresh_key;
 
     try {
         data->update_user_creds(user, new_api_key, new_refresh_key);
@@ -155,11 +155,11 @@ response Endpoints::upload_trade(const request& req) {
     auto body = crow::json::load(req.body);
 
     const Trade trade_in{
-        field_to_ts(string(body["timestamp"])),
-        string(body["sold_currency"]),
-        string(body["bought_currency"]),
-        field_to_double(string(body["sold_amount"])),
-        field_to_double(string(body["bought_amount"]))
+        field_to_ts(string(body[ "timestamp" ])),
+        string(body[ "sold_currency" ]),
+        string(body[ "bought_currency" ]),
+        field_to_double(string(body[ "sold_amount" ])),
+        field_to_double(string(body[ "bought_amount" ]))
     };
 
     try {
@@ -180,10 +180,10 @@ response Endpoints::upload_exchange_key(const request& req) {
 
     auto body = crow::json::load(req.body);
 
-    Exchange exch = from_string(string(body["exchange"]));
+    Exchange exch = from_string(string(body[ "exchange" ]));
     // the names in the json are consistent with legacy
-    API_key pub_key = string(body["readkey"]);
-    API_key pvt_key = string(body["secretkey"]);
+    API_key pub_key = string(body[ "readkey" ]);
+    API_key pvt_key = string(body[ "secretkey" ]);
 
     try {
         data->register_exchange(user, exch, pub_key, pvt_key);
@@ -207,7 +207,7 @@ response Endpoints::remove_exchange_key(const request& req) {
 
     auto body = crow::json::load(req.body);
 
-    Exchange exch = from_string(string(body["exchange"]));
+    Exchange exch = from_string(string(body[ "exchange" ]));
 
     try {
         data->delete_exchange(user, exch);
@@ -232,14 +232,14 @@ response Endpoints::get_annotated_trades(const request& req) {
         crow::json::wvalue ret;
 
         for (int i = 0; i < static_cast<int>(mts.size()); i++) {
-            const auto& mt = mts[i];
+            const auto& mt = mts[ i ];
 
-            ret[i]["bought_timestamp"] = to_string(mt.bought_timestamp);
-            ret[i]["sold_timestamp"] = to_string(mt.sold_timestamp);
-            ret[i]["term"] = to_string(mt.term);
-            ret[i]["currency"] = mt.currency;
-            ret[i]["size"] = to_string(mt.sz);
-            ret[i]["pnl"] = to_string(mt.pnl);
+            ret[ i ][ "bought_timestamp" ] = to_string(mt.bought_timestamp);
+            ret[ i ][ "sold_timestamp" ] = to_string(mt.sold_timestamp);
+            ret[ i ][ "term" ] = to_string(mt.term);
+            ret[ i ][ "currency" ] = mt.currency;
+            ret[ i ][ "size" ] = to_string(mt.sz);
+            ret[ i ][ "pnl" ] = to_string(mt.pnl);
         }
 
         return crow::response(ret);
@@ -261,9 +261,9 @@ response Endpoints::get_year_end_stats(const request& req) {
 
         crow::json::wvalue ye_pnl_crow;
 
-        ye_pnl_crow["lt_realized_pnl"] = ye_pnl.lt_realized;
-        ye_pnl_crow["st_realized_pnl"] = ye_pnl.st_realized;
-        ye_pnl_crow["actual_pnl"] = ye_pnl.actual;
+        ye_pnl_crow[ "lt_realized_pnl" ] = ye_pnl.lt_realized;
+        ye_pnl_crow[ "st_realized_pnl" ] = ye_pnl.st_realized;
+        ye_pnl_crow[ "actual_pnl" ] = ye_pnl.actual;
 
         return ye_pnl_crow;
     } catch (UserNotFound* e) {
@@ -280,11 +280,11 @@ response Endpoints::calc_trade_pnl(const request& req) {
     auto body = crow::json::load(req.body);
 
     const Trade trade_in{
-        field_to_ts(string(body["timestamp"])),
-        string(body["sold_currency"]),
-        string(body["bought_currency"]),
-        field_to_double(string(body["sold_amount"])),
-        field_to_double(string(body["bought_amount"]))
+        field_to_ts(string(body[ "timestamp" ])),
+        string(body[ "sold_currency" ]),
+        string(body[ "bought_currency" ]),
+        field_to_double(string(body[ "sold_amount" ])),
+        field_to_double(string(body[ "bought_amount" ]))
     };
 
     try {
@@ -292,7 +292,7 @@ response Endpoints::calc_trade_pnl(const request& req) {
         data->check_user(user);
         const auto pnl = matcher->get_pnl_from(trade_in);
         crow::json::wvalue pnl_crow;
-        pnl_crow["pnl"] = pnl;
+        pnl_crow[ "pnl" ] = pnl;
         return pnl_crow;
     } catch (UserNotFound* e) {
         cerr << "calc_trade_pnl: " << e->what() << endl;
@@ -310,7 +310,7 @@ response Endpoints::get_net_pnl(const request& req) {
         const auto user_trades = data->get_trades(user);
         const auto pnl = matcher->get_net_pnl(user_trades);
         crow::json::wvalue net_pnl_crow;
-        net_pnl_crow["pnl"] = pnl;
+        net_pnl_crow[ "pnl" ] = pnl;
         return net_pnl_crow;
     } catch (UserNotFound* e) {
         cerr << "get_net_pnl: " << e->what() << endl;
