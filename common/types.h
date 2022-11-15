@@ -1,3 +1,4 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Common types used between modules
 //
@@ -103,17 +104,20 @@ inline TimeDelta from_cal(const int& _m, const int& _d, const int& _y) {
 }
 
 inline int get_year(Timestamp ts) {
-    std::tm* ts_tm = localtime(&ts);
+    std::tm buf;
+    std::tm* ts_tm = localtime_r(&ts, &buf);
 
     return ts_tm->tm_year + 1900;
 }
 inline int get_month(Timestamp ts) {
-    std::tm* ts_tm = localtime(&ts);
+    std::tm buf;
+    std::tm* ts_tm = localtime_r(&ts, &buf);
 
     return ts_tm->tm_mon + 1;
 }
 inline int get_day(Timestamp ts) {
-    std::tm* ts_tm = localtime(&ts);
+    std::tm buf;
+    std::tm* ts_tm = localtime_r(&ts, &buf);
 
     return ts_tm->tm_mday;
 }
@@ -193,7 +197,6 @@ struct MatchedTrade {
 
 std::ostream& operator<<(std::ostream& os, const MatchedTrade& mt);
 
-// TODO define these types with 0Auth
 using User = std::string;
 using Creds = std::string;
 using Refresh = std::string;

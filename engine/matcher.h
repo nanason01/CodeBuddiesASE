@@ -1,3 +1,4 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // The header for all data processing
 //

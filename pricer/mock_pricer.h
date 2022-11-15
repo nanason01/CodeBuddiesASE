@@ -1,3 +1,4 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Mock class of pricer for use by testers
 //

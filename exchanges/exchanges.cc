@@ -1,4 +1,5 @@
-// Copyright 2022 CodingBuddies
+// Copyright 2022 CodeBuddies ASE Group
+
 #include <curl/curl.h>
 #include <crow.h>
 

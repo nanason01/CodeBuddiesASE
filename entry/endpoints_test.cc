@@ -1,3 +1,4 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Testing suite for endpoints.h
 //

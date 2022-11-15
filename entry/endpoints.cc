@@ -1,4 +1,4 @@
-// Copyright 2022 CodingBuddies
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Implementation of API entpoints
 //

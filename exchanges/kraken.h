@@ -1,6 +1,7 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Kraken exchange driver
-// Copyright 2022 CodingBuddies
+//
 
 #pragma once
 
@@ -10,9 +11,9 @@
 #include "common/types.h"
 #include "exchanges/driver.h"
 
-class KrakenDriver final: public ExchangeDriver {
+class KrakenDriver final : public ExchangeDriver {
 public:
-    KrakenDriver(): ExchangeDriver() {}
+    KrakenDriver() : ExchangeDriver() {}
 
     /*
      * On success, processes the trades, checks that

@@ -1,6 +1,7 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // The interface to query the price of a security on a day
-// Copyright 2022 CodingBuddies
+//
 
 #pragma once
 

@@ -1,6 +1,7 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // Coinbase exchange driver
-// Copyright 2022 CodingBuddies
+//
 
 #pragma once
 
@@ -10,9 +11,9 @@
 #include "common/types.h"
 #include "exchanges/driver.h"
 
-class CoinbaseDriver final: public ExchangeDriver {
+class CoinbaseDriver final : public ExchangeDriver {
 public:
-    CoinbaseDriver(): ExchangeDriver() {}
+    CoinbaseDriver() : ExchangeDriver() {}
 
     std::vector<Trade> get_trades(API_key public_key,
         API_key private_key) final;
