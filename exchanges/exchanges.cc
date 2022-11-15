@@ -4,7 +4,6 @@
 #include <crow.h>
 
 #include <iostream>
-#include <chrono>
 #include <string>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -19,7 +18,7 @@
 // From StackOverflow, link in exchanges/README.md
 struct HexCharStruct {
     unsigned char c;
-    explicit HexCharStruct(unsigned char _c): c(_c) {}
+    explicit HexCharStruct(unsigned char _c) : c(_c) {}
 };
 
 inline std::ostream& operator<<(std::ostream& o, const HexCharStruct& hs) {
@@ -360,25 +359,25 @@ std::vector<Trade> KrakenDriver::get_trades(API_key public_key,
     std::string string_txs = this->query_for_trades(public_key, private_key);
 
     auto jsonified_txs = crow::json::load(string_txs);
-    if (!jsonified_txs["result"] ||
-        !jsonified_txs["result"]["count"] ||
-        !jsonified_txs["result"]["trades"]) {
+    if (!jsonified_txs[ "result" ] ||
+        !jsonified_txs[ "result" ][ "count" ] ||
+        !jsonified_txs[ "result" ][ "trades" ]) {
         return processed_txs;
     }
 
-    auto tx_record = jsonified_txs["result"]["trades"];
+    auto tx_record = jsonified_txs[ "result" ][ "trades" ];
     for (auto tx : tx_record) {
         // Now we're looking at individual txs
         Trade single_trade = {
             .timestamp = now(),
 
             // Currency pair
-            .sold_currency = convert_to_string(tx["pair"]),
+            .sold_currency = convert_to_string(tx[ "pair" ]),
 
             // Type of transaction, buy/sell
-           .bought_currency = convert_to_string(tx["type"]),
-           .sold_amount = tx["vol"].d(),
-           .bought_amount = tx["cost"].d()
+           .bought_currency = convert_to_string(tx[ "type" ]),
+           .sold_amount = tx[ "vol" ].d(),
+           .bought_amount = tx[ "cost" ].d()
         };
 
         processed_txs.push_back(single_trade);

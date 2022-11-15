@@ -3,9 +3,10 @@
 // Testing suite for exchanges
 //
 
-#include "coinbase.h"
-#include "kraken.h"
 #include <gtest/gtest.h>
+
+#include "exchanges/coinbase.h"
+#include "exchanges/kraken.h"
 
 class CoinbaseFixture : public ::testing::Test {
 protected:
