@@ -63,7 +63,7 @@ TEST_F(DataFixture, AddUserTest) {
 }
 TEST_F(DataFixture, UpdateCreds) {
     data->add_user({ "jennice1","creds66","refrs66" });
-    data->update_user_creds({ "jennice1","creds77","refrs77" });
+    data->update_user_creds({ "jennice1","creds66","refrs66" }, "creds77", "refrs77");
     EXPECT_THROW(data->check_user({ "jennice1","creds66","refrs66" }), InvalidCreds);
     data->remove_user({ "jennice1","creds77","refrs77" });
 }

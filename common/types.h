@@ -13,6 +13,9 @@
 #include <limits>
 #include <ctime>
 
+// Defined inside home dir (~/)
+constexpr auto CODEBUDDIES_DIR = "/CodeBuddies";
+
 enum class Term : uint8_t {
     Short,
     Long,

@@ -17,15 +17,14 @@
 #include "engine/mock_matcher.h"
 #include "crow.h"
 
-extern std::unique_ptr<BaseData> data;
-extern std::unique_ptr<BaseMatcher> matcher;
-
-void set_mode_prod();
-void set_mode_mock(MockData& data, MockMatcher& matcher);
-void set_up_mock_mode();
 
 class Endpoints {
+    static std::unique_ptr<BaseData> data;
+    static std::unique_ptr<BaseMatcher> matcher;
 public:
+
+    static void set_mode_prod(const std::string& db_filename, const std::string& schema_filename);
+    static void set_mode_mock();
 
     static crow::response validate_credentials(const crow::request& req);
     static crow::response generate_credentials(const crow::request& req);

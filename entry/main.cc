@@ -7,18 +7,14 @@
 #include "entry/endpoints.h"
 
 constexpr int PORT_NUM = 18420;
+constexpr auto DB_FILENAME = "db";  // this will stay on the machine in CodeBuddies dir (defn in types.h)
+constexpr auto SCHEMA_FILENAME = "data/schema.sql";  // this is read from this repo
 
 int main() {
     // seed our rng
     srand((unsigned)time(NULL) * getpid());
 
-    /*MockData data;
-    MockMatcher matcher;
-    set_mode_mock();*/
-
-    //set_up_mock_mode();
-    set_mode_prod();
-
+    Endpoints::set_mode_prod(DB_FILENAME, SCHEMA_FILENAME);
 
     crow::SimpleApp app;
 

@@ -15,6 +15,7 @@
 #include "sqlite3.h"
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 #include <exception>
 #include <chrono>
 
@@ -40,6 +41,16 @@ class Data final : public BaseData {
     // as it is subjectively not changing anything we have to
     // pull and store trades that happened on some other exchange
 
+    void create_file(const std::string& filename) {
+        const std::string built_dir = std::getenv("HOME") + std::string(CODEBUDDIES_DIR);
+
+        std::filesystem::create_directory(built_dir);
+
+        const std::string built_filename = built_dir + "/" + filename;
+
+        std::ofstream ofs{ built_filename };
+    }
+
     void update_exchange(const AuthenticUser& user, Exchange exch,
         API_key pub_key = "", API_key pvt_key = "") const;
 
@@ -47,13 +58,18 @@ public:
     // normal call
     Data(const std::string& db_filename)
         : cb_driver_ptr(&cb_driver), k_driver_ptr(&k_driver) {
+        create_file(db_filename);
         if (sqlite3_open(db_filename.c_str(), &db_conn) != SQLITE_OK) {
             throw DatabaseConnError();
+        } else {
+            std::cout << "Connected to database at file: " <<
+                "~" << CODEBUDDIES_DIR << "/" << db_filename << std::endl;
         }
     }
     // only for testing
     Data(ExchangeDriver* _cb, ExchangeDriver* _k, const std::string& test_db_filename)
         : cb_driver_ptr(_cb), k_driver_ptr(_k) {
+        create_file(test_db_filename);
         if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK) {
             throw DatabaseConnError();
         }
@@ -74,7 +90,9 @@ public:
     void add_user(const AuthenticUser& user) final;
 
     // update the credentials of a user
-    void update_user_creds(const AuthenticUser& user) final;
+    // throws if the refr key on old_user doesn't match
+    // sets old_users creds and refrs to the new vals
+    void update_user_creds(const AuthenticUser& old_user, const Creds& new_creds, const Refresh& new_refrs) final;
 
     // remove a user from our system
     // throws UserNotFound if user doesn't exist
@@ -106,10 +124,6 @@ public:
     // throws UserNotFound if user does not exist
     // throws InvalidCreds if credentials don't match
     void check_user(const AuthenticUser& user) const final;
-
-    // throws UserNotFound if user does not exist
-    // throws InvalidCreds if refresh key doesn't match
-    void check_refr(const User& user, const Refresh& refr_key) const final;
 
     // get last time this exchange was updated for user
     Timestamp get_last_update(const AuthenticUser& user, Exchange e) const final;

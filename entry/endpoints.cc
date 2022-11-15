@@ -16,23 +16,18 @@ using std::string;
 using std::cerr;
 using std::endl;
 
-std::unique_ptr<BaseData> data;
-std::unique_ptr<BaseMatcher> matcher;
-MockData Mdata;
-MockMatcher Mmatcher;
+std::unique_ptr<BaseData> Endpoints::data = std::unique_ptr<BaseData>();
+std::unique_ptr<BaseMatcher> Endpoints::matcher = std::unique_ptr<BaseMatcher>();;
 
-void set_mode_prod() {
-    data = std::make_unique<Data>();
+void Endpoints::set_mode_prod(const std::string& db_filename, const std::string& schema_filename) {
+    data = std::make_unique<Data>(db_filename);
+    data->exec_sql_file(schema_filename);
     matcher = std::make_unique<Matcher>();
 }
 
-void set_mode_mock(MockData& data, MockMatcher& matcher) {
-    ::data.reset(&data);
-    ::matcher.reset(&matcher);
-}
-
-void set_up_mock_mode() {
-    set_mode_mock(Mdata, Mmatcher);
+void Endpoints::set_mode_mock() {
+    data = std::make_unique<MockData>();
+    matcher = std::make_unique<MockMatcher>();
 }
 
 static string gen_random_str(const int len) {
@@ -70,13 +65,11 @@ static AuthenticUser parse_user(const request& req) {
                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
     };
 
-    
+
 }
 
 response Endpoints::validate_credentials(const request& req) {
     const auto user = parse_user(req);
-    std::cout << user.user << std::endl;
-    std::cout << user.creds << std::endl;
 
     try {
         data->check_user(user);
@@ -93,56 +86,30 @@ response Endpoints::validate_credentials(const request& req) {
 
 response Endpoints::generate_credentials(const request& req) {
     crow::json::wvalue ret_val;
-    static int created = 0;
-    /*if(created == 0){
-        // table not yet created. Create table
-        
-        try {
-            data->create_table();
-        } catch (UserNotFound* e) {
-            cerr << "validate_credentials: " << e->what() << endl;
-            return response(401);
-        } catch (InvalidCreds* e) {
-            cerr << "validate_credentials: " << e->what() << endl;
-            return response(401);
-        }
-        created++;
-    }*/
-    std::cout << "in generate_credentials" << std::endl;
-    std::cout << data << std::endl;
 
     string client_id = gen_random_str(CLIENTIDLEN);
     string api_key = gen_random_str(APIKEYLEN);
     string refresh_key = gen_random_str(APIKEYLEN);
 
-    AuthenticUser newuser{
+    AuthenticUser new_user{
         client_id,
         hash_str(api_key),
         hash_str(refresh_key)
     };
-    std::cout << "in generate_credentials2" << std::endl;
-    std::cout << client_id << std::endl;
-    std::cout << hash_str(client_id + api_key) << std::endl;
-    std::cout << hash_str(client_id + refresh_key) << std::endl;
 
     ret_val["client_id"] = client_id;
     ret_val["api_key"] = client_id + api_key;
     ret_val["refresh_token"] = client_id + refresh_key;
-    std::cout << "in generate_credentials3" << std::endl;
 
     try {
-        data->add_user(newuser);
-        std::cout << "in generate_credentials4" << std::endl;
+        data->add_user(new_user);
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "generate_credentials: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "generate_credentials: " << e->what() << endl;
         return response(401);
     }
-    std::cout << "in generate_credentials5" << std::endl;
-
-
 
     return ret_val;
 }
@@ -152,42 +119,20 @@ response Endpoints::refresh_credentials(const request& req) {
 
     const auto user = parse_user(req);
 
-    try {
-        data->check_refr(user.user, user.creds);
-    } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
-        return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
-        return response(401);
-    }
+    string new_api_key = gen_random_str(APIKEYLEN);
+    string new_refresh_key = gen_random_str(APIKEYLEN);
 
-
-    string client_id = user.user;
-    string api_key = gen_random_str(APIKEYLEN);
-    string refresh_key = gen_random_str(APIKEYLEN);
-
-    resp["client_id"] = client_id;
-    resp["api_key"] = client_id + api_key;
-    resp["refresh_token"] = client_id + refresh_key;
-
-    AuthenticUser newcreds{
-        client_id,
-        hash_str(api_key),
-        hash_str(refresh_key)
-    };
-
-    std::cout << client_id << std::endl;
-    std::cout << hash_str(api_key) << std::endl;
-    std::cout << hash_str(refresh_key) << std::endl;
+    resp["client_id"] = user.user;
+    resp["api_key"] = user.user + new_api_key;
+    resp["refresh_token"] = user.user + new_refresh_key;
 
     try {
-        data->update_user_creds(newcreds);
+        data->update_user_creds(user, new_api_key, new_refresh_key);
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "refresh_credentials: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "refresh_credentials: " << e->what() << endl;
         return response(401);
     }
 
@@ -195,15 +140,13 @@ response Endpoints::refresh_credentials(const request& req) {
 }
 
 static Timestamp field_to_ts(string ts_str) {
+    std::cout << "field_to_ts got " << ts_str << std::endl;
     return from_usa_date(4, 20, 2021);
 }
 
-static double field_to_double(string amount_str) {
+static double field_to_double(string double_str) {
+    std::cout << "field_to_double got " << double_str << std::endl;
     return -1.0;
-}
-
-static int field_to_int(string exch_str) {
-    return -1;
 }
 
 response Endpoints::upload_trade(const request& req) {
@@ -245,12 +188,16 @@ response Endpoints::upload_exchange_key(const request& req) {
     try {
         data->register_exchange(user, exch, pub_key, pvt_key);
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "upload_exchange_key: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "upload_exchange_key: " << e->what() << endl;
         return response(401);
-    } //  should we catch exchanges level errors ??
+    } catch (std::exception* e) {
+        //  should we catch exchanges level errors ?? (yes, we should)
+        cerr << "upload_exchange_key (unknown error): " << e->what() << endl;
+        return response(401);
+    }
 
     return response(200);
 }
@@ -261,15 +208,14 @@ response Endpoints::remove_exchange_key(const request& req) {
     auto body = crow::json::load(req.body);
 
     Exchange exch = from_string(string(body["exchange"]));
-    // the to-be-deleted fields are unnecessary, readme updated.
 
     try {
         data->delete_exchange(user, exch);
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "remove_exchange_key: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "remove_exchange_key: " << e->what() << endl;
         return response(401);
     }
 
@@ -281,36 +227,27 @@ response Endpoints::get_annotated_trades(const request& req) {
 
     try {
         const auto user_trades = data->get_trades(user);
-        std::cout << "after getting trades" << std::endl;
         const auto mts = matcher->get_matched_trades(user_trades);
-        std::cout << "after getting matched trades" << std::endl;
-
 
         crow::json::wvalue ret;
-        int i = 0;
 
-        for (const MatchedTrade& mt : mts) {
-            std::cout << "parsing matched trades" << std::endl;
+        for (int i = 0; i < static_cast<int>(mts.size()); i++) {
+            const auto& mt = mts[i];
+
             ret[i]["bought_timestamp"] = to_string(mt.bought_timestamp);
             ret[i]["sold_timestamp"] = to_string(mt.sold_timestamp);
             ret[i]["term"] = to_string(mt.term);
             ret[i]["currency"] = mt.currency;
             ret[i]["size"] = to_string(mt.sz);
             ret[i]["pnl"] = to_string(mt.pnl);
-
-            i = i + 1;
-
-            // ret.emplace_back(std::move(wv));
         }
-        
 
         return crow::response(ret);
-        // return response(std::move(ret));
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "get_annotated_trades: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "get_annotated_trades: " << e->what() << endl;
         return response(401);
     }
 }
@@ -320,16 +257,8 @@ response Endpoints::get_year_end_stats(const request& req) {
 
     try {
         const auto user_trades = data->get_trades(user);
-        std::cout << "after get_trades(user)" << std::endl;
-
-        for (const Trade& t : user_trades) {
-            std::cout << t.sold_currency << std::endl;
-            std::cout << t.bought_currency << std::endl;
-            std::cout << t.sold_amount << std::endl;
-            std::cout << t.bought_amount << std::endl;
-        }
         const auto ye_pnl = matcher->get_year_end_pnl(user_trades);
-        std::cout << "after matcher fn" << std::endl;
+
         crow::json::wvalue ye_pnl_crow;
 
         ye_pnl_crow["lt_realized_pnl"] = ye_pnl.lt_realized;
@@ -338,10 +267,10 @@ response Endpoints::get_year_end_stats(const request& req) {
 
         return ye_pnl_crow;
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "get_year_end_stats: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "get_year_end_stats: " << e->what() << endl;
         return response(401);
     }
 }
@@ -366,10 +295,10 @@ response Endpoints::calc_trade_pnl(const request& req) {
         pnl_crow["pnl"] = pnl;
         return pnl_crow;
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "calc_trade_pnl: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "calc_trade_pnl: " << e->what() << endl;
         return response(401);
     }
 }
@@ -378,17 +307,16 @@ response Endpoints::get_net_pnl(const request& req) {
     AuthenticUser user = parse_user(req);
 
     try {
-        // maybe this isn't necessary, but rules are rules
         const auto user_trades = data->get_trades(user);
         const auto pnl = matcher->get_net_pnl(user_trades);
         crow::json::wvalue net_pnl_crow;
         net_pnl_crow["pnl"] = pnl;
-        return response(net_pnl_crow);
+        return net_pnl_crow;
     } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "get_net_pnl: " << e->what() << endl;
         return response(401);
     } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+        cerr << "get_net_pnl: " << e->what() << endl;
         return response(401);
     }
 }

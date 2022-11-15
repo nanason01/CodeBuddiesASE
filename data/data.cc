@@ -102,7 +102,7 @@ void Data::add_user(const AuthenticUser& user) {
         throw UserExists{};
 
     const string add_user_sql = "INSERT INTO Users VALUES "
-        "(\'" + user.user + "\', \'" + user.creds + "\', \'" + user.refrToken + "\');";
+        "(\'" + user.user + "\', \'" + user.creds + "\', \'" + user.refrs + "\');";
     exec_sql<>(db_conn, add_user_sql);
 
     // we also need to make an entry in ExchangeKeys for their manual trades to be tracked
@@ -111,15 +111,22 @@ void Data::add_user(const AuthenticUser& user) {
     exec_sql<>(db_conn, insert_manual_key_sql);
 }
 
-void Data::update_user_creds(const AuthenticUser& user) {
-    // updates the user credentials in db
-    // check_refr needs to be called before this function is called
-    // now update the creds and the refrToken
+void Data::update_user_creds(const AuthenticUser& old_user, const Creds& new_creds, const Refresh& new_refrs) {
+    // validate old user refrs token
+    const string find_refr_sql = "SELECT Refrs FROM Users "
+        "WHERE UserID = \'" + old_user.user + "\';";
+    const auto find_refr_res = exec_sql<Refresh>(db_conn, find_refr_sql);
+
+    if (find_refr_res.empty())
+        throw UserNotFound{};
+    if (old_user.refrs != get<0>(find_refr_res[0]))
+        throw InvalidCreds{};
+
     const string update_user_creds_sql =
         "UPDATE Users "
-        "SET Creds = \'" + user.creds + "\',"
-        "Refrs = \'" + user.refrToken + "\'"
-        "WHERE UserID = \'" + user.user + "\';";
+        "SET Creds = \'" + new_creds + "\',"
+        "Refrs = \'" + new_refrs + "\'"
+        "WHERE UserID = \'" + old_user.user + "\';";
     exec_sql<>(db_conn, update_user_creds_sql);
 }
 
@@ -327,18 +334,6 @@ void Data::check_user(const AuthenticUser& user) const {
 
     // this prevents overhead from unnecessary check_user calls
     user.validated = true;
-}
-
-// throws UserNotFound if user does not exist
-void Data::check_refr(const User& user, const Refresh& refr) const {
-    const string find_refr_sql = "SELECT Refrs FROM Users "
-        "WHERE UserID = \'" + user + "\';";
-    const auto find_refr_res = exec_sql<Refresh>(db_conn, find_refr_sql);
-
-    if (find_refr_res.empty())
-        throw UserNotFound{};
-    if (refr != get<0>(find_refr_res[0]))
-        throw InvalidCreds{};
 }
 
 // get last time this exchange was updated for user
