@@ -7,18 +7,21 @@
 
 #pragma once
 
-#include "base_data.h"
 
-#include "common/types.h"
-#include "exchanges/coinbase.h"
-#include "exchanges/kraken.h"
+#include <sqlite3.h>
 
-#include "sqlite3.h"
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 #include <exception>
-#include <chrono>
+#include <string>
+#include <vector>
+
+#include "data/base_data.h"
+#include "common/types.h"
+#include "exchanges/coinbase.h"
+#include "exchanges/kraken.h"
+
 
 class Data final : public BaseData {
     CoinbaseDriver cb_driver;

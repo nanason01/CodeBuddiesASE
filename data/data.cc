@@ -3,14 +3,14 @@
 // Implementation of data.h
 //
 
-#include "data.h"
+#include "data/data.h"
 
 #include <exception>
 #include <iostream>
 #include <cassert>
 #include <tuple>
 #include <string>
-#include <chrono>
+#include <vector>
 
 using std::vector;
 using std::string;
@@ -54,7 +54,7 @@ static tuple<Ts...> digest_strings(char** p_flds) {
         return tuple<>();
     else
         return _digest_strings<Ts...>(p_flds);
-    p_flds++; // suppress compiler warning unused param
+    p_flds++;  // suppress compiler warning unused param
 }
 
 template<typename... Ts>
@@ -63,8 +63,7 @@ static int fill_row(void* vec_ptr, int n_flds, char** p_flds, char** p_cols) {
     assert(n_flds == sizeof...(Ts));
 
     reinterpret_cast<vector<tuple<Ts...>>*>(vec_ptr)->push_back(
-        digest_strings<Ts...>(p_flds)
-    );
+        digest_strings<Ts...>(p_flds));
 
     return 0;
 }
@@ -99,7 +98,7 @@ void Data::add_user(const AuthenticUser& user) {
         "UserID = \'" + user.user + "\';";
     const auto check_user_res = exec_sql<int>(db_conn, check_user_sql);
 
-    if (get<0>(check_user_res[0]) > 0)
+    if (get<0>(check_user_res[ 0 ]) > 0)
         throw UserExists{};
 
     const string add_user_sql = "INSERT INTO Users VALUES "
@@ -120,7 +119,7 @@ void Data::update_user_creds(const AuthenticUser& old_user, const Creds& new_cre
 
     if (find_refr_res.empty())
         throw UserNotFound{};
-    if (old_user.refrs != get<0>(find_refr_res[0]))
+    if (old_user.refrs != get<0>(find_refr_res[ 0 ]))
         throw InvalidCreds{};
 
     const string update_user_creds_sql =
@@ -186,7 +185,7 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
 
         exec_sql<>(db_conn, insert_key_sql);
     } else if (pub_key != "" &&
-        (get<0>(check_res[0]) != pub_key || get<1>(check_res[0]) != pvt_key)) {
+        (get<0>(check_res[ 0 ]) != pub_key || get<1>(check_res[ 0 ]) != pvt_key)) {
         // if we are overwriting a key, update it
         const string update_key_sql =
             "UPDATE ExchangeKeys "
@@ -202,8 +201,8 @@ void Data::update_exchange(const AuthenticUser& user, Exchange exch, API_key pub
     } else {
         // otherwise, just use the existing key
 
-        pub_key = get<0>(check_res[0]);
-        pvt_key = get<1>(check_res[0]);
+        pub_key = get<0>(check_res[ 0 ]);
+        pvt_key = get<1>(check_res[ 0 ]);
     }
 
     // remove any existing data for this exchange
@@ -284,8 +283,7 @@ std::vector<Trade> Data::get_trades(const AuthenticUser& user) const {
         "FROM Trades WHERE UserID = \'" + user.user + "\';";
     const auto get_all_trades_res =
         exec_sql<int, int, int, string, string, double, double>(
-            db_conn, get_all_trades_sql
-            );
+            db_conn, get_all_trades_sql);
 
     vector<Trade> ret;
     for (const auto& [yr, mo, da, bc, sc, ba, sa] : get_all_trades_res) {
@@ -330,7 +328,7 @@ void Data::check_user(const AuthenticUser& user) const {
 
     if (find_user_res.empty())
         throw UserNotFound{};
-    if (user.creds != get<0>(find_user_res[0]))
+    if (user.creds != get<0>(find_user_res[ 0 ]))
         throw InvalidCreds{};
 
     // this prevents overhead from unnecessary check_user calls
@@ -356,6 +354,6 @@ Timestamp Data::get_last_update(const AuthenticUser& user, Exchange e) const {
     if (update_date_res.empty())
         return beginning_of_time();
 
-    const auto& [year, month, day] = update_date_res[0];
+    const auto& [year, month, day] = update_date_res[ 0 ];
     return from_usa_date(month, day, year);
 }

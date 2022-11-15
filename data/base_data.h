@@ -5,16 +5,14 @@
 
 #pragma once
 
-#include "common/types.h"
-
 #include <exception>
-#include <chrono>
+#include <string>
+#include <vector>
 
-using namespace std::chrono_literals;
+#include "common/types.h"
 
 const TimeDelta REFRESH_INTERVAL = from_cal(0, 1, 0);
 
-// TODO: subject to change on 0Auth exploration
 struct AuthenticUser {
     User user;
     Creds creds;
@@ -72,7 +70,10 @@ public:
     // update the credentials of a user
     // throws if the refr key on old_user doesn't match
     // sets old_users creds and refrs to the new vals
-    virtual void update_user_creds(const AuthenticUser& old_user, const Creds& new_creds, const Refresh& new_refrs) = 0;
+    virtual void update_user_creds(
+        const AuthenticUser& old_user,
+        const Creds& new_creds,
+        const Refresh& new_refrs) = 0;
 
     // remove a user from our system
     // throws UserNotFound if user doesn't exist
@@ -80,8 +81,11 @@ public:
 
     // add an exchange for user
     // may throw ExchangeDriver level errors
-    virtual void register_exchange(const AuthenticUser& user, Exchange exch,
-        const API_key& pub_key, const API_key& pvt_key) = 0;
+    virtual void register_exchange(
+        const AuthenticUser& user,
+        Exchange exch,
+        const API_key& pub_key,
+        const API_key& pvt_key) = 0;
 
     // delete exchange for user
     // doesn't check whether user actually has exch registered
