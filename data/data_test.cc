@@ -18,7 +18,7 @@
 
 using ::testing::Return;
 
-constexpr auto TEST_DB_FILENAME = "data/test_db";
+constexpr auto TEST_DB_FILENAME = "test_db";  // will be created dynamically in ~/CodeBuddies/
 constexpr auto SCHEMA_FILENAME = "data/schema.sql";
 
 class DataFixture : public ::testing::Test {
@@ -31,6 +31,7 @@ protected:
             k = new MockExchangeDriver();
 
             data = new Data(cb, k, TEST_DB_FILENAME);
+
             data->exec_sql_file(SCHEMA_FILENAME);
         }
     }
