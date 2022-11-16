@@ -249,15 +249,13 @@ PNL Matcher::get_pnl_from(Trade trade, Timestamp end_time) {
 // get net pnl of a user up to end_date
 PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time) {
     PNL pnl = 0.0;
-    std::cout << "in get_net_pnl" << std::endl;
+
     for (const auto& trade : trades) {
         if (trade.timestamp > end_time)
             continue;
-        std::cout << "before" << std::endl;
         pnl += get_pnl_from(trade, end_time);
-        std::cout << "after" << std::endl;
     }
-    std::cout << "returning from get_net_pnl" << std::endl;
+
     return pnl;
 }
 
