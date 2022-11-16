@@ -238,7 +238,7 @@ response Endpoints::upload_trade(const request& req) {
         return response(401);
     }
 
-    return response(200);
+    return response(200, "SUCCESS");
 }
 
 response Endpoints::upload_exchange_key(const request& req) {
@@ -261,7 +261,7 @@ response Endpoints::upload_exchange_key(const request& req) {
         return response(401);
     } // should we catch exchanges level errors ??
 
-    return response(200);
+    return response(200, "SUCCESS");
 }
 
 response Endpoints::remove_exchange_key(const request& req) {
@@ -282,7 +282,7 @@ response Endpoints::remove_exchange_key(const request& req) {
         return response(401);
     }
 
-    return response(200);
+    return response(200, "SUCCESS");
 }
 
 response Endpoints::get_annotated_trades(const request& req) {
