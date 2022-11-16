@@ -5,6 +5,7 @@
 //
 
 #include "endpoints.h"
+// #include <returnable.h>
 
 constexpr int CLIENTIDLEN = 4;
 constexpr int APIKEYLEN = 4;
@@ -141,10 +142,9 @@ response Endpoints::generate_credentials(const request& req) {
         return response(401);
     }
     std::cout << "in generate_credentials5" << std::endl;
-
-
-
-    return ret_val;
+    crow::response res(200, ret_val);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
 }
 
 response Endpoints::refresh_credentials(const request& req) {
@@ -196,7 +196,11 @@ response Endpoints::refresh_credentials(const request& req) {
         return response(401);
     }
 
-    return resp;
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
+
+    //return resp;
 }
 
 static Timestamp field_to_ts(string ts_str) {
@@ -311,8 +315,11 @@ response Endpoints::get_annotated_trades(const request& req) {
             //ret.emplace_back(std::move(wv));
         }
         
+        crow::response res(200, ret);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
 
-        return crow::response(ret);
+        // return crow::response(ret);
         // @TODO: how to return a list of values as a crow json
         // return response(std::move(ret));
     } catch (UserNotFound* e) {
@@ -345,7 +352,10 @@ response Endpoints::get_year_end_stats(const request& req) {
         ye_pnl_crow["st_realized_pnl"] = ye_pnl.st_realized;
         ye_pnl_crow["actual_pnl"] = ye_pnl.actual;
 
-        return ye_pnl_crow;
+        crow::response res(200, ye_pnl_crow);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
+        //return ye_pnl_crow;
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
@@ -373,7 +383,11 @@ response Endpoints::calc_trade_pnl(const request& req) {
         const auto pnl = matcher->get_pnl_from(trade_in);
         crow::json::wvalue pnl_crow;
         pnl_crow["pnl"] = pnl;
-        return pnl_crow;
+
+        crow::response res(200, pnl_crow);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
+        // return pnl_crow;
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
@@ -392,7 +406,10 @@ response Endpoints::get_net_pnl(const request& req) {
         const auto pnl = matcher->get_net_pnl(user_trades);
         crow::json::wvalue net_pnl_crow;
         net_pnl_crow["pnl"] = pnl;
-        return response(net_pnl_crow);
+        crow::response res(200, net_pnl_crow);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
+        //return response(net_pnl_crow);
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);

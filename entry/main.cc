@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "entry/endpoints.h"
+#include "crow/middlewares/cors.h"
 
 constexpr int PORT_NUM = 18420;
 
@@ -19,7 +20,7 @@ int main() {
     set_mode_prod();
 
 
-    crow::SimpleApp app;
+    crow::App<crow::CORSHandler> app;
 
     CROW_ROUTE(app, "/")(Endpoints::validate_credentials);
     CROW_ROUTE(app, "/getcredentials")(Endpoints::generate_credentials);
