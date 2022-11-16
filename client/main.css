@@ -1,0 +1,26 @@
+#hello_div{
+	padding-top:  10px;
+	padding-bottom:  10px;
+	color: green;
+}
+.paperheading{
+	background-color: lightgray;
+	font-size: xxx-large;
+	font-weight: bold;
+	padding-top: 70px;
+	padding-bottom: 70px;
+	padding-left: 40px;
+}
+.reamsip{
+    
+}
+.clientip{
+	padding-left: 30px;
+}
+.err{
+	color: red;
+	font-weight: bold;
+}
+.padme{
+	padding-top: 10px;
+}
