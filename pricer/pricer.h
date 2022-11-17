@@ -1,13 +1,13 @@
+// Copyright 2022 CodeBuddies ASE Group
 //
 // The interface to query the price of a security on a day
-// Copyright 2022 CodingBuddies
+//
 
 #pragma once
 
-#include <chrono>
-#include <string>
-
 #include <crow.h>
+
+#include <string>
 
 #include "pricer/base_pricer.h"
 #include "common/types.h"
@@ -18,7 +18,7 @@
 size_t pricer_write_callback(char* ptr, size_t size,
     size_t nmemb, void* userdata);
 
-class Pricer final: public PricerBase {
+class Pricer final : public PricerBase {
 public:
     friend class PricerFixture;
     // returns the price per unit of currency on date

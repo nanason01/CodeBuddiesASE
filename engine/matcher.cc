@@ -1,10 +1,13 @@
-#include "matcher.h"
+// Copyright 2022 CodeBuddies ASE Group
+
+#include "engine/matcher.h"
 
 #include <unordered_map>
 #include <map>
 #include <queue>
 #include <algorithm>
 #include <limits>
+#include <string>
 
 using std::vector;
 using std::unordered_map;
@@ -15,10 +18,11 @@ static inline bool is_long_term(const Timestamp& bought, const Timestamp& sold) 
     // @TODO refactor this
     // @TODO leap year accounting
 
-    std::tm* bought_tm = localtime(&bought);
+    std::tm buf;
+    std::tm* bought_tm = localtime_r(&bought, &buf);
     std::tm bought_tm_save = *bought_tm;
     bought_tm = &bought_tm_save;
-    std::tm* sold_tm = localtime(&sold);
+    std::tm* sold_tm = localtime_r(&sold, &buf);
     std::tm sold_tm_save = *sold_tm;
     sold_tm = &sold_tm_save;
 
@@ -54,18 +58,19 @@ static std::vector<MatchedTrade> condense(std::vector<MatchedTrade> mts) {
 
     // simple O(n2) algo
     for (int i = 0; i < static_cast<int>(mts.size()); i++) {
-        if (mts[i].sz == 0.0 || (mts[i].currency == "USD" && (mts[i].term == Term::Long || mts[i].term == Term::Short)))
+        if (mts[ i ].sz == 0.0 ||
+            (mts[ i ].currency == "USD" && (mts[ i ].term == Term::Long || mts[ i ].term == Term::Short)))
             continue;
         // look for duplicates
         for (int j = i + 1; j < static_cast<int>(mts.size()); j++) {
-            if (isSameMatchedMeta(mts[i], mts[j])) {
-                mts[i].sz += mts[j].sz;
-                mts[i].pnl += mts[j].pnl;
-                mts[j].sz = 0.0;
+            if (isSameMatchedMeta(mts[ i ], mts[ j ])) {
+                mts[ i ].sz += mts[ j ].sz;
+                mts[ i ].pnl += mts[ j ].pnl;
+                mts[ j ].sz = 0.0;
             }
         }
 
-        ret.push_back(mts[i]);
+        ret.push_back(mts[ i ]);
     }
 
     return ret;
@@ -73,7 +78,8 @@ static std::vector<MatchedTrade> condense(std::vector<MatchedTrade> mts) {
 
 // roundabout to work with leap years
 inline Timestamp long_term_date(const Timestamp& ts) {
-    std::tm* ts_tm = localtime(&ts);
+    std::tm buf;
+    std::tm* ts_tm = localtime_r(&ts, &buf);
     std::tm out_tm = *ts_tm;
 
     out_tm.tm_year += 1;
@@ -102,7 +108,7 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in,
 
     for (const Trade& trade : trades_in) {
         if (trade.timestamp <= end_time)
-            year_to_trades[get_year(trade.timestamp)].push_back(trade);
+            year_to_trades[ get_year(trade.timestamp) ].push_back(trade);
     }
 
     if (year_to_trades.empty())
@@ -115,13 +121,13 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in,
     for (const auto& [year, trades] : year_to_trades) {
         for (const auto& trade : trades) {
             if (trade.bought_currency == trade.sold_currency)
-                continue; // should this throw ?? is this even worth checking ?
+                continue;  // should this throw ?? is this even worth checking ?
 
             const double basis_bought = trade.bought_currency == "USD" ? 1 :
                 trade.sold_currency == "USD" ? trade.sold_amount / trade.bought_amount :
                 pricer->get_usd_price(trade.bought_currency, trade.timestamp);
 
-            unmatched_buys[trade.bought_currency].push_back({
+            unmatched_buys[ trade.bought_currency ].push_back({
                 trade.timestamp,
                 basis_bought,
                 trade.bought_amount
@@ -138,7 +144,8 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in,
             // so losses over gains
             // STCL over LTCL
             // LTCG over STCG if over some fixing factor
-            const auto comp = [sell_ts = trade.timestamp, new_basis = basis_sold](const TradePayload& a, const TradePayload& b) {
+            const auto comp =
+                [sell_ts = trade.timestamp, new_basis = basis_sold](const TradePayload& a, const TradePayload& b) {
                 const double a_gain = new_basis - a.basis;
                 const double b_gain = new_basis - b.basis;
 
@@ -160,12 +167,11 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in,
             };
             priority_queue<TradePayload, vector<TradePayload>, decltype(comp)>
                 matching_orders(
-                    unmatched_buys[trade.sold_currency].begin(),
-                    unmatched_buys[trade.sold_currency].end(),
-                    comp
-                );
+                    unmatched_buys[ trade.sold_currency ].begin(),
+                    unmatched_buys[ trade.sold_currency ].end(),
+                    comp);
 
-            unmatched_buys[trade.sold_currency].clear();
+            unmatched_buys[ trade.sold_currency ].clear();
 
             while (sz && !matching_orders.empty()) {
                 TradePayload matched = matching_orders.top();
@@ -192,7 +198,7 @@ vector<MatchedTrade> Matcher::get_matched_trades(const vector<Trade>& trades_in,
 
             // case: put unused buys back into unmatched buys
             while (!matching_orders.empty()) {
-                unmatched_buys[trade.sold_currency].push_back(matching_orders.top());
+                unmatched_buys[ trade.sold_currency ].push_back(matching_orders.top());
                 matching_orders.pop();
             }
 
@@ -243,15 +249,13 @@ PNL Matcher::get_pnl_from(Trade trade, Timestamp end_time) {
 // get net pnl of a user up to end_date
 PNL Matcher::get_net_pnl(const vector<Trade>& trades, Timestamp end_time) {
     PNL pnl = 0.0;
-    std::cout << "in get_net_pnl" << std::endl;
+
     for (const auto& trade : trades) {
         if (trade.timestamp > end_time)
             continue;
-        std::cout << "before" << std::endl;
         pnl += get_pnl_from(trade, end_time);
-        std::cout << "after" << std::endl;
     }
-    std::cout << "returning from get_net_pnl" << std::endl;
+
     return pnl;
 }
 
@@ -308,8 +312,6 @@ vector<SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vect
 // all of them to be considered long term cap gains
 // Trade::bought_amount is meaningless as the future price is unknown
 vector<Trade> Matcher::get_earliest_long_term_sells(const vector<Trade>& trades, const Timestamp end_time) {
-    using namespace std::chrono;
-
     vector<Trade> ret;
 
     for (const auto& mt : get_matched_trades(trades)) {
@@ -319,8 +321,7 @@ vector<Trade> Matcher::get_earliest_long_term_sells(const vector<Trade>& trades,
         ret.push_back({
             .timestamp = std::min(
                 long_term_date(mt.bought_timestamp),
-                now()
-            ),
+                now()),
             .sold_currency = mt.currency,
             .bought_currency = "USD",
             .sold_amount = mt.sz,

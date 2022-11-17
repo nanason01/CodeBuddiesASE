@@ -1,6 +1,9 @@
-// Copyright 2022 CodingBuddies
+// Copyright 2022 CodeBuddies ASE Group
+//
 // Crypto primitives wrappers and other helper functions
 // for exchanges
+//
+
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 #include <sstream>
@@ -39,8 +42,8 @@ err_out:
  *
  */
 std::vector<unsigned char> hmac_sha512_wrapper(
-                std::vector<unsigned char> data_vec,
-                std::vector<unsigned char> key_vec) {
+    std::vector<unsigned char> data_vec,
+    std::vector<unsigned char> key_vec) {
     unsigned int length = EVP_MAX_MD_SIZE;
     std::vector<unsigned char> hmac_digest(length);
 
@@ -48,13 +51,13 @@ std::vector<unsigned char> hmac_sha512_wrapper(
         goto err_out;
     }
 
-    HMAC_CTX *ctx;
+    HMAC_CTX* ctx;
     if (!(ctx = HMAC_CTX_new())) {
         goto err_out;
     }
 
     if (!HMAC_Init_ex(ctx, key_vec.data(), key_vec.size(),
-                                        EVP_sha512(), NULL)) {
+        EVP_sha512(), NULL)) {
         goto err_out;
     }
 
@@ -77,8 +80,8 @@ err_out:
  *
  */
 std::vector<unsigned char> hmac_sha256_wrapper(
-                    std::vector<unsigned char> data_vec,
-                    std::vector<unsigned char> key_vec) {
+    std::vector<unsigned char> data_vec,
+    std::vector<unsigned char> key_vec) {
     unsigned int length = EVP_MAX_MD_SIZE;
     std::vector<unsigned char> hmac_digest(length);
 
@@ -86,13 +89,13 @@ std::vector<unsigned char> hmac_sha256_wrapper(
         goto err_out;
     }
 
-    HMAC_CTX *ctx;
+    HMAC_CTX* ctx;
     if (!(ctx = HMAC_CTX_new())) {
         goto err_out;
     }
 
     if (!HMAC_Init_ex(ctx, key_vec.data(), key_vec.size(),
-                                        EVP_sha256(), NULL)) {
+        EVP_sha256(), NULL)) {
         goto err_out;
     }
 
@@ -127,9 +130,9 @@ std::string convert_vec_to_str(std::vector<unsigned char> data) {
 /*
  *
  */
-size_t kraken_write_callback(char *ptr, size_t size,
-                        size_t nmemb, void *userdata) {
-    std::string *response = reinterpret_cast<std::string *> (userdata);
+size_t kraken_write_callback(char* ptr, size_t size,
+    size_t nmemb, void* userdata) {
+    std::string* response = reinterpret_cast<std::string*> (userdata);
     response->append(ptr, size * nmemb);
     return size * nmemb;
 }

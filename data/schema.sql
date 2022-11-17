@@ -14,11 +14,14 @@ CREATE TABLE IF NOT EXISTS ExchangeKeys (
     LastUpdatedMonth int,
     LastUpdatedDay int,
     PRIMARY KEY(UserID, ExchangeID),
-    FOREIGN KEY(UserID) REFERENCES Users(UserID)
+    FOREIGN KEY(UserID) 
+        REFERENCES Users(UserID)
+        ON DELETE CASCADE  -- Updates should never happen, UserID is static
 );
 
 CREATE TABLE IF NOT EXISTS Trades (
     UserID VARCHAR(16) NOT NULL,
+    ExchangeID int NOT NULL,
     TradeYear int,
     TradeMonth int,
     TradeDay int,
@@ -26,5 +29,7 @@ CREATE TABLE IF NOT EXISTS Trades (
     SoldCurrency VARCHAR(16),
     BoughtAmount DECIMAL,
     SoldAmount DECIMAL,
-    FOREIGN KEY(UserID) REFERENCES Users(UserID)
+    FOREIGN KEY(UserID, ExchangeID)
+        REFERENCES ExchangeKeys(UserID, ExchangeID)
+        ON DELETE CASCADE
 );
