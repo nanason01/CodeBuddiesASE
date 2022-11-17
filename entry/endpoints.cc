@@ -142,7 +142,7 @@ response Endpoints::refresh_credentials(const request& req) {
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
 
-    string client_id = user.user;
+    /*string client_id = user.user;
     string api_key = gen_random_str(APIKEYLEN);
     string refresh_key = gen_random_str(APIKEYLEN);
 
@@ -177,7 +177,7 @@ response Endpoints::refresh_credentials(const request& req) {
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
 
-    //return resp;
+    //return resp;*/
 }
 
 static Timestamp field_to_ts(string ts_str) {
