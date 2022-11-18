@@ -33,7 +33,7 @@ cpplint <path_to_file> # to run for single file
 ```
 To run static analysis:
 ```
-sudo apt-get install cppcheck # install once
+apt-get install cppcheck # install once
 cppcheck ./ --file-filter=*.cc # run for entire repo
 cppcheck <file> # to run for single file
 ```
