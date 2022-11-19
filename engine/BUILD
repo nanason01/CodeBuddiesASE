@@ -7,6 +7,7 @@ cc_library(
     ],
     visibility=[
         "//entry:__pkg__",
+        "//tests:__pkg__",
     ],
     deps=[
         "//common",

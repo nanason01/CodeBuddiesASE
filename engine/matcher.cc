@@ -293,11 +293,14 @@ YearEndPNL Matcher::get_year_end_pnl(const vector<Trade>& trades, Timestamp year
 
 // get pnl over various points in time
 // currently assumes that get_trades returns trades in chronological asc order
-vector<SnapshotPNL> Matcher::get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timedeltas) {
+vector<SnapshotPNL> Matcher::get_pnl_snapshots(
+    const vector<Trade>& trades,
+    Timestamp end,
+    vector<TimeDelta> timedeltas) {
     vector<SnapshotPNL> ret;
 
     for (const auto delta : timedeltas) {
-        const auto next_timestamp = now() - delta;
+        const auto next_timestamp = end - delta;
 
         ret.push_back({
             .timestamp = next_timestamp,

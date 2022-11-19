@@ -11,10 +11,11 @@ cc_library(
         "//data:mock",
         "//engine",
         "//engine:mock",
-        "@com_google_googletest//:gtest_main",
+        "@com_google_googletest//:gtest_main"
     ],
     visibility=[
         "//entry:__pkg__",
+        "//tests:__pkg__",
     ],
 )
 

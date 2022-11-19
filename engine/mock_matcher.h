@@ -18,6 +18,7 @@ class MockMatcher : public BaseMatcher {
     MOCK_METHOD(PNL, get_pnl_from, (Trade, Timestamp), (override));
     MOCK_METHOD(PNL, get_net_pnl, (const vector<Trade>&, Timestamp), (override));
     MOCK_METHOD(YearEndPNL, get_year_end_pnl, (const vector<Trade>&, Timestamp), (override));
-    MOCK_METHOD(vector<SnapshotPNL>, get_pnl_snapshots, (const vector<Trade>&, vector<TimeDelta>), (override));
+    MOCK_METHOD(
+        vector<SnapshotPNL>, get_pnl_snapshots, (const vector<Trade>&, Timestamp, vector<TimeDelta>), (override));
     MOCK_METHOD(vector<Trade>, get_earliest_long_term_sells, (const vector<Trade>&, const Timestamp), (override));
 };

@@ -13,6 +13,7 @@ cc_library(
     visibility=[
         "//data:__pkg__",
         "//exchanges:__pkg__",
+        "//tests:__pkg__",
     ],
     deps=["//common"],
 )
