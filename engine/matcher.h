@@ -11,8 +11,6 @@
 #include "common/types.h"
 #include "pricer/pricer.h"
 
-using std::vector;
-
 class Matcher : public BaseMatcher {
     Pricer _pricer;
     PricerBase* pricer;
@@ -27,8 +25,8 @@ public:
     // note: no contract on condensing results,
     // a trade may be split into an arbitrary number of matched trades
     // as long as they account for exactly the trade volume
-    vector<MatchedTrade>
-        get_matched_trades(const vector<Trade>& trades_in, const Timestamp end_time = now()) final;
+    std::vector<MatchedTrade>
+        get_matched_trades(const std::vector<Trade>& trades_in, const Timestamp end_time = now()) final;
 
     // get pnl of trade
     // internally, this assumes the trade was net-0 value the first day
@@ -36,20 +34,23 @@ public:
     PNL get_pnl_from(Trade trade, Timestamp end_time = now()) final;
 
     // get net pnl of a user up to end_date
-    PNL get_net_pnl(const vector<Trade>& trades, Timestamp end_time = now()) final;
+    PNL get_net_pnl(const std::vector<Trade>& trades, Timestamp end_time = now()) final;
 
     // get year end stats for a year
-    YearEndPNL get_year_end_pnl(const vector<Trade>& trades, Timestamp year = now()) final;
+    YearEndPNL get_year_end_pnl(const std::vector<Trade>& trades, Timestamp year = now()) final;
 
     // get pnl over various points in time
-    vector<SnapshotPNL>
-        get_pnl_snapshots(const vector<Trade>& trades, vector<TimeDelta> timestamps = DEFAULT_SAMPLES) final;
+    std::vector<SnapshotPNL> get_pnl_snapshots(
+        const std::vector<Trade>& trades,
+        Timestamp end = now(),
+        std::vector<TimeDelta> timestamps = DEFAULT_SAMPLES
+    ) final;
 
     // returns the earliest dates user could sell each of his cryptos for
     // all of them to be considered long term cap gains
     // Trade::bought_amount is meaningless as the future price is unknown
-    vector<Trade>
-        get_earliest_long_term_sells(const vector<Trade>& trades, const Timestamp end_time = now()) final;
+    std::vector<Trade>
+        get_earliest_long_term_sells(const std::vector<Trade>& trades, const Timestamp end_time = now()) final;
 
 private:
     // get whether this is a short or long term trade

@@ -11,6 +11,7 @@ cc_library(
     visibility=[
         "//entry:__pkg__",
         "//data:__pkg__",
+        "//tests:__pkg__",
     ],
     linkopts=["-lsqlite3"],
     deps=[

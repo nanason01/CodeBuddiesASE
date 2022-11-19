@@ -302,7 +302,7 @@ TEST_F(MatcherFixture, GetPnlSnapshotsEmpty) {
 
     EXPECT_EQ(now() - samples[ 0 ], from_usa_date(3, 1, 2017));
 
-    const auto ret = matcher->get_pnl_snapshots({}, samples);
+    const auto ret = matcher->get_pnl_snapshots({}, now(), samples);
 
     ASSERT_EQ(ret.size(), 3);
 
@@ -347,7 +347,7 @@ TEST_F(MatcherFixture, GetPnlSnapshotsNormal) {
         1.0,
     };
 
-    const auto ret = matcher->get_pnl_snapshots({ usd_to_crsh, usd_to_incr, late_incr_to_decr }, samples);
+    const auto ret = matcher->get_pnl_snapshots({ usd_to_crsh, usd_to_incr, late_incr_to_decr }, now(), samples);
 
     ASSERT_EQ(ret.size(), 3);
 
