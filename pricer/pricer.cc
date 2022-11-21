@@ -1,6 +1,7 @@
 // Copyright 2022 CodeBuddies ASE Group
 
 #include "pricer/pricer.h"
+// #include "pricer/list.h"
 
 #include <curl/curl.h>
 #include <crow.h>
@@ -58,11 +59,15 @@ std::string Pricer::get_asset_id(std::string currency) {
 
     std::string list_of_ids = this->perform_curl_request(url_list);
     auto jsonified_ids = crow::json::load(list_of_ids);
-
-    for (i = 0; i < jsonified_ids.size(); i++) {
-        if (std::string(jsonified_ids[ i ][ "symbol" ]) == currency) {
-            return std::string(jsonified_ids[ i ][ "id" ]);
+    // auto jsonified_ids = crow::json::load(big_ass_string);
+    try {
+        for (i = 0; i < jsonified_ids.size(); i++) {
+            if (std::string(jsonified_ids[ i ][ "symbol" ]) == currency) {
+                return std::string(jsonified_ids[ i ][ "id" ]);
+            }
         }
+    } catch (...) {
+        return "";
     }
 
     return "";
