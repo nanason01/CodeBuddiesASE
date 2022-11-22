@@ -68,6 +68,16 @@ static AuthenticUser parse_user(const request& req) {
     };
 }
 
+static AuthenticUser parse_user_refr_creds(const request& req) {
+    return AuthenticUser{
+        req.get_header_value("Authorization")
+            .substr(7).substr(0, CLIENTIDLEN),
+        "",
+        hash_str(req.get_header_value("Authorization")
+            .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
+    };
+}
+
 response Endpoints::validate_credentials(const request& req) {
     const auto user = parse_user(req);
 
@@ -119,7 +129,7 @@ response Endpoints::generate_credentials(const request& req) {
 response Endpoints::refresh_credentials(const request& req) {
     crow::json::wvalue resp;
 
-    const auto user = parse_user(req);
+    const auto user = parse_user_refr_creds(req);
 
     string new_api_key = gen_random_str(APIKEYLEN);
     string new_refresh_key = gen_random_str(APIKEYLEN);
@@ -129,7 +139,7 @@ response Endpoints::refresh_credentials(const request& req) {
     resp[ "refresh_token" ] = user.user + new_refresh_key;
 
     try {
-        data->update_user_creds(user, new_api_key, new_refresh_key);
+        data->update_user_creds(user, hash_str(new_api_key), hash_str(new_refresh_key));
     } catch (UserNotFound* e) {
         cerr << "refresh_credentials: " << e->what() << endl;
         return response(401);
