@@ -29,19 +29,19 @@
                 Manage Your Crypto
         </div>
         
-        <div class="row padme">
+        <!--<div class="row padme">
             <div class="col-md-10"><input id="serverurl" type="text" placeholder="Enter the url of the server" size = 50></div>
             <div class="col-md-2"><button id="submiturl" class="btn btn-primary">Submit</button></div>
-        </div>
-        <div class="row padme">
+        </div>-->
+        <div class="row padme heading bg-dark text-white">
             <div class="col-md-2">Endpoint</div>
             <div class="col-md-4">Input</div>
             <div class="col-md-1">Button</div>
             <div class="col-md-5">Output</div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\getcredentials</div>
+        <div class="row ui-widget padme row1">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/getcredentials</div>
             <div class="col-md-4">No Input required</div>
             <div class="col-md-1"><button id="submit1" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5">
@@ -51,8 +51,8 @@
             </div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\refreshcredentials</div>
+        <div class="row ui-widget padme row2">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/refreshcredentials</div>
             <div class="col-md-4">No Input required</div>
             <div class="col-md-1"><button id="submit2" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5">
@@ -62,60 +62,60 @@
             </div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\trade</div>
+        <div class="row ui-widget padme row1">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/trade</div>
             <div class="col-md-4">
-                <div class="row">
-                    <div class="col-md-3">Date of Trade : </div> 
-                    <div class="col-md-9"><input id="3timestamp" type="text" placeholder="Date"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Date of Trade : </div> 
+                    <div class="col-md-8"><input id="3timestamp" type="text" placeholder="Date" size=25></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Sold Currency : </div>
-                    <div class="col-md-9"><input id="3sc" type="text" placeholder="Eg BTC"></div> 
+                <div class="row padinput">
+                    <div class="col-md-4">Sold Currency : </div>
+                    <div class="col-md-8"><input id="3sc" type="text" placeholder="Eg BTC" size=25></div> 
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Bought Currency : </div>
-                    <div class="col-md-9"><input id="3bc" type="text" placeholder="Eg USD"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Bought Currency : </div>
+                    <div class="col-md-8"><input id="3bc" type="text" placeholder="Eg USD" size=25></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Sold Amount : </div>
-                    <div class="col-md-9"><input id="3sa" type="text" placeholder="Sold Amount"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Sold Amount : </div>
+                    <div class="col-md-8"><input id="3sa" type="text" placeholder="Sold Amount" size=25></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Bought Amount : </div>
-                    <div class="col-md-9"><input id="3ba" type="text" placeholder="Bought Amount"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Bought Amount : </div>
+                    <div class="col-md-8"><input id="3ba" type="text" placeholder="Bought Amount" size=25></div>
                 </div>
             </div>
             <div class="col-md-1"><button id="submit3" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5" id="3resp"></div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\exchangekey</div>
+        <div class="row ui-widget padme row2">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/exchangekey</div>
             <div class="col-md-4">
-                <div class="row">
-                    <div class="col-md-3">Exchange : </div> 
-                    <div class="col-md-9"><input id="4exchange" type="text" placeholder="Exchange name"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Exchange : </div> 
+                    <div class="col-md-8"><input id="4exchange" type="text" placeholder="Exchange name" size=25></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Secret Key : </div>
-                    <div class="col-md-9"><input id="4secretkey" type="text" placeholder="Secret key"></div> 
+                <div class="row padinput">
+                    <div class="col-md-4">Secret Key : </div>
+                    <div class="col-md-8"><input id="4secretkey" type="text" placeholder="Secret key" size=25></div> 
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Read Key : </div>
-                    <div class="col-md-9"><input id="4readkey" type="text" placeholder="Read key"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Read Key : </div>
+                    <div class="col-md-8"><input id="4readkey" type="text" placeholder="Read key" size=25></div>
                 </div>
             </div>
             <div class="col-md-1"><button id="submit4" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5" id="4resp"></div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\removekey</div>
+        <div class="row ui-widget padme row1">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/removekey</div>
             <div class="col-md-4">
-                <div class="row">
-                    <div class="col-md-3">Exchange : </div> 
-                    <div class="col-md-9"><input id="5exchange" type="text" placeholder="Exchange name"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Exchange : </div> 
+                    <div class="col-md-8"><input id="5exchange" type="text" placeholder="Exchange name" size=25></div>
                 </div>
             </div>
             <div class="col-md-1"><button id="submit5" class="btn btn-primary">Submit</button></div>
@@ -123,15 +123,15 @@
         </div>
 
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\get_annotated_trades</div>
+        <div class="row ui-widget padme row2">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/get_annotated_trades</div>
             <div class="col-md-4">No Input required</div>
             <div class="col-md-1"><button id="submit6" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5" id="6resp"></div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\year_end_stats</div>
+        <div class="row ui-widget padme row1">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/year_end_stats</div>
             <div class="col-md-4">No Input required</div>
             <div class="col-md-1"><button id="submit7" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5" id="7resp">
@@ -141,36 +141,36 @@
             </div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\trade_pnl</div>
+        <div class="row ui-widget padme row2">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/trade_pnl</div>
             <div class="col-md-4">
-                <div class="row">
-                    <div class="col-md-3">Date of Trade : </div> 
-                    <div class="col-md-9"><input id="8timestamp" type="text" placeholder="Date"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Date of Trade : </div> 
+                    <div class="col-md-8"><input id="8timestamp" type="text" placeholder="Date" size=25></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Sold Currency : </div>
-                    <div class="col-md-9"><input id="8sc" type="text" placeholder="Eg BTC"></div> 
+                <div class="row padinput">
+                    <div class="col-md-4">Sold Currency : </div>
+                    <div class="col-md-8"><input id="8sc" type="text" placeholder="Eg BTC" size=25></div> 
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Bought Currency : </div>
-                    <div class="col-md-9"><input id="8bc" type="text" placeholder="Eg USD"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Bought Currency : </div>
+                    <div class="col-md-8"><input id="8bc" type="text" placeholder="Eg USD" size=25></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Sold Amount : </div>
-                    <div class="col-md-9"><input id="8sa" type="text" placeholder="Sold Amount"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Sold Amount : </div>
+                    <div class="col-md-8"><input id="8sa" type="text" placeholder="Sold Amount" size=25></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">Bought Amount : </div>
-                    <div class="col-md-9"><input id="8ba" type="text" placeholder="Bought Amount"></div>
+                <div class="row padinput">
+                    <div class="col-md-4">Bought Amount : </div>
+                    <div class="col-md-8"><input id="8ba" type="text" placeholder="Bought Amount" size=25></div>
                 </div>
             </div>
             <div class="col-md-1"><button id="submit8" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5" id="tradepnl"></div>
         </div>
 
-        <div class="row ui-widget padme">
-            <div class="col-md-2">\portfolio_pnl</div>
+        <div class="row ui-widget padme row1">
+            <div class="col-md-2 text-primary" style="font-weight:bold;">/portfolio_pnl</div>
             <div class="col-md-4">No Input required</div>
             <div class="col-md-1"><button id="submit9" class="btn btn-primary">Submit</button></div>
             <div class="col-md-5" id="portfoliopnl"></div>
