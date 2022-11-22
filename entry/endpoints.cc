@@ -202,6 +202,7 @@ static double field_to_double(string double_str) {
 
 response Endpoints::upload_trade(const request& req) {
     const AuthenticUser user = parse_user(req);
+    crow::json::wvalue resp;
 
     auto body = crow::json::load(req.body);
 
@@ -222,13 +223,16 @@ response Endpoints::upload_trade(const request& req) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
     }
-
-    return response(200, "SUCCESS");
+    resp[ "status" ] = "SUCCESS";
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
+    //return response(200, "SUCCESS");
 }
 
 response Endpoints::upload_exchange_key(const request& req) {
     AuthenticUser user = parse_user(req);
-
+    crow::json::wvalue resp;
     auto body = crow::json::load(req.body);
 
     Exchange exch = from_string(string(body[ "exchange" ]));
@@ -250,12 +254,16 @@ response Endpoints::upload_exchange_key(const request& req) {
         return response(401);
     }
 
-    return response(200, "SUCCESS");
+    resp[ "status" ] = "SUCCESS";
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
+    //return response(200, "SUCCESS");
 }
 
 response Endpoints::remove_exchange_key(const request& req) {
     AuthenticUser user = parse_user(req);
-
+    crow::json::wvalue resp;
     auto body = crow::json::load(req.body);
 
     Exchange exch = from_string(string(body[ "exchange" ]));
@@ -270,7 +278,11 @@ response Endpoints::remove_exchange_key(const request& req) {
         return response(401);
     }
 
-    return response(200, "SUCCESS");
+    resp[ "status" ] = "SUCCESS";
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
+    //return response(200, "SUCCESS");
 }
 
 response Endpoints::get_annotated_trades(const request& req) {
