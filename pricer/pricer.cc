@@ -5,6 +5,7 @@
 #include <curl/curl.h>
 #include <crow.h>
 
+#include <unordered_map>
 #include <algorithm>
 #include <iostream>
 

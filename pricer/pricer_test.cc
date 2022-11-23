@@ -88,3 +88,16 @@ TEST_F(PricerFixture, assetPrice_eth_invalidDate) {
     catch (RateLimitedQuery const &e) { }
     catch (NoRecordsFound const &e) { }
 }
+
+/*
+{"matic", "matic-network"},
+{"link", "chainlink"},
+{"algo", "algorand"},
+{"ltc",  "litecoin"},
+{"eth",  "ethereum"},
+{"dot",  "polkadot"},
+{"btc",  "bitcoin"},
+{"uni",  "uniswap"},
+{"xrp",  "ripple"},
+{"sol",  "solana"}
+*/
