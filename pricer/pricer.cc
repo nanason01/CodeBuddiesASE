@@ -1,14 +1,30 @@
 // Copyright 2022 CodeBuddies ASE Group
 
 #include "pricer/pricer.h"
-// #include "pricer/list.h"
 
 #include <curl/curl.h>
 #include <crow.h>
 
+#include <unordered_map>
 #include <algorithm>
 #include <iostream>
 
+/*
+ * Unordered map of coin id-symbol mappings for
+ * get_asset_id. symbols are key, ids are values.
+ */
+std::unordered_map<std::string, std::string> token_name_map = {
+        {"matic", "matic-network"},
+        {"link", "chainlink"},
+        {"algo", "algorand"},
+        {"ltc",  "litecoin"},
+        {"eth",  "ethereum"},
+        {"dot",  "polkadot"},
+        {"btc",  "bitcoin"},
+        {"uni",  "uniswap"},
+        {"xrp",  "ripple"},
+        {"sol",  "solana"}
+    };
 
 /*
  *
@@ -54,20 +70,16 @@ out:
  *
  */
 std::string Pricer::get_asset_id(std::string currency) {
-    size_t i;
-    std::string url_list = "https://api.coingecko.com/api/v3/coins/list";
+    // Ensure that the currency is in lower case
+    std::transform(currency.begin(),
+        currency.end(), currency.begin(), [](unsigned char x) {
+            return std::tolower(x);
+        });
 
-    std::string list_of_ids = this->perform_curl_request(url_list);
-    auto jsonified_ids = crow::json::load(list_of_ids);
-    // auto jsonified_ids = crow::json::load(big_ass_string);
-    try {
-        for (i = 0; i < jsonified_ids.size(); i++) {
-            if (std::string(jsonified_ids[ i ][ "symbol" ]) == currency) {
-                return std::string(jsonified_ids[ i ][ "id" ]);
-            }
+    for (const auto& [key, value] : token_name_map) {
+        if (key == currency) {
+            return value;
         }
-    } catch (...) {
-        return "";
     }
 
     return "";
@@ -113,12 +125,6 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
  * SEE: https://www.coingecko.com/en/api/documentation
  */
 double Pricer::get_usd_price(std::string currency, Timestamp tstamp) {
-    // Ensure that the currency is in lower case
-    std::transform(currency.begin(),
-        currency.end(), currency.begin(), [](unsigned char x) {
-            return std::tolower(x);
-        });
-
     // Get the asset id for CoinGecko
     std::string currency_id = this->get_asset_id(currency);
     if (currency_id == "") {
