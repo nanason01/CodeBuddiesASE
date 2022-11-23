@@ -5,26 +5,8 @@
 #include <curl/curl.h>
 #include <crow.h>
 
-#include <unordered_map>
 #include <algorithm>
 #include <iostream>
-
-/*
- * Unordered map of coin id-symbol mappings for
- * get_asset_id. symbols are key, ids are values.
- */
-std::unordered_map<std::string, std::string> token_name_map = {
-        {"matic", "matic-network"},
-        {"link", "chainlink"},
-        {"algo", "algorand"},
-        {"ltc",  "litecoin"},
-        {"eth",  "ethereum"},
-        {"dot",  "polkadot"},
-        {"btc",  "bitcoin"},
-        {"uni",  "uniswap"},
-        {"xrp",  "ripple"},
-        {"sol",  "solana"}
-    };
 
 /*
  *
@@ -76,7 +58,7 @@ std::string Pricer::get_asset_id(std::string currency) {
             return std::tolower(x);
         });
 
-    for (const auto& [key, value] : token_name_map) {
+    for (const auto& [key, value] : this->token_name_map) {
         if (key == currency) {
             return value;
         }
@@ -111,8 +93,11 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
 
     auto jsonified_ids = crow::json::load(price_records);
 
-    if (jsonified_ids[ "market_data" ] &&
+    if (jsonified_ids.size() > 0 &&
+        jsonified_ids[ "market_data" ] &&
+        jsonified_ids[ "market_data" ].size() > 0 &&
         jsonified_ids[ "market_data" ][ "current_price" ] &&
+        jsonified_ids[ "market_data" ][ "current_price" ].size() > 0 &&
         jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ]) {
         ans = jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ].d();
     }

@@ -7,6 +7,7 @@
 
 #include <crow.h>
 
+#include <unordered_map>
 #include <string>
 
 #include "pricer/base_pricer.h"
@@ -25,7 +26,25 @@ public:
     double get_usd_price(std::string currency_pair,
         Timestamp tstamp = now()) final;
 
+    /*
+     * Unordered map of coin id-symbol mappings for
+     * get_asset_id. symbols are key, ids are values.
+     */
+    std::unordered_map<std::string, std::string> token_name_map = {
+        {"matic", "matic-network"},
+        {"link", "chainlink"},
+        {"algo", "algorand"},
+        {"ltc",  "litecoin"},
+        {"eth",  "ethereum"},
+        {"dot",  "polkadot"},
+        {"btc",  "bitcoin"},
+        {"uni",  "uniswap"},
+        {"xrp",  "ripple"},
+        {"sol",  "solana"}
+    };
+
 private:
+
     std::string get_asset_id(std::string currency);
 
     std::string perform_curl_request(std::string url);
