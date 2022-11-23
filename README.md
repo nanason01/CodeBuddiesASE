@@ -45,9 +45,9 @@ bazel test --test_output=all //... # run every test
 bazel test --test_output=all //<target> # run single test suite
 ```
 
-To run branch coverage checker:
+To run branch coverage checker (when in root directory of project):
 ```
-./coverage-testing/test_coverage.sh
+./test_coverage.sh
 ```
 and launch the index.html generated in the coverage_reports/ directory of this project in your browser for an interactive view of the results.
 
