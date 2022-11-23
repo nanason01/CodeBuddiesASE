@@ -10,5 +10,4 @@
 #include "exchanges/kraken.h"
 
 TEST(DataIntegration, Todo) {
-
 }
