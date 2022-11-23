@@ -111,6 +111,7 @@ response Endpoints::generate_credentials(const request& req) {
     ret_val[ "api_key" ] = client_id + api_key;
     ret_val[ "refresh_token" ] = client_id + refresh_key;
 
+    // TODO : I think it should be catch UserExists
     try {
         data->add_user(new_user);
     } catch (UserNotFound* e) {
@@ -120,6 +121,16 @@ response Endpoints::generate_credentials(const request& req) {
         cerr << "generate_credentials: " << e->what() << endl;
         return response(401);
     }
+    /*
+    try {
+        data->add_user(new_user);
+    } catch (UserExists* e) {
+        cerr << "generate_credentials: " << e->what() << endl;
+        return response(401);
+        // what do we do now? regenerate client id?
+        // how to test for this? Integration test/Unit test
+    }
+    */
     // std::cout << "in generate_credentials5" << std::endl;
     crow::response res(200, ret_val);
     res.add_header("Access-Control-Allow-Origin", "*");
@@ -140,11 +151,11 @@ response Endpoints::refresh_credentials(const request& req) {
 
     try {
         data->update_user_creds(user, hash_str(new_api_key), hash_str(new_refresh_key));
-    } catch (UserNotFound* e) {
-        cerr << "refresh_credentials: " << e->what() << endl;
+    } catch (UserNotFound& e) {
+        cerr << "refresh_credentials: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "refresh_credentials: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "refresh_credentials: " << e.what() << endl;
         return response(401);
     }
 

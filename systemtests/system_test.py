@@ -40,6 +40,22 @@ def test_refreshcredentials():
 
     assert requests.get(SERVER, headers = {"Authorization" : "Bearer " + api_key}).status_code == 200
 
+    # Check Invalid Creds
+    if refresh_token == client_id + "aaaa":
+        fake_refresh_key = "aaab"
+    else:
+        fake_refresh_key = "aaaa"
+    response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + client_id + fake_refresh_key})
+    assert response.status_code == 401
+
+    # Check Invalid Client ID
+    if client_id == "aaaa":
+        fake_client_id = "aaab"
+    else:
+        fake_client_id = "aaaa"
+    response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + fake_client_id + fake_refresh_key})
+    assert response.status_code == 401
+
 
 def test_trade():
     global api_key
