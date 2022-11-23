@@ -41,5 +41,5 @@ TEST_F(PricerFixture, assetPrice_all) {
 
 TEST_F(PricerFixture, assetPrice_bad) {
     Timestamp ts = from_usa_date(12, 30, 2017);
-    EXPECT_EQ(p.get_usd_price("Alejandro", ts), 0);
+    EXPECT_THROW(p.get_usd_price("Alejandro", ts), NoRecordsFound);
 }
