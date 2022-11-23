@@ -73,6 +73,13 @@ TEST_F(PricerFixture, assetPrice_all) {
     }
 }
 
+TEST_F(PricerFixture, assetPrice_all) {
+    Timestamp ts = from_usa_date(3, 3, 2021);
+    for (const auto& [key, value] : p.token_name_map) {
+       EXPECT_GT(p.get_usd_price(key, ts), 0);
+    }
+}
+
 TEST_F(PricerFixture, assetPrice_bad) {
     Timestamp ts = from_usa_date(12, 30, 2017);
     EXPECT_THROW(p.get_usd_price("Alejandro", ts), NoRecordsFound);
@@ -88,16 +95,3 @@ TEST_F(PricerFixture, assetPrice_eth_invalidDate) {
     catch (RateLimitedQuery const &e) { }
     catch (NoRecordsFound const &e) { }
 }
-
-/*
-{"matic", "matic-network"},
-{"link", "chainlink"},
-{"algo", "algorand"},
-{"ltc",  "litecoin"},
-{"eth",  "ethereum"},
-{"dot",  "polkadot"},
-{"btc",  "bitcoin"},
-{"uni",  "uniswap"},
-{"xrp",  "ripple"},
-{"sol",  "solana"}
-*/
