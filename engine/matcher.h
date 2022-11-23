@@ -43,8 +43,7 @@ public:
     std::vector<SnapshotPNL> get_pnl_snapshots(
         const std::vector<Trade>& trades,
         Timestamp end = now(),
-        std::vector<TimeDelta> timestamps = DEFAULT_SAMPLES
-    ) final;
+        std::vector<TimeDelta> timestamps = DEFAULT_SAMPLES) final;
 
     // returns the earliest dates user could sell each of his cryptos for
     // all of them to be considered long term cap gains

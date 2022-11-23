@@ -1,13 +1,11 @@
-
+// Copyright 2022 CodeBuddies ASE Group
 
 #include <iostream>
 
 #include "engine/matcher.h"
 #include "common/types.h"
 
-
 int main() {
-
     Matcher m;
 
     const Trade trade_in = {
