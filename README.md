@@ -49,7 +49,7 @@ To run branch coverage checker:
 ```
 ./coverage-testing/test_coverage.sh
 ```
-and launch the index.html generated in the coverage/ directory of this project in your browser for an interactive view of the results.
+and launch the index.html generated in the coverage_reports/ directory of this project in your browser for an interactive view of the results.
 
 # Endpoint Specification :
 
