@@ -63,7 +63,6 @@ public:
     };
 
 private:
-
     std::string get_asset_id(std::string currency);
 
     std::string perform_curl_request(std::string url);
