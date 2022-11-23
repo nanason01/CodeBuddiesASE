@@ -93,12 +93,16 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
 
     auto jsonified_ids = crow::json::load(price_records);
 
-    if (jsonified_ids.size() > 0 &&
-        jsonified_ids[ "market_data" ] &&
-        jsonified_ids[ "market_data" ].size() > 0 &&
-        jsonified_ids[ "market_data" ][ "current_price" ] &&
-        jsonified_ids[ "market_data" ][ "current_price" ].size() > 0 &&
-        jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ]) {
+    if (jsonified_ids.size() < 5) {
+        ans = (-1);
+    } else if (!jsonified_ids[ "market_data" ]) {
+        ans = (-2);
+    } else if (jsonified_ids[ "market_data" ].size() == 0 ||
+              !jsonified_ids[ "market_data" ][ "current_price" ] ||
+               jsonified_ids[ "market_data" ][ "current_price" ].size() == 0 ||
+              !jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ]) {
+        ans = (-1);
+    } else {
         ans = jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ].d();
     }
 
@@ -111,9 +115,18 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
  */
 double Pricer::get_usd_price(std::string currency, Timestamp tstamp) {
     // Get the asset id for CoinGecko
+    double ans = 0;
     std::string currency_id = this->get_asset_id(currency);
     if (currency_id == "") {
-        return 0;
+        throw NoRecordsFound{};
     }
-    return this->get_asset_price(currency_id, tstamp);
+
+    ans = this->get_asset_price(currency_id, tstamp);
+    if (ans == (-1)) {
+        throw RateLimitedQuery{};
+    } else if (ans == (-2)) {
+        throw NoRecordsFound{};
+    }
+
+    return ans;
 }

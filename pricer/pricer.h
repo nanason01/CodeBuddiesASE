@@ -8,10 +8,30 @@
 #include <crow.h>
 
 #include <unordered_map>
+#include <exception>
+
 #include <string>
 
 #include "pricer/base_pricer.h"
 #include "common/types.h"
+
+/*
+ * 
+ */
+struct RateLimitedQuery : std::exception {
+    const char* what() const noexcept override {
+        return "Too many queries, slow down";
+    }
+};
+
+/*
+ * 
+ */
+struct NoRecordsFound : std::exception {
+    const char* what() const noexcept override {
+        return "No records found for this token/date";
+    }
+};
 
 /*
  * Write callback function for cURL
