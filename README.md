@@ -45,6 +45,13 @@ bazel test --test_output=all //... # run every test
 bazel test --test_output=all //<target> # run single test suite
 ```
 
+To run system tests:
+
+```
+pip install -U pytest
+cd systemtests
+pytest
+```
 # Endpoint Specification :
 
 Except for /getcredentials, calls to all other endpoints must be authenticated with the API key (or the refresh token when calling /refreshcredentials) by sending it in the **Authorization** header, where the API key (or the refresh token) is concatenated to the string _"Bearer "_ . (Note that the space after the letter r is intentional.)
