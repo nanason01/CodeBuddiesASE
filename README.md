@@ -6,7 +6,7 @@ apt-get install libcurl4-gnutls-dev # libcurl
 https://github.com/CrowCpp/Crow/releases/tag/v1.0+5 # crow
 apt install crow-v1.0+5.deb # to install crow deb
 apt-get install libboost-all-dev # boost (needed by crow)
-
+apt install lcov # for processing coverage test results
 gcc --version >= 9.0.0
 ```
 
@@ -44,6 +44,12 @@ To run tests:
 bazel test --test_output=all //... # run every test
 bazel test --test_output=all //<target> # run single test suite
 ```
+
+To run branch coverage checker (when in root directory of project):
+```
+./test_coverage.sh
+```
+and launch the index.html generated in the coverage_reports/ directory of this project in your browser for an interactive view of the results.
 
 # Endpoint Specification :
 
