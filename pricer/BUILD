@@ -9,6 +9,7 @@ cc_library(
     ],
     visibility=[
         "//engine:__pkg__",
+        "//tests:__pkg__",
     ],
     deps=["//common"],
 )

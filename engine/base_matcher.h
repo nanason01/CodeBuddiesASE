@@ -45,8 +45,10 @@ public:
     virtual PNL get_pnl_from(Trade trade, Timestamp end_time = now()) = 0;
     virtual PNL get_net_pnl(const vector<Trade>& trades_in, Timestamp end_time = now()) = 0;
     virtual YearEndPNL get_year_end_pnl(const vector<Trade>& trades_in, Timestamp year = now()) = 0;
-    virtual vector<SnapshotPNL>
-        get_pnl_snapshots(const vector<Trade>& trades_in, vector<TimeDelta> timestamps = DEFAULT_SAMPLES) = 0;
+    virtual vector<SnapshotPNL> get_pnl_snapshots(
+        const vector<Trade>& trades_in,
+        Timestamp end = now(),
+        vector<TimeDelta> timestamps = DEFAULT_SAMPLES) = 0;
     virtual vector<Trade>
         get_earliest_long_term_sells(const vector<Trade>& trades, const Timestamp end_time = now()) = 0;
 };
