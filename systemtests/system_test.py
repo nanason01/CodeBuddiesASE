@@ -3,58 +3,172 @@ import pytest
 
 SERVER = "http://0.0.0.0:18420/"
 
-def test_getcredentials():
+
+@pytest.fixture(scope="class")
+def endpoint_getcredentials(request):
     response = requests.get(SERVER + "getcredentials")
+    request.cls.response = response
 
-    assert response.status_code == 200
+@pytest.mark.usefixtures("endpoint_getcredentials")
+class TestGetcredentialsClass:
+    def test_response_getcredentials(self):
+        #response = endpoint_getcredentials
+        assert self.response.status_code == 200
 
-    authenticatedUser = response.json()
+        # save credentials in global variables
+        authenticatedUser = self.response.json()
+        global client_id
+        global api_key
+        global refresh_token
+        client_id = authenticatedUser["client_id"]
+        api_key = authenticatedUser["api_key"]
+        refresh_token = authenticatedUser["refresh_token"]
 
-    global client_id
-    global api_key
-    global refresh_token
-    client_id = authenticatedUser["client_id"]
-    api_key = authenticatedUser["api_key"]
-    refresh_token = authenticatedUser["refresh_token"]
+        print(api_key + " " + refresh_token + " " + client_id)
 
-    assert client_id == api_key[0 : 4] == refresh_token[0 : 4]
+    def test_credential_properties(self):
+        global client_id
+        global api_key
+        global refresh_token
 
-    assert requests.get(SERVER, headers = {"Authorization" : "Bearer " + api_key}).status_code == 200
+        assert client_id == api_key[0 : 4] == refresh_token[0 : 4]
 
-def test_refreshcredentials():
-    global client_id
-    global api_key
-    global refresh_token
+        print(api_key + " " + refresh_token + " " + client_id)
+
+    def test_authentication(self):
+        
+        print(api_key + " " + refresh_token + " " + client_id)
+        assert requests.get(SERVER, headers = {"Authorization" : "Bearer " + api_key}).status_code == 200
+
+    def test_invalid_apikey(self):
+        global client_id
+        global api_key
+        global refresh_token
+
+        # Check Response for wrong Refresh token
+        if api_key == client_id + "aaaa":
+            fake_api_key = "aaab"
+        else:
+            fake_api_key = "aaaa"
+        response = requests.get(SERVER, headers = {"Authorization" : "Bearer " + client_id + fake_api_key})
+        assert response.status_code == 401
+
     
+
+# def test_getcredentials():
+#     response = requests.get(SERVER + "getcredentials")
+
+#     assert response.status_code == 200
+
+#     authenticatedUser = response.json()
+
+#     global client_id
+#     global api_key
+#     global refresh_token
+#     client_id = authenticatedUser["client_id"]
+#     api_key = authenticatedUser["api_key"]
+#     refresh_token = authenticatedUser["refresh_token"]
+
+#     assert client_id == api_key[0 : 4] == refresh_token[0 : 4]
+
+#     assert requests.get(SERVER, headers = {"Authorization" : "Bearer " + api_key}).status_code == 200
+
+        
+@pytest.fixture(scope="class")
+def endpoint_refreshcredentials(request):
     response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + refresh_token})
+    request.cls.response = response
 
-    assert response.status_code == 200
+@pytest.mark.usefixtures("endpoint_refreshcredentials")
+class TestrefreshcredentialsClass:
+    def test_response_refreshcredentials(self):
+        assert self.response.status_code == 200
 
-    authenticatedUser = response.json()
+        # Update credentials
+        global client_id
+        global api_key
+        global refresh_token
+
+        authenticatedUser = self.response.json()
+        api_key = authenticatedUser["api_key"]
+        refresh_token = authenticatedUser["refresh_token"]
+
+    def test_credential_properties(self):
+        global client_id
+        global api_key
+        global refresh_token
+
+        assert client_id == api_key[0 : 4] == refresh_token[0 : 4]
+
+        print(api_key + " " + refresh_token + " " + client_id)
+
+    def test_authentication_with_new_creds(self):
+        
+        print(api_key + " " + refresh_token + " " + client_id)
+        assert requests.get(SERVER, headers = {"Authorization" : "Bearer " + api_key}).status_code == 200
+    
+    def test_invalid_apikey(self):
+        global client_id
+        global api_key
+        global refresh_token
+
+        # Check Response for wrong Refresh token
+        if refresh_token == client_id + "aaaa":
+            fake_refresh_key = "aaab"
+        else:
+            fake_refresh_key = "aaaa"
+        response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + client_id + fake_refresh_key})
+        assert response.status_code == 401
+
+    def test_invalid_clientid(self):
+        global client_id
+        global api_key
+        global refresh_token
+
+        # Check Response for client Id that doesn't exist
+        if client_id == "aaaa":
+            fake_client_id = "aaab"
+        else:
+            fake_client_id = "aaaa"
+        response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + fake_client_id + refresh_token})
+        assert response.status_code == 401
+
+
+
+# def test_refreshcredentials():
+#     global client_id
+#     global api_key
+#     global refresh_token
+    
+#     response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + refresh_token})
+
+#     assert response.status_code == 200
+
+#     authenticatedUser = response.json()
 
     
-    api_key = authenticatedUser["api_key"]
-    refresh_token = authenticatedUser["refresh_token"]
+#     api_key = authenticatedUser["api_key"]
+#     refresh_token = authenticatedUser["refresh_token"]
 
-    assert client_id == authenticatedUser["client_id"] == api_key[0 : 4] == refresh_token[0 : 4]
+#     assert client_id == authenticatedUser["client_id"] == api_key[0 : 4] == refresh_token[0 : 4]
 
-    assert requests.get(SERVER, headers = {"Authorization" : "Bearer " + api_key}).status_code == 200
+#     assert requests.get(SERVER, headers = {"Authorization" : "Bearer " + api_key}).status_code == 200
 
-    # Check Invalid Creds
-    if refresh_token == client_id + "aaaa":
-        fake_refresh_key = "aaab"
-    else:
-        fake_refresh_key = "aaaa"
-    response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + client_id + fake_refresh_key})
-    assert response.status_code == 401
+#     # Check Invalid Creds
+#     if refresh_token == client_id + "aaaa":
+    #     fake_refresh_key = "aaab"
+    # else:
+    #     fake_refresh_key = "aaaa"
+    # response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + client_id + fake_refresh_key})
+    # assert response.status_code == 401
 
-    # Check Invalid Client ID
-    if client_id == "aaaa":
-        fake_client_id = "aaab"
-    else:
-        fake_client_id = "aaaa"
-    response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + fake_client_id + fake_refresh_key})
-    assert response.status_code == 401
+    # # Check Invalid Client ID
+    # if client_id == "aaaa":
+    #     fake_client_id = "aaab"
+    # else:
+    #     fake_client_id = "aaaa"
+    # response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + fake_client_id + fake_refresh_key})
+    # assert response.status_code == 401
 
 
 def test_trade():
@@ -108,3 +222,14 @@ def test_portfolio_pnl():
     pnl = response.json()
     assert float(pnl["pnl"])
 
+# def test_get_annotated_trades():
+#     global api_key
+#     response = requests.get(SERVER + "get_annotated_trades", headers = {"Authorization" : "Bearer " + api_key})
+#     assert response.status_code == 200
+#     print(response.json())
+
+# def test_year_end_pnl():
+#     global api_key
+#     response = requests.get(SERVER + "year_end_stats", headers = {"Authorization" : "Bearer " + api_key})
+#     assert response.status_code == 200
+#     print(response.json())

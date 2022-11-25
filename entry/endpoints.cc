@@ -86,8 +86,8 @@ response Endpoints::validate_credentials(const request& req) {
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "validate_credentials: " << e.what() << endl;
         return response(401);
     }
 
