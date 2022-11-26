@@ -183,19 +183,6 @@ class TestTradepnlClass:
         pnl = self.response.json()
         assert float(pnl["pnl"]) or (not float(pnl["pnl"]))
 
-# def test_tradepnl():
-#     global api_key
-#     trade = {
-#         "timestamp":"2/02/2020",
-#         "sold_currency":"BTC",
-#         "bought_currency":"USD",
-#         "sold_amount":"1",
-#         "bought_amount":"1"
-#     }
-#     response = requests.post(SERVER + "trade_pnl", headers = {"Authorization" : "Bearer " + api_key}, json = trade)
-#     assert response.status_code == 200
-#     pnl = response.json()
-#     assert float(pnl["pnl"])
 
 @pytest.fixture(scope="class")
 def endpoint_portfoliopnl(request):
@@ -212,12 +199,6 @@ class TestPortfoliopnlClass:
         pnl = self.response.json()
         assert float(pnl["pnl"]) or (not float(pnl["pnl"]))
 
-# def test_portfolio_pnl():
-#     global api_key
-#     response = requests.get(SERVER + "portfolio_pnl", headers = {"Authorization" : "Bearer " + api_key})
-#     assert response.status_code == 200
-#     pnl = response.json()
-#     assert float(pnl["pnl"])
 
 # def test_get_annotated_trades():
 #     global api_key
