@@ -22,4 +22,4 @@ API endpoints that we aim to reach:
 - Kraken: 
     https://api.kraken.com/0/private/TradesHistory (allows us to query for individual client's recent transaction history).
 
-- CoinGeck (initially a part of this module, querying functionality for CoinGecko's API was moved to pricer/)
+- CoinGecko (initially a part of this module, querying functionality for CoinGecko's API was moved to pricer/)

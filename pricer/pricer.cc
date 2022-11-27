@@ -90,11 +90,6 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
     } else if (jsonified_ids.size() == 5 ||
               !jsonified_ids[ "market_data" ]) {
         ans = (-2);
-    } else if (jsonified_ids[ "market_data" ].size() == 0 ||
-              !jsonified_ids[ "market_data" ][ "current_price" ] ||
-               jsonified_ids[ "market_data" ][ "current_price" ].size() == 0 ||
-              !jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ]) {
-        ans = (-1);
     } else {
         ans = jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ].d();
     }

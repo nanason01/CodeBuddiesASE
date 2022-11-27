@@ -12,6 +12,15 @@ protected:
     Pricer p;
 };
 
+TEST_F(PricerFixture, assetPrice_eth_invalidDate) {
+    Timestamp ts = from_usa_date(3, 3, 2012);
+
+    try {
+        p.get_usd_price("eth", ts);
+    } catch (NoRecordsFound const &e) {
+    } catch (RateLimitedQuery const &e) { }
+}
+
 TEST_F(PricerFixture, assetPrice_btc_1) {
     Timestamp ts = from_usa_date(3, 3, 2017);
     double ans;
@@ -73,25 +82,12 @@ TEST_F(PricerFixture, assetPrice_all) {
     }
 }
 
-TEST_F(PricerFixture, assetPrice_all) {
-    Timestamp ts = from_usa_date(3, 3, 2021);
-    for (const auto& [key, value] : p.token_name_map) {
-       EXPECT_GT(p.get_usd_price(key, ts), 0);
-    }
-}
-
 TEST_F(PricerFixture, assetPrice_bad) {
     Timestamp ts = from_usa_date(12, 30, 2017);
-    EXPECT_THROW(p.get_usd_price("Alejandro", ts), NoRecordsFound);
-}
-
-TEST_F(PricerFixture, assetPrice_eth_invalidDate) {
-    Timestamp ts = from_usa_date(12, 30, 2010);
 
     try {
-        p.get_usd_price("eth", ts);
+        p.get_usd_price("Alejandro", ts);
+    } catch (std::exception const &e) {
+        EXPECT_EQ(e.what(), NoRecordsFound{}.what());
     }
-
-    catch (RateLimitedQuery const &e) { }
-    catch (NoRecordsFound const &e) { }
 }
