@@ -73,11 +73,10 @@ TEST(EngineIntegration, GetPNLFrom) {
     try {
         res1 = m.get_pnl_from(sample_trades[ 2 ], sample_end);
         res2 = m.get_pnl_from(sample_trades[ 3 ], sample_end);
+        std::cout << "res1: " << res1 << " res2: " << res2 << std::endl;
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
     }
-
-    std::cout << "res1: " << res1 << " res2: " << res2 << std::endl;
 }
 
 TEST(EngineIntegration, GetNetPNL) {
@@ -86,11 +85,10 @@ TEST(EngineIntegration, GetNetPNL) {
 
     try {
         res = m.get_net_pnl(sample_trades, sample_end);
+        std::cout << "res: " << res << std::endl;
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
     }
-
-    std::cout << "res: " << res << std::endl;
 }
 
 TEST(EngineIntegration, GetYearEndPNL) {
@@ -99,11 +97,10 @@ TEST(EngineIntegration, GetYearEndPNL) {
 
     try {
         res = m.get_year_end_pnl(sample_trades, sample_end);
+        std::cout << "actual: " << res.actual << " lt: " << res.lt_realized << " st: " << res.st_realized << std::endl;
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
     }
-
-    std::cout << "actual: " << res.actual << " lt: " << res.lt_realized << " st: " << res.st_realized << std::endl;
 }
 
 TEST(EngineIntegration, GetPNLSnapshots) {
