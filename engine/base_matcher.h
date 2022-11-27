@@ -39,7 +39,6 @@ struct SnapshotPNL {
 };
 class BaseMatcher {
 public:
-    virtual ~BaseMatcher() = default;
     virtual vector<MatchedTrade>
         get_matched_trades(const vector<Trade>& trades_in, const Timestamp end_time = now()) = 0;
     virtual PNL get_pnl_from(Trade trade, Timestamp end_time = now()) = 0;
