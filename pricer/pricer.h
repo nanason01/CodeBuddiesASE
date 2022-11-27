@@ -9,7 +9,6 @@
 
 #include <unordered_map>
 #include <exception>
-
 #include <string>
 
 #include "pricer/base_pricer.h"

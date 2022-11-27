@@ -87,7 +87,8 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
 
     if (jsonified_ids.size() < 5) {
         ans = (-1);
-    } else if (!jsonified_ids[ "market_data" ]) {
+    } else if (!jsonified_ids[ "market_data" ] ||
+                jsonified_ids.size() == 5) {
         ans = (-2);
     } else if (jsonified_ids[ "market_data" ].size() == 0 ||
               !jsonified_ids[ "market_data" ][ "current_price" ] ||
