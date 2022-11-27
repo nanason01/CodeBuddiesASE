@@ -26,7 +26,7 @@ TEST_F(KrakenFixture, get_trades_valid) {
 
 TEST_F(KrakenFixture, get_trades_invalidkey_mia1) {
     try {
-        kr.get_trades("","VzP5UOZzOcsjJOw/9gU1D1QY78eBNO3LHnXIUngXxK7jbhy58EHpPOGI8b7CIg4D/304BOAwrxX5JwGVECJimg==");
+        kr.get_trades("", "VzP5UOZzOcsjJOw/9gU1D1QY78eBNO3LHnXIUngXxK7jbhy58EHpPOGI8b7CIg4D/304BOAwrxX5JwGVECJimg==");
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), APICredsMissing{}.what());
     }
