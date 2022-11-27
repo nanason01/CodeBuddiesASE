@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 
 #include "data/data.h"
-#include "exchanges/coinbase.h"
 #include "exchanges/kraken.h"
 
 TEST(DataIntegration, Todo) {
