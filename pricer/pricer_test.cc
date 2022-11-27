@@ -18,11 +18,10 @@ TEST_F(PricerFixture, assetPrice_btc_1) {
 
     try {
         ans = p.get_usd_price("BTC", ts);
+        EXPECT_NEAR(ans, 1289.54, 0.01);
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
     }
-
-    EXPECT_NEAR(ans, 1289.54, 0.01);
 }
 
 TEST_F(PricerFixture, assetPrice_btc_2) {
@@ -31,11 +30,10 @@ TEST_F(PricerFixture, assetPrice_btc_2) {
 
     try {
         ans = p.get_usd_price("BtC", ts);
+        EXPECT_NEAR(ans, 1289.54, 0.01);
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
     }
-
-    EXPECT_NEAR(ans, 1289.54, 0.01);
 }
 
 TEST_F(PricerFixture, assetPrice_btc_3) {
@@ -44,11 +42,10 @@ TEST_F(PricerFixture, assetPrice_btc_3) {
 
     try {
         ans = p.get_usd_price("btc", ts);
+        EXPECT_NEAR(ans, 1289.54, 0.01);
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
     }
-
-    EXPECT_NEAR(ans, 1289.54, 0.01);
 }
 
 TEST_F(PricerFixture, assetPrice_btc_4) {
@@ -57,11 +54,10 @@ TEST_F(PricerFixture, assetPrice_btc_4) {
 
     try {
         ans = p.get_usd_price("BTC", ts);
+        EXPECT_NEAR(ans, 13620.36, 0.01);
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
     }
-
-    EXPECT_NEAR(ans, 13620.36, 0.01);
 }
 
 TEST_F(PricerFixture, assetPrice_all) {
@@ -70,15 +66,25 @@ TEST_F(PricerFixture, assetPrice_all) {
     for (const auto& [key, value] : p.token_name_map) {
         try {
             ans = p.get_usd_price(key, ts);
+            EXPECT_GT(ans, 0);
         } catch (std::exception const &e) {
             EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
         }
-
-        EXPECT_GT(ans, 0);
     }
 }
 
 TEST_F(PricerFixture, assetPrice_bad) {
     Timestamp ts = from_usa_date(12, 30, 2017);
     EXPECT_THROW(p.get_usd_price("Alejandro", ts), NoRecordsFound);
+}
+
+TEST_F(PricerFixture, assetPrice_eth_invalidDate) {
+    Timestamp ts = from_usa_date(12, 30, 2010);
+
+    try {
+        p.get_usd_price("eth", ts);
+    }
+
+    catch (RateLimitedQuery const &e) { }
+    catch (NoRecordsFound const &e) { }
 }
