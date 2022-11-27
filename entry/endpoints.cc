@@ -203,12 +203,38 @@ response Endpoints::refresh_credentials(const request& req) {
 
 static Timestamp field_to_ts(string ts_str) {
     std::cout << "field_to_ts got " << ts_str << std::endl;
-    return from_usa_date(4, 20, 2021);
+
+    int first = -1;
+    int second = -1;
+    for(int i=0; i<(int)ts_str.size(); i++) {
+        if (ts_str[i] == '/') {
+            if(first == -1)
+                first = i;
+            else if(second == -1)
+                second = i;
+            else
+                break;
+        }   
+    }
+    int month = std::stoi(ts_str.substr(0, first));
+    int day = std::stoi(ts_str.substr(first + 1, second));
+    int year = std::stoi(ts_str.substr(second + 1, second + 5));
+
+    std::cout << month << std::endl;
+    std::cout << day << std::endl;
+    std::cout << year << std::endl;
+
+    if(day < 0 || day > 31 || month < 0 || month > 12)
+        throw std::invalid_argument("Invalid Date");
+    
+    return from_usa_date(month, day, year);
+    //return from_usa_date(4, 20, 2021);
 }
 
 static double field_to_double(string double_str) {
     std::cout << "field_to_double got " << double_str << std::endl;
-    return -1.0;
+    return std::stod(double_str);
+    //return -1.0;
 }
 
 response Endpoints::upload_trade(const request& req) {
@@ -217,15 +243,14 @@ response Endpoints::upload_trade(const request& req) {
 
     auto body = crow::json::load(req.body);
 
-    const Trade trade_in{
-        field_to_ts(string(body[ "timestamp" ])),
-        string(body[ "sold_currency" ]),
-        string(body[ "bought_currency" ]),
-        field_to_double(string(body[ "sold_amount" ])),
-        field_to_double(string(body[ "bought_amount" ]))
-    };
-
     try {
+        const Trade trade_in{
+            field_to_ts(string(body[ "timestamp" ])),
+            string(body[ "sold_currency" ]),
+            string(body[ "bought_currency" ]),
+            field_to_double(string(body[ "sold_amount" ])),
+            field_to_double(string(body[ "bought_amount" ]))
+        };
         data->upload_trade(user, trade_in);
     } catch (UserNotFound* e) {
         cerr << "validate_credentials: " << e->what() << endl;
@@ -233,7 +258,11 @@ response Endpoints::upload_trade(const request& req) {
     } catch (InvalidCreds* e) {
         cerr << "validate_credentials: " << e->what() << endl;
         return response(401);
+    } catch (...) {
+        cerr << "Invalid timestamp" << endl;
+        return response(400);
     }
+
     resp[ "status" ] = "SUCCESS";
     crow::response res(200, resp);
     res.add_header("Access-Control-Allow-Origin", "*");
