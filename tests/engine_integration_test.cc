@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <typeinfo>
 #include <iostream>
 
 #include "common/types.h"
@@ -53,8 +54,13 @@ const Timestamp sample_end = from_usa_date(11, 18, 2022);
 
 TEST(EngineIntegration, GetMatchedTrades) {
     Matcher m;
+    std::vector<MatchedTrade> res;
 
-    const auto res = m.get_matched_trades(sample_trades);
+    try {
+        res = m.get_matched_trades(sample_trades);
+    } catch (std::exception const &e) {
+        EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
+    }
 
     for (const auto& mt : res)
         std::cout << mt << std::endl;
@@ -62,33 +68,53 @@ TEST(EngineIntegration, GetMatchedTrades) {
 
 TEST(EngineIntegration, GetPNLFrom) {
     Matcher m;
+    PNL res1, res2;
 
-    const auto res1 = m.get_pnl_from(sample_trades[ 2 ], sample_end);
-    const auto res2 = m.get_pnl_from(sample_trades[ 3 ], sample_end);
+    try {
+        res1 = m.get_pnl_from(sample_trades[ 2 ], sample_end);
+        res2 = m.get_pnl_from(sample_trades[ 3 ], sample_end);
+    } catch (std::exception const &e) {
+        EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
+    }
 
     std::cout << "res1: " << res1 << " res2: " << res2 << std::endl;
 }
 
 TEST(EngineIntegration, GetNetPNL) {
     Matcher m;
+    PNL res;
 
-    const auto res = m.get_net_pnl(sample_trades, sample_end);
+    try {
+        res = m.get_net_pnl(sample_trades, sample_end);
+    } catch (std::exception const &e) {
+        EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
+    }
 
     std::cout << "res: " << res << std::endl;
 }
 
 TEST(EngineIntegration, GetYearEndPNL) {
     Matcher m;
+    YearEndPNL res;
 
-    const auto res = m.get_year_end_pnl(sample_trades, sample_end);
+    try {
+        res = m.get_year_end_pnl(sample_trades, sample_end);
+    } catch (std::exception const &e) {
+        EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
+    }
 
     std::cout << "actual: " << res.actual << " lt: " << res.lt_realized << " st: " << res.st_realized << std::endl;
 }
 
 TEST(EngineIntegration, GetPNLSnapshots) {
     Matcher m;
+    std::vector<SnapshotPNL> res;
 
-    const auto res = m.get_pnl_snapshots(sample_trades, sample_end);
+    try {
+        res = m.get_pnl_snapshots(sample_trades, sample_end);
+    } catch (std::exception const &e) {
+        EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
+    }
 
     for (const auto& snapshot : res) {
         std::cout << "pnl: " << snapshot.pnl << " ts: " << snapshot.timestamp << std::endl;
@@ -97,8 +123,13 @@ TEST(EngineIntegration, GetPNLSnapshots) {
 
 TEST(EngineIntegration, GetEarliestLongTermSells) {
     Matcher m;
+    std::vector<Trade> res;
 
-    const auto res = m.get_earliest_long_term_sells(sample_trades, sample_end);
+    try {
+        res = m.get_earliest_long_term_sells(sample_trades, sample_end);
+    } catch (std::exception const &e) {
+        EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
+    }
 
     for (const auto& lt_sell : res) {
         std::cout << lt_sell << std::endl;
