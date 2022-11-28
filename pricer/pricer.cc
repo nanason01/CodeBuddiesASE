@@ -115,6 +115,10 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
  */
 double Pricer::get_usd_price(std::string currency, Timestamp tstamp) {
     // Get the asset id for CoinGecko
+    std::cout << "get_usd_price" << std::endl;
+    std::cout << get_year(tstamp) << std::endl;
+    std::cout << get_month(tstamp) << std::endl;
+    std::cout << get_day(tstamp) << std::endl;
     double ans = 0;
     std::string currency_id = this->get_asset_id(currency);
     if (currency_id == "") {
