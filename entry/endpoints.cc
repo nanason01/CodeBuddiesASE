@@ -111,7 +111,7 @@ response Endpoints::generate_credentials(const request& req) {
     ret_val[ "api_key" ] = client_id + api_key;
     ret_val[ "refresh_token" ] = client_id + refresh_key;
 
-    // TODO : I think it should be catch UserExists
+    // FIXME: I think it should be catch UserExists
     try {
         data->add_user(new_user);
     } catch (UserNotFound* e) {
@@ -206,15 +206,15 @@ static Timestamp field_to_ts(string ts_str) {
 
     int first = -1;
     int second = -1;
-    for(int i=0; i<(int)ts_str.size(); i++) {
+    for (int i = 0; i < static_cast<int>(ts_str.size()); i++) {
         if (ts_str[i] == '/') {
-            if(first == -1)
+            if (first == -1)
                 first = i;
-            else if(second == -1)
+            else if (second == -1)
                 second = i;
             else
                 break;
-        }   
+        }
     }
     int month = std::stoi(ts_str.substr(0, first));
     int day = std::stoi(ts_str.substr(first + 1, second));
@@ -224,17 +224,17 @@ static Timestamp field_to_ts(string ts_str) {
     std::cout << day << std::endl;
     std::cout << year << std::endl;
 
-    if(day < 0 || day > 31 || month < 0 || month > 12)
+    if (day < 0 || day > 31 || month < 0 || month > 12)
         throw std::invalid_argument("Invalid Date");
-    
+
     return from_usa_date(month, day, year);
-    //return from_usa_date(4, 20, 2021);
+    // return from_usa_date(4, 20, 2021);
 }
 
 static double field_to_double(string double_str) {
     std::cout << "field_to_double got " << double_str << std::endl;
     return std::stod(double_str);
-    //return -1.0;
+    // return -1.0;
 }
 
 response Endpoints::upload_trade(const request& req) {
@@ -267,7 +267,7 @@ response Endpoints::upload_trade(const request& req) {
     crow::response res(200, resp);
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
-    //return response(200, "SUCCESS");
+    // return response(200, "SUCCESS");
 }
 
 response Endpoints::upload_exchange_key(const request& req) {
@@ -298,7 +298,7 @@ response Endpoints::upload_exchange_key(const request& req) {
     crow::response res(200, resp);
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
-    //return response(200, "SUCCESS");
+    // return response(200, "SUCCESS");
 }
 
 response Endpoints::remove_exchange_key(const request& req) {
@@ -322,7 +322,7 @@ response Endpoints::remove_exchange_key(const request& req) {
     crow::response res(200, resp);
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
-    //return response(200, "SUCCESS");
+    // return response(200, "SUCCESS");
 }
 
 response Endpoints::get_annotated_trades(const request& req) {
@@ -344,7 +344,7 @@ response Endpoints::get_annotated_trades(const request& req) {
             ret[ i ][ "size" ] = to_string(mt.sz);
             ret[ i ][ "pnl" ] = to_string(mt.pnl);
         }
-        
+
         crow::response res(200, ret);
         res.add_header("Access-Control-Allow-Origin", "*");
         return res;
@@ -377,7 +377,7 @@ response Endpoints::get_year_end_stats(const request& req) {
         crow::response res(200, ye_pnl_crow);
         res.add_header("Access-Control-Allow-Origin", "*");
         return res;
-        //return ye_pnl_crow;
+        // return ye_pnl_crow;
     } catch (UserNotFound* e) {
         cerr << "get_year_end_stats: " << e->what() << endl;
         return response(401);
@@ -399,7 +399,7 @@ response Endpoints::calc_trade_pnl(const request& req) {
             field_to_double(string(body[ "sold_amount" ])),
             field_to_double(string(body[ "bought_amount" ]))
         };
-        
+
         // maybe this isn't necessary, but rules are rules
         data->check_user(user);
         const auto pnl = matcher->get_pnl_from(trade_in);
@@ -433,7 +433,7 @@ response Endpoints::get_net_pnl(const request& req) {
         crow::response res(200, net_pnl_crow);
         res.add_header("Access-Control-Allow-Origin", "*");
         return res;
-        //return response(net_pnl_crow);
+        // return response(net_pnl_crow);
     } catch (UserNotFound* e) {
         cerr << "get_net_pnl: " << e->what() << endl;
         return response(401);
