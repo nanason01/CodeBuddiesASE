@@ -391,15 +391,15 @@ response Endpoints::calc_trade_pnl(const request& req) {
     AuthenticUser user = parse_user(req);
     auto body = crow::json::load(req.body);
 
-    const Trade trade_in{
-        field_to_ts(string(body[ "timestamp" ])),
-        string(body[ "sold_currency" ]),
-        string(body[ "bought_currency" ]),
-        field_to_double(string(body[ "sold_amount" ])),
-        field_to_double(string(body[ "bought_amount" ]))
-    };
-
     try {
+        const Trade trade_in{
+            field_to_ts(string(body[ "timestamp" ])),
+            string(body[ "sold_currency" ]),
+            string(body[ "bought_currency" ]),
+            field_to_double(string(body[ "sold_amount" ])),
+            field_to_double(string(body[ "bought_amount" ]))
+        };
+        
         // maybe this isn't necessary, but rules are rules
         data->check_user(user);
         const auto pnl = matcher->get_pnl_from(trade_in);
@@ -416,6 +416,9 @@ response Endpoints::calc_trade_pnl(const request& req) {
     } catch (InvalidCreds* e) {
         cerr << "calc_trade_pnl: " << e->what() << endl;
         return response(401);
+    } catch (...) {
+        cerr << "Invalid timestamp" << endl;
+        return response(400);
     }
 }
 

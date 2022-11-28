@@ -132,6 +132,17 @@ class TestTradeClass:
     def test_response_trade(self):
         assert self.response.status_code == 200
 
+    def test_wrong_date(self):
+        trade = {
+            "timestamp":"33/02/2020",
+            "sold_currency":"BTC",
+            "bought_currency":"USD",
+            "sold_amount":"1",
+            "bought_amount":"1"
+        }
+        response = requests.post(SERVER + "trade", headers = {"Authorization" : "Bearer " + api_key}, json = trade)
+        assert response.status_code == 400
+
         
 @pytest.fixture(scope="class")
 def endpoint_exchangekey(request):
@@ -183,6 +194,17 @@ class TestTradepnlClass:
         pnl = self.response.json()
         assert float(pnl["pnl"]) or (not float(pnl["pnl"]))
 
+    def test_wrong_date_format(self):
+        trade = {
+            "timestamp":"22/02/2020",
+            "sold_currency":"BTC",
+            "bought_currency":"USD",
+            "sold_amount":"1",
+            "bought_amount":"1"
+        }
+        response = requests.post(SERVER + "trade_pnl", headers = {"Authorization" : "Bearer " + api_key}, json = trade)
+        assert response.status_code == 400
+
 
 @pytest.fixture(scope="class")
 def endpoint_portfoliopnl(request):
@@ -200,14 +222,21 @@ class TestPortfoliopnlClass:
         assert float(pnl["pnl"]) or (not float(pnl["pnl"]))
 
 
-# def test_get_annotated_trades():
-#     global api_key
-#     response = requests.get(SERVER + "get_annotated_trades", headers = {"Authorization" : "Bearer " + api_key})
-#     assert response.status_code == 200
-#     print(response.json())
+def test_get_annotated_trades():
+    global api_key
+    keydata = {
+        "exchange":"Kraken",
+        "readkey":"J9LYvgnqF6wG4H0Y7/Yr1ysdXke/O2vPdu58nQGp9bmK+e7R4OSyWAsU",
+        "secretkey":"VzP5UOZzOcsjJOw/9gU1D1QY78eBNO3LHnXIUngXxK7jbhy58EHpPOGI8b7CIg4D/304BOAwrxX5JwGVECJimg=="
+    }
+    response = requests.post(SERVER + "exchangekey", headers = {"Authorization" : "Bearer " + api_key}, json = keydata)
+    response.status_code == 200
+    response = requests.get(SERVER + "get_annotated_trades", headers = {"Authorization" : "Bearer " + api_key})
+    assert response.status_code == 200
+    print(response.json())
 
-# def test_year_end_pnl():
-#     global api_key
-#     response = requests.get(SERVER + "year_end_stats", headers = {"Authorization" : "Bearer " + api_key})
-#     assert response.status_code == 200
-#     print(response.json())
+def test_year_end_pnl():
+    global api_key
+    response = requests.get(SERVER + "year_end_stats", headers = {"Authorization" : "Bearer " + api_key})
+    assert response.status_code == 200
+    print(response.json())
