@@ -6,7 +6,7 @@ apt-get install libcurl4-gnutls-dev # libcurl
 https://github.com/CrowCpp/Crow/releases/tag/v1.0+5 # crow
 apt install crow-v1.0+5.deb # to install crow deb
 apt-get install libboost-all-dev # boost (needed by crow)
-
+apt install lcov # for processing coverage test results
 gcc --version >= 9.0.0
 ```
 
@@ -52,6 +52,12 @@ pip install -U pytest
 cd systemtests
 pytest
 ```
+To run branch coverage checker (when in root directory of project):
+```
+./test_coverage.sh
+```
+and launch the index.html generated in the coverage_reports/ directory of this project in your browser for an interactive view of the results.
+
 # Endpoint Specification :
 
 Except for /getcredentials, calls to all other endpoints must be authenticated with the API key (or the refresh token when calling /refreshcredentials) by sending it in the **Authorization** header, where the API key (or the refresh token) is concatenated to the string _"Bearer "_ . (Note that the space after the letter r is intentional.)
