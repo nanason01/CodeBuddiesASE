@@ -5,7 +5,6 @@ cc_library(
         "helpers.cc",
     ],
     hdrs=[
-        "coinbase.h",
         "kraken.h",
         "driver.h",
         "helpers.h",

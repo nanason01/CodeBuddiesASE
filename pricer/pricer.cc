@@ -37,14 +37,10 @@ std::string Pricer::perform_curl_request(std::string url) {
             static_cast<void*> (&response_buffer));
 
         curl_easy_perform(curl);
-    } else {
-        goto out;
     }
 
     // Deallocate resources
     curl_easy_cleanup(curl);
-
-out:
     return response_buffer;
 }
 
@@ -83,25 +79,17 @@ std::string Pricer::format_timestamp(Timestamp tstamp) {
  */
 double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
     double ans = 0;
-
     std::string timestamp_str = format_timestamp(tstamp);
-
-    std::string url_list = "https://api.coingecko.com/api/v3/coins/" +
-        currency_id + "/history?date=" + timestamp_str;
-
+    std::string url_list = "https://api.coingecko.com/api/v3/coins/"+currency_id+"/history?date="+timestamp_str;
     std::string price_records = this->perform_curl_request(url_list);
 
     auto jsonified_ids = crow::json::load(price_records);
 
     if (jsonified_ids.size() < 5) {
         ans = (-1);
-    } else if (!jsonified_ids[ "market_data" ]) {
+    } else if (jsonified_ids.size() == 5 ||
+              !jsonified_ids[ "market_data" ]) {
         ans = (-2);
-    } else if (jsonified_ids[ "market_data" ].size() == 0 ||
-              !jsonified_ids[ "market_data" ][ "current_price" ] ||
-               jsonified_ids[ "market_data" ][ "current_price" ].size() == 0 ||
-              !jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ]) {
-        ans = (-1);
     } else {
         ans = jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ].d();
     }

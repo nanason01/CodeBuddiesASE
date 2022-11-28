@@ -1,4 +1,5 @@
 # idk yet
+coverage_reports
 
 .vscode*
 bazel*
@@ -11,3 +12,4 @@ bazel*
 
 *.dSYM*
 *db*
+

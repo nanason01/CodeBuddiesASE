@@ -19,21 +19,17 @@
 
 #include "data/base_data.h"
 #include "common/types.h"
-#include "exchanges/coinbase.h"
 #include "exchanges/kraken.h"
 
 
 class Data final : public BaseData {
-    CoinbaseDriver cb_driver;
     KrakenDriver k_driver;
-    ExchangeDriver* const cb_driver_ptr, * const k_driver_ptr;
+    ExchangeDriver * const k_driver_ptr;
 
     sqlite3* db_conn;
 
     inline ExchangeDriver* get_driver(const Exchange& e) const {
         switch (e) {
-        case (Exchange::Coinbase):
-            return cb_driver_ptr;
         case (Exchange::Kraken):
             return k_driver_ptr;
         default:
@@ -65,7 +61,7 @@ class Data final : public BaseData {
 public:
     // normal call
     Data(const std::string& db_filename)
-        : cb_driver_ptr(&cb_driver), k_driver_ptr(&k_driver) {
+        : k_driver_ptr(&k_driver) {
         create_file(db_filename, true);
         if (sqlite3_open(db_filename.c_str(), &db_conn) != SQLITE_OK) {
             throw DatabaseConnError();
@@ -75,8 +71,8 @@ public:
         }
     }
     // only for testing
-    Data(ExchangeDriver* _cb, ExchangeDriver* _k, const std::string& test_db_filename)
-        : cb_driver_ptr(_cb), k_driver_ptr(_k) {
+    Data(ExchangeDriver* _k, const std::string& test_db_filename)
+        : k_driver_ptr(_k) {
         create_file(test_db_filename, false);
         if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK) {
             throw DatabaseConnError();

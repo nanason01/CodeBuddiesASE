@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "data/data.h"
-#include "exchanges/coinbase.h"
 #include "exchanges/helpers.h"
 #include "exchanges/kraken.h"
 #include "exchanges/mock_driver.h"
@@ -27,10 +26,9 @@ protected:
         if (!data) {
             std::filesystem::remove(TEST_DB_FILENAME);
 
-            cb = new MockExchangeDriver();
             k = new MockExchangeDriver();
 
-            data = new Data(cb, k, TEST_DB_FILENAME);
+            data = new Data(k, TEST_DB_FILENAME);
             data->exec_sql_file(SCHEMA_FILENAME);
         }
     }
@@ -39,7 +37,6 @@ protected:
         if (data) {
             delete data;
 
-            delete cb;
             delete k;
 
             std::filesystem::remove(TEST_DB_FILENAME);
@@ -50,11 +47,10 @@ protected:
     static Data* data;
 
     // use this to mock cb, cc functions
-    static MockExchangeDriver* cb, * k;
+    static MockExchangeDriver* k;
 };
 
 Data* DataFixture::data = nullptr;
-MockExchangeDriver* DataFixture::cb = nullptr;
 MockExchangeDriver* DataFixture::k = nullptr;
 
 TEST_F(DataFixture, AddUserTest) {
@@ -119,24 +115,15 @@ TEST_F(DataFixture, emptyTrade) {
 
 TEST_F(DataFixture, RegisterExchange) {
     data->add_user({ "Franck", "creds6", "refrs6" });
-    EXPECT_THROW(data->register_exchange(
-        { "jennice", "creds5", "refrs5" },
-        Exchange::Coinbase, "jennice_key1", "jennice_prikey1"),
-        UserNotFound);
-    data->register_exchange({ "Franck", "creds6", "refrs3" }, Exchange::Coinbase, "alek_key1", "alek_prikey1");
     data->register_exchange({ "Franck", "creds6", "refrs3" }, Exchange::Kraken, "alek_key2", "alek_prikey2");
 
     std::vector<Exchange> res = data->get_exchanges({ "Franck", "creds6", "refrs6" });
-    Exchange coinV = Exchange::Coinbase;
     Exchange kraV = Exchange::Kraken;
 
     Exchange eK = res.back();
     res.pop_back();
     EXPECT_EQ(kraV, eK);
 
-    Exchange eC = res.back();
-    res.pop_back();
-    EXPECT_EQ(coinV, eC);
     data->remove_user({ "Franck", "creds6", "refrs6" });
 }
 
