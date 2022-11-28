@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <iostream>
 
-
 /*
  *
  */
@@ -38,14 +37,10 @@ std::string Pricer::perform_curl_request(std::string url) {
             static_cast<void*> (&response_buffer));
 
         curl_easy_perform(curl);
-    } else {
-        goto out;
     }
 
     // Deallocate resources
     curl_easy_cleanup(curl);
-
-out:
     return response_buffer;
 }
 
@@ -53,15 +48,15 @@ out:
  *
  */
 std::string Pricer::get_asset_id(std::string currency) {
-    size_t i;
-    std::string url_list = "https://api.coingecko.com/api/v3/coins/list";
+    // Ensure that the currency is in lower case
+    std::transform(currency.begin(),
+        currency.end(), currency.begin(), [](unsigned char x) {
+            return std::tolower(x);
+        });
 
-    std::string list_of_ids = this->perform_curl_request(url_list);
-    auto jsonified_ids = crow::json::load(list_of_ids);
-
-    for (i = 0; i < jsonified_ids.size(); i++) {
-        if (std::string(jsonified_ids[ i ][ "symbol" ]) == currency) {
-            return std::string(jsonified_ids[ i ][ "id" ]);
+    for (const auto& [key, value] : this->token_name_map) {
+        if (key == currency) {
+            return value;
         }
     }
 
@@ -84,19 +79,18 @@ std::string Pricer::format_timestamp(Timestamp tstamp) {
  */
 double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
     double ans = 0;
-
     std::string timestamp_str = format_timestamp(tstamp);
-
-    std::string url_list = "https://api.coingecko.com/api/v3/coins/" +
-        currency_id + "/history?date=" + timestamp_str;
-
+    std::string url_list = "https://api.coingecko.com/api/v3/coins/"+currency_id+"/history?date="+timestamp_str;
     std::string price_records = this->perform_curl_request(url_list);
 
     auto jsonified_ids = crow::json::load(price_records);
 
-    if (jsonified_ids[ "market_data" ] &&
-        jsonified_ids[ "market_data" ][ "current_price" ] &&
-        jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ]) {
+    if (jsonified_ids.size() < 5) {
+        ans = (-1);
+    } else if (jsonified_ids.size() == 5 ||
+              !jsonified_ids[ "market_data" ]) {
+        ans = (-2);
+    } else {
         ans = jsonified_ids[ "market_data" ][ "current_price" ][ "usd" ].d();
     }
 
@@ -108,16 +102,19 @@ double Pricer::get_asset_price(std::string currency_id, Timestamp tstamp) {
  * SEE: https://www.coingecko.com/en/api/documentation
  */
 double Pricer::get_usd_price(std::string currency, Timestamp tstamp) {
-    // Ensure that the currency is in lower case
-    std::transform(currency.begin(),
-        currency.end(), currency.begin(), [](unsigned char x) {
-            return std::tolower(x);
-        });
-
     // Get the asset id for CoinGecko
+    double ans = 0;
     std::string currency_id = this->get_asset_id(currency);
     if (currency_id == "") {
-        return 0;
+        throw NoRecordsFound{};
     }
-    return this->get_asset_price(currency_id, tstamp);
+
+    ans = this->get_asset_price(currency_id, tstamp);
+    if (ans == (-1)) {
+        throw RateLimitedQuery{};
+    } else if (ans == (-2)) {
+        throw NoRecordsFound{};
+    }
+
+    return ans;
 }

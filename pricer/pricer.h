@@ -7,10 +7,30 @@
 
 #include <crow.h>
 
+#include <unordered_map>
+#include <exception>
 #include <string>
 
 #include "pricer/base_pricer.h"
 #include "common/types.h"
+
+/*
+ * 
+ */
+struct RateLimitedQuery : std::exception {
+    const char* what() const noexcept override {
+        return "Too many queries, slow down";
+    }
+};
+
+/*
+ * 
+ */
+struct NoRecordsFound : std::exception {
+    const char* what() const noexcept override {
+        return "No records found for this token/date";
+    }
+};
 
 /*
  * Write callback function for cURL
@@ -24,6 +44,23 @@ public:
     // returns the price per unit of currency on date
     double get_usd_price(std::string currency_pair,
         Timestamp tstamp = now()) final;
+
+    /*
+     * Unordered map of coin id-symbol mappings for
+     * get_asset_id. symbols are key, ids are values.
+     */
+    std::unordered_map<std::string, std::string> token_name_map = {
+        {"matic", "matic-network"},
+        {"link", "chainlink"},
+        {"algo", "algorand"},
+        {"ltc",  "litecoin"},
+        {"eth",  "ethereum"},
+        {"dot",  "polkadot"},
+        {"btc",  "bitcoin"},
+        {"uni",  "uniswap"},
+        {"xrp",  "ripple"},
+        {"sol",  "solana"}
+    };
 
 private:
     std::string get_asset_id(std::string currency);

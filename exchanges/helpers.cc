@@ -11,35 +11,21 @@
 #include "exchanges/helpers.h"
 
 /*
- *
+ * Wrapper for the SHA256 hash function.
  */
 std::vector<unsigned char> sha256_wrapper(std::string data) {
     std::vector<unsigned char> sha256_digest(SHA256_DIGEST_LENGTH);
-    if (data.empty()) {
-        goto err_out;
-    }
 
     SHA256_CTX ctx;
-    if (!SHA256_Init(&ctx)) {
-        goto err_out;
-    }
-
-    if (!SHA256_Update(&ctx, data.c_str(), data.length())) {
-        goto err_out;
-    }
-
-    if (!SHA256_Final(sha256_digest.data(), &ctx)) {
-        goto err_out;
-    }
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, data.c_str(), data.length());
+    SHA256_Final(sha256_digest.data(), &ctx);
 
     return sha256_digest;
-
-err_out:
-    return std::vector<unsigned char>();
 }
 
 /*
- *
+ * Wrapper for the HMAC function using SHA256 hashing algo.
  */
 std::vector<unsigned char> hmac_sha512_wrapper(
     std::vector<unsigned char> data_vec,
@@ -47,75 +33,18 @@ std::vector<unsigned char> hmac_sha512_wrapper(
     unsigned int length = EVP_MAX_MD_SIZE;
     std::vector<unsigned char> hmac_digest(length);
 
-    if (data_vec.empty() || key_vec.empty()) {
-        goto err_out;
-    }
-
     HMAC_CTX* ctx;
-    if (!(ctx = HMAC_CTX_new())) {
-        goto err_out;
-    }
-
-    if (!HMAC_Init_ex(ctx, key_vec.data(), key_vec.size(),
-        EVP_sha512(), NULL)) {
-        goto err_out;
-    }
-
-    if (!HMAC_Update(ctx, data_vec.data(), data_vec.size())) {
-        goto err_out;
-    }
-
-    if (!HMAC_Final(ctx, hmac_digest.data(), &length)) {
-        goto err_out;
-    }
-
+    ctx = HMAC_CTX_new();
+    HMAC_Init_ex(ctx, key_vec.data(), key_vec.size(), EVP_sha512(), NULL);
+    HMAC_Update(ctx, data_vec.data(), data_vec.size());
+    HMAC_Final(ctx, hmac_digest.data(), &length);
     HMAC_CTX_free(ctx);
-    return hmac_digest;
 
-err_out:
-    return std::vector<unsigned char>();
+    return hmac_digest;
 }
 
 /*
- *
- */
-std::vector<unsigned char> hmac_sha256_wrapper(
-    std::vector<unsigned char> data_vec,
-    std::vector<unsigned char> key_vec) {
-    unsigned int length = EVP_MAX_MD_SIZE;
-    std::vector<unsigned char> hmac_digest(length);
-
-    if (data_vec.empty() || key_vec.empty()) {
-        goto err_out;
-    }
-
-    HMAC_CTX* ctx;
-    if (!(ctx = HMAC_CTX_new())) {
-        goto err_out;
-    }
-
-    if (!HMAC_Init_ex(ctx, key_vec.data(), key_vec.size(),
-        EVP_sha256(), NULL)) {
-        goto err_out;
-    }
-
-    if (!HMAC_Update(ctx, data_vec.data(), data_vec.size())) {
-        goto err_out;
-    }
-
-    if (!HMAC_Final(ctx, hmac_digest.data(), &length)) {
-        goto err_out;
-    }
-
-    HMAC_CTX_free(ctx);
-    return hmac_digest;
-
-err_out:
-    return std::vector<unsigned char>();
-}
-
-/*
- *
+ * Convert a vector of unsigned chars to string.
  */
 std::string convert_vec_to_str(std::vector<unsigned char> data) {
     std::ostringstream output;
@@ -128,7 +57,7 @@ std::string convert_vec_to_str(std::vector<unsigned char> data) {
 }
 
 /*
- *
+ * Write callback function for cURL passed into request made to Kraken API.
  */
 size_t kraken_write_callback(char* ptr, size_t size,
     size_t nmemb, void* userdata) {
@@ -138,7 +67,7 @@ size_t kraken_write_callback(char* ptr, size_t size,
 }
 
 /*
- *
+ * Convert a crow::rvalue object to a string
  */
 std::string convert_to_string(const crow::json::rvalue jrvalue) {
     std::ostringstream os;
