@@ -58,7 +58,7 @@ TEST_F(DataIntegration, CheckExchanges) {
         "ETH",
         "BTC",
         20.0,
-        1.0, // not verified exchange rate, not using pricer
+        1.0,  // not verified exchange rate, not using pricer
     };
     data->upload_trade(user, man_trade);
 
