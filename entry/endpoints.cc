@@ -121,17 +121,6 @@ response Endpoints::generate_credentials(const request& req) {
         cerr << "generate_credentials: " << e.what() << endl;
         return response(401);
     }
-    /*
-    try {
-        data->add_user(new_user);
-    } catch (UserExists* e) {
-        cerr << "generate_credentials: " << e.what() << endl;
-        return response(401);
-        // what do we do now? regenerate client id?
-        // how to test for this? Integration test/Unit test
-    }
-    */
-    // std::cout << "in generate_credentials5" << std::endl;
     crow::response res(200, ret_val);
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
@@ -183,15 +172,14 @@ static Timestamp field_to_ts(string ts_str) {
     int day = std::stoi(ts_str.substr(first + 1, second));
     int year = std::stoi(ts_str.substr(second + 1, second + 5));
 
-    std::cout << month << std::endl;
+    /* std::cout << month << std::endl;
     std::cout << day << std::endl;
-    std::cout << year << std::endl;
+    std::cout << year << std::endl; */
 
     if (day < 0 || day > 31 || month < 0 || month > 12)
         throw std::invalid_argument("Invalid Date");
 
     return from_usa_date(month, day, year);
-    // return from_usa_date(4, 20, 2021);
 }
 
 static double field_to_double(string double_str) {
@@ -230,7 +218,6 @@ response Endpoints::upload_trade(const request& req) {
     crow::response res(200, resp);
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
-    // return response(200, "SUCCESS");
 }
 
 response Endpoints::upload_exchange_key(const request& req) {
@@ -261,7 +248,6 @@ response Endpoints::upload_exchange_key(const request& req) {
     crow::response res(200, resp);
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
-    // return response(200, "SUCCESS");
 }
 
 response Endpoints::remove_exchange_key(const request& req) {
@@ -285,7 +271,6 @@ response Endpoints::remove_exchange_key(const request& req) {
     crow::response res(200, resp);
     res.add_header("Access-Control-Allow-Origin", "*");
     return res;
-    // return response(200, "SUCCESS");
 }
 
 response Endpoints::get_annotated_trades(const request& req) {
@@ -311,10 +296,6 @@ response Endpoints::get_annotated_trades(const request& req) {
         crow::response res(200, ret);
         res.add_header("Access-Control-Allow-Origin", "*");
         return res;
-
-        // return crow::response(ret);
-        // @TODO: how to return a list of values as a crow json
-        // return response(std::move(ret));
     } catch (UserNotFound& e) {
         cerr << "get_annotated_trades: " << e.what() << endl;
         return response(401);
@@ -350,7 +331,6 @@ response Endpoints::get_year_end_stats(const request& req) {
         crow::response res(200, ye_pnl_crow);
         res.add_header("Access-Control-Allow-Origin", "*");
         return res;
-        // return ye_pnl_crow;
     } catch (UserNotFound& e) {
         cerr << "get_year_end_stats: " << e.what() << endl;
         return response(401);
