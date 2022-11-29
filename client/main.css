@@ -1,0 +1,45 @@
+#hello_div{
+	padding-top:  10px;
+	padding-bottom:  10px;
+	color: green;
+}
+.paperheading{
+	background-color: lightgray;
+	font-size: xxx-large;
+	font-weight: bold;
+	padding-top: 70px;
+	padding-bottom: 70px;
+	padding-left: 40px;
+}
+.reamsip{
+    
+}
+.clientip{
+	padding-left: 30px;
+}
+.err{
+	color: red;
+	font-weight: bold;
+}
+.padme{
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.heading{
+	font-size: x-large;
+	font-weight: bold;
+}
+
+.row1{
+	font-size: large;
+}
+
+.row2{
+	font-size: large;
+	background-color: #E8E8E8;
+}
+
+.padinput{
+	padding-bottom: 10px;
+}

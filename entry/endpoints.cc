@@ -68,16 +68,26 @@ static AuthenticUser parse_user(const request& req) {
     };
 }
 
+static AuthenticUser parse_user_refr_creds(const request& req) {
+    return AuthenticUser{
+        req.get_header_value("Authorization")
+            .substr(7).substr(0, CLIENTIDLEN),
+        "",
+        hash_str(req.get_header_value("Authorization")
+            .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
+    };
+}
+
 response Endpoints::validate_credentials(const request& req) {
     const auto user = parse_user(req);
 
     try {
         data->check_user(user);
-    } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+    } catch (UserNotFound& e) {
+        cerr << "validate_credentials: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "validate_credentials: " << e.what() << endl;
         return response(401);
     }
 
@@ -101,23 +111,25 @@ response Endpoints::generate_credentials(const request& req) {
     ret_val[ "api_key" ] = client_id + api_key;
     ret_val[ "refresh_token" ] = client_id + refresh_key;
 
+    // FIXME: I think it should be catch UserExists
     try {
         data->add_user(new_user);
-    } catch (UserNotFound* e) {
-        cerr << "generate_credentials: " << e->what() << endl;
+    } catch (UserNotFound& e) {
+        cerr << "generate_credentials: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "generate_credentials: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "generate_credentials: " << e.what() << endl;
         return response(401);
     }
-
-    return ret_val;
+    crow::response res(200, ret_val);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
 }
 
 response Endpoints::refresh_credentials(const request& req) {
     crow::json::wvalue resp;
 
-    const auto user = parse_user(req);
+    const auto user = parse_user_refr_creds(req);
 
     string new_api_key = gen_random_str(APIKEYLEN);
     string new_refresh_key = gen_random_str(APIKEYLEN);
@@ -127,57 +139,90 @@ response Endpoints::refresh_credentials(const request& req) {
     resp[ "refresh_token" ] = user.user + new_refresh_key;
 
     try {
-        data->update_user_creds(user, new_api_key, new_refresh_key);
-    } catch (UserNotFound* e) {
-        cerr << "refresh_credentials: " << e->what() << endl;
+        data->update_user_creds(user, hash_str(new_api_key), hash_str(new_refresh_key));
+    } catch (UserNotFound& e) {
+        cerr << "refresh_credentials: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "refresh_credentials: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "refresh_credentials: " << e.what() << endl;
         return response(401);
     }
 
-    return resp;
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
 }
 
 static Timestamp field_to_ts(string ts_str) {
     std::cout << "field_to_ts got " << ts_str << std::endl;
-    return from_usa_date(4, 20, 2021);
+
+    int first = -1;
+    int second = -1;
+    for (int i = 0; i < static_cast<int>(ts_str.size()); i++) {
+        if (ts_str[i] == '/') {
+            if (first == -1)
+                first = i;
+            else if (second == -1)
+                second = i;
+            else
+                break;
+        }
+    }
+    int month = std::stoi(ts_str.substr(0, first));
+    int day = std::stoi(ts_str.substr(first + 1, second));
+    int year = std::stoi(ts_str.substr(second + 1, second + 5));
+
+    /* std::cout << month << std::endl;
+    std::cout << day << std::endl;
+    std::cout << year << std::endl; */
+
+    if (day < 0 || day > 31 || month < 0 || month > 12)
+        throw std::invalid_argument("Invalid Date");
+
+    return from_usa_date(month, day, year);
 }
 
 static double field_to_double(string double_str) {
     std::cout << "field_to_double got " << double_str << std::endl;
-    return -1.0;
+    return std::stod(double_str);
+    // return -1.0;
 }
 
 response Endpoints::upload_trade(const request& req) {
     const AuthenticUser user = parse_user(req);
+    crow::json::wvalue resp;
 
     auto body = crow::json::load(req.body);
 
-    const Trade trade_in{
-        field_to_ts(string(body[ "timestamp" ])),
-        string(body[ "sold_currency" ]),
-        string(body[ "bought_currency" ]),
-        field_to_double(string(body[ "sold_amount" ])),
-        field_to_double(string(body[ "bought_amount" ]))
-    };
-
     try {
+        const Trade trade_in{
+            field_to_ts(string(body[ "timestamp" ])),
+            string(body[ "sold_currency" ]),
+            string(body[ "bought_currency" ]),
+            field_to_double(string(body[ "sold_amount" ])),
+            field_to_double(string(body[ "bought_amount" ]))
+        };
         data->upload_trade(user, trade_in);
-    } catch (UserNotFound* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+    } catch (UserNotFound& e) {
+        cerr << "validate_credentials: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "validate_credentials: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "validate_credentials: " << e.what() << endl;
         return response(401);
+    } catch (...) {
+        cerr << "Invalid timestamp" << endl;
+        return response(400);
     }
 
-    return response(200);
+    resp[ "status" ] = "SUCCESS";
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
 }
 
 response Endpoints::upload_exchange_key(const request& req) {
     AuthenticUser user = parse_user(req);
-
+    crow::json::wvalue resp;
     auto body = crow::json::load(req.body);
 
     Exchange exch = from_string(string(body[ "exchange" ]));
@@ -187,39 +232,45 @@ response Endpoints::upload_exchange_key(const request& req) {
 
     try {
         data->register_exchange(user, exch, pub_key, pvt_key);
-    } catch (UserNotFound* e) {
-        cerr << "upload_exchange_key: " << e->what() << endl;
+    } catch (UserNotFound& e) {
+        cerr << "upload_exchange_key: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "upload_exchange_key: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "upload_exchange_key: " << e.what() << endl;
         return response(401);
-    } catch (std::exception* e) {
+    } catch (std::exception& e) {
         //  should we catch exchanges level errors ?? (yes, we should)
-        cerr << "upload_exchange_key (unknown error): " << e->what() << endl;
+        cerr << "upload_exchange_key (unknown error): " << e.what() << endl;
         return response(401);
     }
 
-    return response(200);
+    resp[ "status" ] = "SUCCESS";
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
 }
 
 response Endpoints::remove_exchange_key(const request& req) {
     AuthenticUser user = parse_user(req);
-
+    crow::json::wvalue resp;
     auto body = crow::json::load(req.body);
 
     Exchange exch = from_string(string(body[ "exchange" ]));
 
     try {
         data->delete_exchange(user, exch);
-    } catch (UserNotFound* e) {
-        cerr << "remove_exchange_key: " << e->what() << endl;
+    } catch (UserNotFound& e) {
+        cerr << "remove_exchange_key: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "remove_exchange_key: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "remove_exchange_key: " << e.what() << endl;
         return response(401);
     }
 
-    return response(200);
+    resp[ "status" ] = "SUCCESS";
+    crow::response res(200, resp);
+    res.add_header("Access-Control-Allow-Origin", "*");
+    return res;
 }
 
 response Endpoints::get_annotated_trades(const request& req) {
@@ -242,13 +293,25 @@ response Endpoints::get_annotated_trades(const request& req) {
             ret[ i ][ "pnl" ] = to_string(mt.pnl);
         }
 
-        return crow::response(ret);
-    } catch (UserNotFound* e) {
-        cerr << "get_annotated_trades: " << e->what() << endl;
+        crow::response res(200, ret);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
+    } catch (UserNotFound& e) {
+        cerr << "get_annotated_trades: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "get_annotated_trades: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "get_annotated_trades: " << e.what() << endl;
         return response(401);
+    } catch (RateLimitedQuery& e) {
+        cerr << "get_annotated_trades: " << e.what() << endl;
+        return response(503);
+    } catch (NoRecordsFound& e) {
+        cerr << "get_annotated_trades: " << e.what() << endl;
+        crow::json::wvalue resp;
+        resp[ "status" ] = "NO RECORDS FOUND";
+        crow::response res(200, resp);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
     }
 }
 
@@ -265,13 +328,25 @@ response Endpoints::get_year_end_stats(const request& req) {
         ye_pnl_crow[ "st_realized_pnl" ] = ye_pnl.st_realized;
         ye_pnl_crow[ "actual_pnl" ] = ye_pnl.actual;
 
-        return ye_pnl_crow;
-    } catch (UserNotFound* e) {
-        cerr << "get_year_end_stats: " << e->what() << endl;
+        crow::response res(200, ye_pnl_crow);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
+    } catch (UserNotFound& e) {
+        cerr << "get_year_end_stats: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "get_year_end_stats: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "get_year_end_stats: " << e.what() << endl;
         return response(401);
+    } catch (RateLimitedQuery& e) {
+        cerr << "get_year_end_stats: " << e.what() << endl;
+        return response(503);
+    } catch (NoRecordsFound& e) {
+        cerr << "get_year_end_stats: " << e.what() << endl;
+        crow::json::wvalue resp;
+        resp[ "status" ] = "NO RECORDS FOUND";
+        crow::response res(200, resp);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
     }
 }
 
@@ -279,27 +354,34 @@ response Endpoints::calc_trade_pnl(const request& req) {
     AuthenticUser user = parse_user(req);
     auto body = crow::json::load(req.body);
 
-    const Trade trade_in{
-        field_to_ts(string(body[ "timestamp" ])),
-        string(body[ "sold_currency" ]),
-        string(body[ "bought_currency" ]),
-        field_to_double(string(body[ "sold_amount" ])),
-        field_to_double(string(body[ "bought_amount" ]))
-    };
-
     try {
+        const Trade trade_in{
+            field_to_ts(string(body[ "timestamp" ])),
+            string(body[ "sold_currency" ]),
+            string(body[ "bought_currency" ]),
+            field_to_double(string(body[ "sold_amount" ])),
+            field_to_double(string(body[ "bought_amount" ]))
+        };
+
         // maybe this isn't necessary, but rules are rules
         data->check_user(user);
         const auto pnl = matcher->get_pnl_from(trade_in);
         crow::json::wvalue pnl_crow;
-        pnl_crow[ "pnl" ] = pnl;
-        return pnl_crow;
-    } catch (UserNotFound* e) {
-        cerr << "calc_trade_pnl: " << e->what() << endl;
+        pnl_crow["pnl"] = pnl;
+
+        crow::response res(200, pnl_crow);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
+        // return pnl_crow;
+    } catch (UserNotFound& e) {
+        cerr << "calc_trade_pnl: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "calc_trade_pnl: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "calc_trade_pnl: " << e.what() << endl;
         return response(401);
+    } catch (...) {
+        cerr << "Invalid timestamp" << endl;
+        return response(400);
     }
 }
 
@@ -310,13 +392,16 @@ response Endpoints::get_net_pnl(const request& req) {
         const auto user_trades = data->get_trades(user);
         const auto pnl = matcher->get_net_pnl(user_trades);
         crow::json::wvalue net_pnl_crow;
-        net_pnl_crow[ "pnl" ] = pnl;
-        return net_pnl_crow;
-    } catch (UserNotFound* e) {
-        cerr << "get_net_pnl: " << e->what() << endl;
+        net_pnl_crow["pnl"] = pnl;
+        crow::response res(200, net_pnl_crow);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
+        // return response(net_pnl_crow);
+    } catch (UserNotFound& e) {
+        cerr << "get_net_pnl: " << e.what() << endl;
         return response(401);
-    } catch (InvalidCreds* e) {
-        cerr << "get_net_pnl: " << e->what() << endl;
+    } catch (InvalidCreds& e) {
+        cerr << "get_net_pnl: " << e.what() << endl;
         return response(401);
     }
 }

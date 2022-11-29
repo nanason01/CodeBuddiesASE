@@ -13,3 +13,4 @@ bazel*
 *.dSYM*
 *db*
 
+systemtests/__pycache__/system_test.cpython-38-pytest-7.2.0.pyc

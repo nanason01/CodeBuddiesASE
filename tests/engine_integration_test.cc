@@ -26,27 +26,6 @@ const std::vector<Trade> sample_trades = {
         0.5,
         13.514,
     },
-    {
-        from_usa_date(5, 14, 2021),
-        "ETH",
-        "BTC",
-        12.821,
-        1.0,
-    },
-    {
-        from_usa_date(6, 2, 2021),
-        "BTC",
-        "ETH",
-        0.5,
-        7.813,
-    },
-    {
-        from_usa_date(5, 20, 2022),
-        "BTC",
-        "ETH",
-        1.0,
-        14.925,
-    },
 };
 
 // so the expected output shouldn't change if you run on different dates

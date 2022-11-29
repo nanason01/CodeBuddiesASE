@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include "entry/endpoints.h"
+#include "crow/middlewares/cors.h"
 
 constexpr int PORT_NUM = 18420;
 constexpr auto DB_FILENAME = "db";  // this will stay on the machine in CodeBuddies dir (defn in types.h)
@@ -16,7 +17,7 @@ int main() {
 
     Endpoints::set_mode_prod(DB_FILENAME, SCHEMA_FILENAME);
 
-    crow::SimpleApp app;
+    crow::App<crow::CORSHandler> app;
 
     CROW_ROUTE(app, "/")(Endpoints::validate_credentials);
     CROW_ROUTE(app, "/getcredentials")(Endpoints::generate_credentials);
