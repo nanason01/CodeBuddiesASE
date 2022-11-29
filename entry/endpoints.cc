@@ -358,6 +358,16 @@ response Endpoints::get_annotated_trades(const request& req) {
     } catch (InvalidCreds* e) {
         cerr << "get_annotated_trades: " << e->what() << endl;
         return response(401);
+    } catch (RateLimitedQuery& e) {
+        cerr << "get_annotated_trades: " << e.what() << endl;
+        return response(503);
+    } catch (NoRecordsFound& e) {
+        cerr << "get_annotated_trades: " << e.what() << endl;
+        crow::json::wvalue resp;
+        resp[ "status" ] = "NO RECORDS FOUND";
+        crow::response res(200, resp);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
     }
 }
 
@@ -384,6 +394,16 @@ response Endpoints::get_year_end_stats(const request& req) {
     } catch (InvalidCreds* e) {
         cerr << "get_year_end_stats: " << e->what() << endl;
         return response(401);
+    } catch (RateLimitedQuery& e) {
+        cerr << "get_year_end_stats: " << e.what() << endl;
+        return response(503);
+    } catch (NoRecordsFound& e) {
+        cerr << "get_year_end_stats: " << e.what() << endl;
+        crow::json::wvalue resp;
+        resp[ "status" ] = "NO RECORDS FOUND";
+        crow::response res(200, resp);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        return res;
     }
 }
 
