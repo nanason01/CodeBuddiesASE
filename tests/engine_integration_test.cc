@@ -26,27 +26,6 @@ const std::vector<Trade> sample_trades = {
         0.5,
         13.514,
     },
-    {
-        from_usa_date(5, 14, 2021),
-        "ETH",
-        "BTC",
-        12.821,
-        1.0,
-    },
-    {
-        from_usa_date(6, 2, 2021),
-        "BTC",
-        "ETH",
-        0.5,
-        7.813,
-    },
-    {
-        from_usa_date(5, 20, 2022),
-        "BTC",
-        "ETH",
-        1.0,
-        14.925,
-    },
 };
 
 // so the expected output shouldn't change if you run on different dates
@@ -71,8 +50,8 @@ TEST(EngineIntegration, GetPNLFrom) {
     PNL res1, res2;
 
     try {
-        res1 = m.get_pnl_from(sample_trades[ 2 ], sample_end);
-        res2 = m.get_pnl_from(sample_trades[ 3 ], sample_end);
+        res1 = m.get_pnl_from(sample_trades[ 0 ], sample_end);
+        res2 = m.get_pnl_from(sample_trades[ 1 ], sample_end);
         std::cout << "res1: " << res1 << " res2: " << res2 << std::endl;
     } catch (std::exception const &e) {
         EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
