@@ -22,15 +22,3 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
-
-cc_binary(
-    name="quick-test",
-    srcs=["quick.cc"],
-    linkopts=["-pthread", "-lcrypto", "-lcurl",
-              "-lboost_date_time","-ldl"],
-    deps=[
-        "//common",
-        "//engine",
-        "//pricer",
-    ],
-)
