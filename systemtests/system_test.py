@@ -240,3 +240,9 @@ def test_year_end_pnl():
     response = requests.get(SERVER + "year_end_stats", headers = {"Authorization" : "Bearer " + api_key})
     assert response.status_code == 200
     print(response.json())
+
+
+# if __name__ == "__main__":
+#     import pytest
+#     import requests
+#     raise SystemExit(pytest.main([__file__]))
