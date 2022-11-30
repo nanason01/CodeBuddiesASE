@@ -1,8 +1,8 @@
 import requests
 import pytest
+import sys
 
 SERVER = "http://0.0.0.0:18420/"
-
 
 @pytest.fixture(scope="class")
 def endpoint_getcredentials(request):
@@ -52,7 +52,6 @@ class TestGetcredentialsClass:
             fake_api_key = "aaaa"
         response = requests.get(SERVER, headers = {"Authorization" : "Bearer " + client_id + fake_api_key})
         assert response.status_code == 401
-
         
 @pytest.fixture(scope="class")
 def endpoint_refreshcredentials(request):
@@ -112,8 +111,6 @@ class TestrefreshcredentialsClass:
             fake_client_id = "aaaa"
         response = requests.get(SERVER + "refreshcredentials", headers = {"Authorization" : "Bearer " + fake_client_id + refresh_token})
         assert response.status_code == 401
-
-
 
 @pytest.fixture(scope="class")
 def endpoint_trade(request):
@@ -241,8 +238,5 @@ def test_year_end_pnl():
     assert response.status_code == 200
     print(response.json())
 
-
-# if __name__ == "__main__":
-#     import pytest
-#     import requests
-#     raise SystemExit(pytest.main([__file__]))
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))
