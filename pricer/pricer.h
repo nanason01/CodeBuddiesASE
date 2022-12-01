@@ -50,16 +50,8 @@ public:
      * get_asset_id. symbols are key, ids are values.
      */
     std::unordered_map<std::string, std::string> token_name_map = {
-        {"matic", "matic-network"},
-        {"link", "chainlink"},
-        {"algo", "algorand"},
-        {"ltc",  "litecoin"},
         {"eth",  "ethereum"},
-        {"dot",  "polkadot"},
-        {"btc",  "bitcoin"},
-        {"uni",  "uniswap"},
-        {"xrp",  "ripple"},
-        {"sol",  "solana"}
+        {"btc",  "bitcoin"}
     };
 
 private:

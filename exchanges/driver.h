@@ -18,6 +18,7 @@ struct APICredsMissing : std::exception {
 
 class ExchangeDriver {
 public:
+    virtual ~ExchangeDriver() = default;
     virtual std::vector<Trade> get_trades(API_key public_key,
         API_key private_key) = 0;
 };

@@ -30,7 +30,7 @@ std::string Pricer::perform_curl_request(std::string url) {
         // Perform a GET request
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_USERAGENT,
-            "CodeBuddies Crypto Portfolio Tracker");
+            "Thanks for the Invalid JSON Errors");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, pricer_write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA,
