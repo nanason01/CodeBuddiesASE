@@ -248,12 +248,13 @@ response Endpoints::upload_exchange_key(const request& req) {
     crow::json::wvalue resp;
     auto body = crow::json::load(req.body);
 
-    Exchange exch = from_string(string(body[ "exchange" ]));
-    API_key pub_key = string(body[ "readkey" ]);
-    API_key pvt_key = string(body[ "secretkey" ]);
-
     try {
         AuthenticUser user = parse_user(req);
+
+        Exchange exch = from_string(string(body[ "exchange" ]));
+        API_key pub_key = string(body[ "readkey" ]);
+        API_key pvt_key = string(body[ "secretkey" ]);
+
         data->register_exchange(user, exch, pub_key, pvt_key);
     } catch (UserNotFound& e) {
         cerr << "upload_exchange_key: " << e.what() << endl;
@@ -281,10 +282,9 @@ response Endpoints::remove_exchange_key(const request& req) {
     crow::json::wvalue resp;
     auto body = crow::json::load(req.body);
 
-    Exchange exch = from_string(string(body[ "exchange" ]));
-
     try {
         AuthenticUser user = parse_user(req);
+        Exchange exch = from_string(string(body[ "exchange" ]));
         data->delete_exchange(user, exch);
     } catch (UserNotFound& e) {
         cerr << "remove_exchange_key: " << e.what() << endl;
@@ -294,7 +294,10 @@ response Endpoints::remove_exchange_key(const request& req) {
         return response(401);
     } catch (NoAuthHeader& e) {
         cerr << "remove_exchange_key: " << e.what() << endl;
+        std::cout << "exception is :" << typeid(e).name() << endl;
         return response(400);
+    } catch (std::exception const& e) {
+        std::cout << "exception is :" << typeid(e).name() << endl;
     }
 
     resp[ "status" ] = "SUCCESS";
