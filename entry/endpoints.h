@@ -17,6 +17,12 @@
 #include "engine/matcher.h"
 #include "engine/mock_matcher.h"
 
+// errors
+struct NoAuthHeader : std::exception {
+    const char* what() const noexcept override {
+        return "No Authorization header found.";
+    }
+};
 
 class Endpoints {
     static std::unique_ptr<BaseData> data;

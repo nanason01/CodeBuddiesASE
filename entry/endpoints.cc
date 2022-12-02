@@ -21,17 +21,20 @@ using std::endl;
 std::unique_ptr<BaseData> Endpoints::data = std::unique_ptr<BaseData>();
 std::unique_ptr<BaseMatcher> Endpoints::matcher = std::unique_ptr<BaseMatcher>();;
 
+// Initialization for production mode
 void Endpoints::set_mode_prod(const std::string& db_filename, const std::string& schema_filename) {
     data = std::make_unique<Data>(db_filename);
     data->exec_sql_file(schema_filename);
     matcher = std::make_unique<Matcher>();
 }
 
+// Set mock mode
 void Endpoints::set_mode_mock() {
     data = std::make_unique<MockData>();
     matcher = std::make_unique<MockMatcher>();
 }
 
+// Generate a random string of lenght len
 static string gen_random_str(const int len) {
     static const char alphanum[] =
         "0123456789"
@@ -45,6 +48,7 @@ static string gen_random_str(const int len) {
     return ret;
 }
 
+// Generate sha256 hash of input string
 static string hash_str(string key) {
     unsigned char hash[ SHA256_DIGEST_LENGTH ];
     SHA256_CTX sha256;
@@ -59,29 +63,41 @@ static string hash_str(string key) {
     return ss.str();
 }
 
+// Parse client ID and API key from API token in request header
 static AuthenticUser parse_user(const request& req) {
-    return AuthenticUser{
-           req.get_header_value("Authorization")
-               .substr(7).substr(0, CLIENTIDLEN),
-           hash_str(req.get_header_value("Authorization")
-               .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
-    };
-}
-
-static AuthenticUser parse_user_refr_creds(const request& req) {
-    return AuthenticUser{
-        req.get_header_value("Authorization")
-            .substr(7).substr(0, CLIENTIDLEN),
-        "",
-        hash_str(req.get_header_value("Authorization")
-            .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
-    };
-}
-
-response Endpoints::validate_credentials(const request& req) {
-    const auto user = parse_user(req);
-
     try {
+        AuthenticUser userCredentials{
+            req.get_header_value("Authorization")
+                .substr(7).substr(0, CLIENTIDLEN),
+            hash_str(req.get_header_value("Authorization")
+                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
+        };
+        return userCredentials;
+    } catch (std::out_of_range& e) {
+        throw NoAuthHeader{};
+    }
+}
+
+// Parse client ID and Refresh key from refresh token in request header
+static AuthenticUser parse_user_refr_creds(const request& req) {
+    try{
+        AuthenticUser userCredentials{
+            req.get_header_value("Authorization")
+                .substr(7).substr(0, CLIENTIDLEN),
+            "",
+            hash_str(req.get_header_value("Authorization")
+                .substr(7).substr(CLIENTIDLEN, APIKEYLEN))
+        };
+        return userCredentials;
+    } catch (std::out_of_range& e) {
+        throw NoAuthHeader{};
+    }
+}
+
+// Validate credentials. Only validates credentials
+response Endpoints::validate_credentials(const request& req) {
+    try {
+        const auto user = parse_user(req);
         data->check_user(user);
     } catch (UserNotFound& e) {
         cerr << "validate_credentials: " << e.what() << endl;
@@ -89,11 +105,15 @@ response Endpoints::validate_credentials(const request& req) {
     } catch (InvalidCreds& e) {
         cerr << "validate_credentials: " << e.what() << endl;
         return response(401);
+    } catch (NoAuthHeader& e) {
+        cerr << "validate_credentials: " << e.what() << endl;
+        return response(400);
     }
 
     return response(200);
 }
 
+// Generate credentials for a new user
 response Endpoints::generate_credentials(const request& req) {
     crow::json::wvalue ret_val;
 
@@ -126,6 +146,7 @@ response Endpoints::generate_credentials(const request& req) {
     return res;
 }
 
+// Generate new tokens (credentials) for an existing user
 response Endpoints::refresh_credentials(const request& req) {
     crow::json::wvalue resp;
 
@@ -153,6 +174,7 @@ response Endpoints::refresh_credentials(const request& req) {
     return res;
 }
 
+// Convert input date from string to Timestamp
 static Timestamp field_to_ts(string ts_str) {
     std::cout << "field_to_ts got " << ts_str << std::endl;
 
@@ -172,22 +194,20 @@ static Timestamp field_to_ts(string ts_str) {
     int day = std::stoi(ts_str.substr(first + 1, second));
     int year = std::stoi(ts_str.substr(second + 1, second + 5));
 
-    /* std::cout << month << std::endl;
-    std::cout << day << std::endl;
-    std::cout << year << std::endl; */
-
     if (day < 0 || day > 31 || month < 0 || month > 12)
         throw std::invalid_argument("Invalid Date");
 
     return from_usa_date(month, day, year);
 }
 
+// Convert input numerical value from string to double
 static double field_to_double(string double_str) {
     std::cout << "field_to_double got " << double_str << std::endl;
     return std::stod(double_str);
     // return -1.0;
 }
 
+// Store a trade manually sent by the user
 response Endpoints::upload_trade(const request& req) {
     const AuthenticUser user = parse_user(req);
     crow::json::wvalue resp;
@@ -220,6 +240,7 @@ response Endpoints::upload_trade(const request& req) {
     return res;
 }
 
+// Store exchange keys for a user for particular exchange
 response Endpoints::upload_exchange_key(const request& req) {
     AuthenticUser user = parse_user(req);
     crow::json::wvalue resp;
@@ -250,6 +271,7 @@ response Endpoints::upload_exchange_key(const request& req) {
     return res;
 }
 
+// Delete exchange key for a user for a particular exchange
 response Endpoints::remove_exchange_key(const request& req) {
     AuthenticUser user = parse_user(req);
     crow::json::wvalue resp;
@@ -273,6 +295,7 @@ response Endpoints::remove_exchange_key(const request& req) {
     return res;
 }
 
+// Get annotated trades
 response Endpoints::get_annotated_trades(const request& req) {
     AuthenticUser user = parse_user(req);
 
@@ -315,6 +338,7 @@ response Endpoints::get_annotated_trades(const request& req) {
     }
 }
 
+// Get the profit/loss over a year
 response Endpoints::get_year_end_stats(const request& req) {
     AuthenticUser user = parse_user(req);
 
@@ -350,6 +374,7 @@ response Endpoints::get_year_end_stats(const request& req) {
     }
 }
 
+// Calcuate the profit/loss for a trade manually sent by the user
 response Endpoints::calc_trade_pnl(const request& req) {
     AuthenticUser user = parse_user(req);
     auto body = crow::json::load(req.body);
@@ -385,6 +410,7 @@ response Endpoints::calc_trade_pnl(const request& req) {
     }
 }
 
+// Get the profit/loss for the portfolio
 response Endpoints::get_net_pnl(const request& req) {
     AuthenticUser user = parse_user(req);
 
@@ -396,7 +422,6 @@ response Endpoints::get_net_pnl(const request& req) {
         crow::response res(200, net_pnl_crow);
         res.add_header("Access-Control-Allow-Origin", "*");
         return res;
-        // return response(net_pnl_crow);
     } catch (UserNotFound& e) {
         cerr << "get_net_pnl: " << e.what() << endl;
         return response(401);
