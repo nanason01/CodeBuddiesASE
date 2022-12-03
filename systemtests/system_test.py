@@ -1,5 +1,6 @@
 import requests
 import pytest
+import sys
 
 SERVER = "http://0.0.0.0:18420/"
 
@@ -323,3 +324,5 @@ def test_wrong_clientid_post_endpoints(endpoint):
 #     import pytest
 #     import requests
 #     raise SystemExit(pytest.main([__file__]))
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))
