@@ -267,8 +267,57 @@ def test_no_auth_headers_post_endpoints(endpoint):
 
 # Tests to check response if body not sent : post endpoints
 @pytest.mark.parametrize("endpoint", [("trade"), ("exchangekey"), ("removekey"), ("trade_pnl")])
-def test_no_body_post_endpoints(endpoint, key):
+def test_no_body_post_endpoints(endpoint):
     assert requests.post(SERVER + endpoint, headers = {"Authorization" : "Bearer " + api_key}).status_code == 400
+
+
+# Tests to check response if wrong api_key sent : get endpoints
+@pytest.mark.parametrize("endpoint", [("get_annotated_trades"), ("year_end_stats"), ("portfolio_pnl")])
+def test_wrong_apikey_get_endpoints(endpoint):
+    # Check Response for wrong api key
+    if api_key == client_id + "aaaa":
+        fake_api_key = "aaab"
+    else:
+        fake_api_key = "aaaa"
+    response = requests.get(SERVER + endpoint, headers = {"Authorization" : "Bearer " + client_id + fake_api_key})
+    assert response.status_code == 401
+
+
+# Tests to check response if wrong api_key sent : post endpoints
+@pytest.mark.parametrize("endpoint", [("trade"), ("exchangekey"), ("removekey"), ("trade_pnl")])
+def test_wrong_apikey_post_endpoints(endpoint):
+    # Check Response for wrong api key
+    if api_key == client_id + "aaaa":
+        fake_api_key = "aaab"
+    else:
+        fake_api_key = "aaaa"
+    response = requests.post(SERVER + endpoint, headers = {"Authorization" : "Bearer " + client_id + fake_api_key})
+    assert response.status_code == 401
+
+
+# Tests to check response if wrong user sent : get endpoints
+@pytest.mark.parametrize("endpoint", [("get_annotated_trades"), ("year_end_stats"), ("portfolio_pnl")])
+def test_wrong_clientid_get_endpoints(endpoint):
+    # Check Response for client Id that doesn't exist
+    if client_id == "aaaa":
+        fake_client_id = "aaab"
+    else:
+        fake_client_id = "aaaa"
+    response = requests.get(SERVER + endpoint, headers = {"Authorization" : "Bearer " + fake_client_id + api_key})
+    assert response.status_code == 401
+
+
+# Tests to check response if wrong user sent : post endpoints
+@pytest.mark.parametrize("endpoint", [("trade"), ("exchangekey"), ("removekey"), ("trade_pnl")])
+def test_wrong_clientid_post_endpoints(endpoint):
+    # Check Response for client Id that doesn't exist
+    if client_id == "aaaa":
+        fake_client_id = "aaab"
+    else:
+        fake_client_id = "aaaa"
+    response = requests.post(SERVER + endpoint, headers = {"Authorization" : "Bearer " + fake_client_id + api_key})
+    assert response.status_code == 401
+
 
 # if __name__ == "__main__":
 #     import pytest

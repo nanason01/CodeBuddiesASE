@@ -211,10 +211,10 @@ static double field_to_double(string double_str) {
 // Store a trade manually sent by the user
 response Endpoints::upload_trade(const request& req) {
     crow::json::wvalue resp;
-    auto body = crow::json::load(req.body);
 
     try {
         const AuthenticUser user = parse_user(req);
+        auto body = crow::json::load(req.body);
         const Trade trade_in{
             field_to_ts(string(body[ "timestamp" ])),
             string(body[ "sold_currency" ]),
@@ -232,6 +232,9 @@ response Endpoints::upload_trade(const request& req) {
     } catch (NoAuthHeader& e) {
         cerr << "upload_trade: " << e.what() << endl;
         return response(400);
+    } catch (std::runtime_error const& e) {
+        cerr << "upload_trade: " << e.what() << endl;
+        return response(400); 
     } catch (...) {
         cerr << "upload_trade: Invalid timestamp" << endl;
         return response(400);
@@ -265,6 +268,9 @@ response Endpoints::upload_exchange_key(const request& req) {
     } catch (NoAuthHeader& e) {
         cerr << "upload_exchange_key: " << e.what() << endl;
         return response(400);
+    } catch (std::runtime_error const& e) {
+        cerr << "upload_exchange_key: " << e.what() << endl;
+        return response(400); 
     } catch (std::exception& e) {
         //  should we catch exchanges level errors ?? (yes, we should)
         cerr << "upload_exchange_key (unknown error): " << e.what() << endl;
@@ -296,8 +302,9 @@ response Endpoints::remove_exchange_key(const request& req) {
         cerr << "remove_exchange_key: " << e.what() << endl;
         std::cout << "exception is :" << typeid(e).name() << endl;
         return response(400);
-    } catch (std::exception const& e) {
-        std::cout << "exception is :" << typeid(e).name() << endl;
+    } catch (std::runtime_error const& e) {
+        cerr << "remove_exchange_key: " << e.what() << endl;
+        return response(400); 
     }
 
     resp[ "status" ] = "SUCCESS";
@@ -422,6 +429,9 @@ response Endpoints::calc_trade_pnl(const request& req) {
     } catch (NoAuthHeader& e) {
         cerr << "calc_trade_pnl: " << e.what() << endl;
         return response(400);
+    } catch (std::runtime_error const& e) {
+        cerr << "calc_trade_pnl: " << e.what() << endl;
+        return response(400); 
     } catch (...) {
         cerr << "Invalid timestamp" << endl;
         return response(400);
