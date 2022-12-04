@@ -284,15 +284,32 @@ def test_wrong_apikey_get_endpoints(endpoint):
     assert response.status_code == 401
 
 
+# data to send to post requests
+trade = {
+    "timestamp":"2/02/2020",
+    "sold_currency":"BTC",
+    "bought_currency":"USD",
+    "sold_amount":"1",
+    "bought_amount":"1"
+}
+
+keydata = {
+    "exchange":"Kraken",
+    "readkey":"J9LYvgnqF6wG4H0Y7/Yr1ysdXke/O2vPdu58nQGp9bmK+e7R4OSyWAsU",
+    "secretkey":"VzP5UOZzOcsjJOw/9gU1D1QY78eBNO3LHnXIUngXxK7jbhy58EHpPOGI8b7CIg4D/304BOAwrxX5JwGVECJimg=="
+}
+
+removekeydata = { "exchange":"Kraken" }
+
 # Tests to check response if wrong api_key sent : post endpoints
-@pytest.mark.parametrize("endpoint", [("trade"), ("exchangekey"), ("removekey"), ("trade_pnl")])
-def test_wrong_apikey_post_endpoints(endpoint):
+@pytest.mark.parametrize("endpoint, data", [("trade", trade), ("exchangekey", keydata), ("removekey", removekeydata), ("trade_pnl", trade)])
+def test_wrong_apikey_post_endpoints(endpoint, data):
     # Check Response for wrong api key
     if api_key == client_id + "aaaa":
         fake_api_key = "aaab"
     else:
         fake_api_key = "aaaa"
-    response = requests.post(SERVER + endpoint, headers = {"Authorization" : "Bearer " + client_id + fake_api_key})
+    response = requests.post(SERVER + endpoint, headers = {"Authorization" : "Bearer " + client_id + fake_api_key}, json = data)
     assert response.status_code == 401
 
 
@@ -309,14 +326,14 @@ def test_wrong_clientid_get_endpoints(endpoint):
 
 
 # Tests to check response if wrong user sent : post endpoints
-@pytest.mark.parametrize("endpoint", [("trade"), ("exchangekey"), ("removekey"), ("trade_pnl")])
-def test_wrong_clientid_post_endpoints(endpoint):
+@pytest.mark.parametrize("endpoint, data", [("trade", trade), ("exchangekey", keydata), ("removekey", removekeydata), ("trade_pnl", trade)])
+def test_wrong_clientid_post_endpoints(endpoint, data):
     # Check Response for client Id that doesn't exist
     if client_id == "aaaa":
         fake_client_id = "aaab"
     else:
         fake_client_id = "aaaa"
-    response = requests.post(SERVER + endpoint, headers = {"Authorization" : "Bearer " + fake_client_id + api_key})
+    response = requests.post(SERVER + endpoint, headers = {"Authorization" : "Bearer " + fake_client_id + api_key}, json = data)
     assert response.status_code == 401
 
 

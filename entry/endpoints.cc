@@ -249,11 +249,11 @@ response Endpoints::upload_trade(const request& req) {
 // Store exchange keys for a user for particular exchange
 response Endpoints::upload_exchange_key(const request& req) {
     crow::json::wvalue resp;
-    auto body = crow::json::load(req.body);
+    
 
     try {
         AuthenticUser user = parse_user(req);
-
+        auto body = crow::json::load(req.body);
         Exchange exch = from_string(string(body[ "exchange" ]));
         API_key pub_key = string(body[ "readkey" ]);
         API_key pvt_key = string(body[ "secretkey" ]);
@@ -386,7 +386,9 @@ response Endpoints::get_year_end_stats(const request& req) {
     } catch (NoRecordsFound& e) {
         cerr << "get_year_end_stats: " << e.what() << endl;
         crow::json::wvalue resp;
-        resp[ "status" ] = "NO RECORDS FOUND";
+        resp[ "lt_realized_pnl" ] = "0.0";
+        resp[ "st_realized_pnl" ] = 0.0;
+        resp[ "actual_pnl" ] = 0.0;
         crow::response res(200, resp);
         res.add_header("Access-Control-Allow-Origin", "*");
         return res;
