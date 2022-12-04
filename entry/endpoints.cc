@@ -234,7 +234,7 @@ response Endpoints::upload_trade(const request& req) {
         return response(400);
     } catch (std::runtime_error const& e) {
         cerr << "upload_trade: " << e.what() << endl;
-        return response(400); 
+        return response(400);
     } catch (...) {
         cerr << "upload_trade: Invalid timestamp" << endl;
         return response(400);
@@ -249,7 +249,6 @@ response Endpoints::upload_trade(const request& req) {
 // Store exchange keys for a user for particular exchange
 response Endpoints::upload_exchange_key(const request& req) {
     crow::json::wvalue resp;
-    
 
     try {
         AuthenticUser user = parse_user(req);
@@ -270,7 +269,7 @@ response Endpoints::upload_exchange_key(const request& req) {
         return response(400);
     } catch (std::runtime_error const& e) {
         cerr << "upload_exchange_key: " << e.what() << endl;
-        return response(400); 
+        return response(400);
     } catch (std::exception& e) {
         //  should we catch exchanges level errors ?? (yes, we should)
         cerr << "upload_exchange_key (unknown error): " << e.what() << endl;
@@ -304,7 +303,7 @@ response Endpoints::remove_exchange_key(const request& req) {
         return response(400);
     } catch (std::runtime_error const& e) {
         cerr << "remove_exchange_key: " << e.what() << endl;
-        return response(400); 
+        return response(400);
     }
 
     resp[ "status" ] = "SUCCESS";
@@ -433,7 +432,7 @@ response Endpoints::calc_trade_pnl(const request& req) {
         return response(400);
     } catch (std::runtime_error const& e) {
         cerr << "calc_trade_pnl: " << e.what() << endl;
-        return response(400); 
+        return response(400);
     } catch (...) {
         cerr << "Invalid timestamp" << endl;
         return response(400);
