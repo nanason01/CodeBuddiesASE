@@ -57,7 +57,7 @@ TEST(EngineIntegration, GetMatchedTrades) {
     std::vector<MatchedTrade> res;
 
     try {
-        res = m.get_matched_trades(sample_trades);
+        res = m.get_matched_trades(sample_trades, sample_end);
     } catch (const RateLimitedQuery& rq) {
         std::cerr << "rate limited, redo later\n";
         return;
@@ -79,15 +79,15 @@ TEST(EngineIntegration, GetMatchedTrades) {
             if (mt.bought_timestamp == from_usa_date(9, 11, 2020)) {
                 EXPECT_EQ(mt.currency, "ETH");
                 EXPECT_NEAR(mt.sz, 0.69, 0.1);
-                EXPECT_NEAR(mt.pnl, 556.11, 0.1);
+                EXPECT_NEAR(mt.pnl, 633.9, 0.1);
             } else if (mt.bought_timestamp == from_usa_date(6, 2, 2021)) {
                 EXPECT_EQ(mt.currency, "ETH");
                 EXPECT_NEAR(mt.sz, 7.81, 0.1);
-                EXPECT_NEAR(mt.pnl, -11426.8, 0.1);
+                EXPECT_NEAR(mt.pnl, -10549.4, 0.1);
             } else if (mt.bought_timestamp == from_usa_date(5, 20, 2022)) {
                 EXPECT_EQ(mt.currency, "ETH");
                 EXPECT_NEAR(mt.sz, 14.925, 0.1);
-                EXPECT_NEAR(mt.pnl, -12742, 0.1);
+                EXPECT_NEAR(mt.pnl, -11065.8, 0.1);
             } else {
                 ADD_FAILURE();
             }
