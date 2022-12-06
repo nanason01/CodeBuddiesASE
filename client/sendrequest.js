@@ -155,7 +155,9 @@ $(document).ready(function(){
                 xhr.setRequestHeader('Authorization', 'Bearer ' + apikey);
             },
             success: function(result, textstatus, xhr){
-                $("#6resp").html(result)
+                
+                //$("#6resp").html("200 OK. No records found.")
+                $("#6resp").html("Success! HTTP " + xhr.status + " " + result["status"])
                 console.log(result)
             },
             error: function(request, status, error){
