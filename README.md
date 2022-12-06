@@ -45,13 +45,22 @@ bazel test --test_output=all //... # run every test
 bazel test --test_output=all //<target> # run single test suite
 ```
 
-To run system tests:
-
+To run system tests: 
+Install pytest
 ```
 pip install -U pytest
+```
+Start the server by typing (in the root directory of the project):
+```
+bazel run //entry:service
+```
+Open another window/tab in the terminal, and navigate to the systemtests folder. Assuming you are in the root directory:
+```
 cd systemtests
 pytest
 ```
+More details included in systemtests/README.md
+
 To run branch coverage checker (when in root directory of project):
 ```
 ./test_coverage.sh
