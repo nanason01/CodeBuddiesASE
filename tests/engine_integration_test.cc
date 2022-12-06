@@ -79,15 +79,15 @@ TEST(EngineIntegration, GetMatchedTrades) {
             if (mt.bought_timestamp == from_usa_date(9, 11, 2020)) {
                 EXPECT_EQ(mt.currency, "ETH");
                 EXPECT_NEAR(mt.sz, 0.69, 0.1);
-                EXPECT_NEAR(mt.pnl, 633.9, 0.1);
+                EXPECT_NEAR(mt.pnl, 618.2, 0.1);
             } else if (mt.bought_timestamp == from_usa_date(6, 2, 2021)) {
                 EXPECT_EQ(mt.currency, "ETH");
                 EXPECT_NEAR(mt.sz, 7.81, 0.1);
-                EXPECT_NEAR(mt.pnl, -10549.4, 0.1);
+                EXPECT_NEAR(mt.pnl, -10726.4, 0.1);
             } else if (mt.bought_timestamp == from_usa_date(5, 20, 2022)) {
                 EXPECT_EQ(mt.currency, "ETH");
                 EXPECT_NEAR(mt.sz, 14.925, 0.1);
-                EXPECT_NEAR(mt.pnl, -11065.8, 0.1);
+                EXPECT_NEAR(mt.pnl, -11404.0, 0.1);
             } else {
                 ADD_FAILURE();
             }
@@ -167,8 +167,9 @@ TEST(EngineIntegration, GetYearEndPNL) {
 
     try {
         res = m.get_year_end_pnl(sample_trades, sample_end);
-    } catch (std::exception const& e) {
-        EXPECT_EQ(e.what(), RateLimitedQuery{}.what());
+    } catch (const RateLimitedQuery& rq) {
+        std::cerr << "rate limited, redo later\n";
+        return;
     }
 
     EXPECT_NEAR(res.actual, 0.0, 0.1);
