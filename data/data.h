@@ -24,7 +24,7 @@
 
 class Data final : public BaseData {
     KrakenDriver k_driver;
-    ExchangeDriver * const k_driver_ptr;
+    ExchangeDriver* const k_driver_ptr;
 
     sqlite3* db_conn;
 
@@ -41,18 +41,13 @@ class Data final : public BaseData {
     // as it is subjectively not changing anything we have to
     // pull and store trades that happened on some other exchange
 
-    void create_file(const std::string& filename, bool in_home_dir) {
-        std::string built_filename = filename;
+    std::string build_filename(std::string filename) {
+        const std::string built_dir = std::getenv("HOME") + std::string(CODEBUDDIES_DIR);
 
-        if (in_home_dir) {
-            const std::string built_dir = std::getenv("HOME") + std::string(CODEBUDDIES_DIR);
+        // ensure the dir is present
+        std::filesystem::create_directory(built_dir);
 
-            std::filesystem::create_directory(built_dir);
-
-            built_filename = built_dir + "/" + filename;
-        }
-
-        std::ofstream ofs{ built_filename };
+        return built_dir + "/" + filename;
     }
 
     void update_exchange(const AuthenticUser& user, Exchange exch,
@@ -62,18 +57,19 @@ public:
     // normal call
     Data(const std::string& db_filename)
         : k_driver_ptr(&k_driver) {
-        create_file(db_filename, true);
-        if (sqlite3_open(db_filename.c_str(), &db_conn) != SQLITE_OK) {
+        std::string made_file = build_filename(db_filename);
+        if (sqlite3_open(made_file.c_str(), &db_conn) != SQLITE_OK) {
+            std::cerr << "Failed to connect to db at: " << db_filename << "\n";
             throw DatabaseConnError();
         } else {
-            std::cout << "Connected to database at file: " <<
-                "~" << CODEBUDDIES_DIR << "/" << db_filename << std::endl;
+            std::cout << "Tried to connect to: ~" << CODEBUDDIES_DIR << "/"
+                << db_filename << std::endl;
+            std::cout << "Connected to database at file: " << made_file << std::endl;
         }
     }
     // only for testing
     Data(ExchangeDriver* _k, const std::string& test_db_filename)
         : k_driver_ptr(_k) {
-        create_file(test_db_filename, false);
         if (sqlite3_open(test_db_filename.c_str(), &db_conn) != SQLITE_OK) {
             throw DatabaseConnError();
         }
